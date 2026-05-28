@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>burns._frame &mdash; burns 0.0.2 documentation</title>
+  <title>burns._frame &mdash; burns 0.0.3 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=e3a6060d"></script>
+      <script src="../../_static/documentation_options.js?v=47de8214"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -95,6 +95,12 @@
 <span class="sd">   AR, **cover-crop** the window to the output AR (center-cropped — the FCP /</span>
 <span class="sd">   iMovie default), so frames fill the output without stretching.</span>
 <span class="sd">4. Resize the result to the (even-snapped) output size with a quality filter.</span>
+
+<span class="sd">Steps 1-3 are pure integer geometry and are isolated in :func:`sample_box`</span>
+<span class="sd">(``-&gt; (x0, y0, x1, y1)`` in source-image pixels); :func:`sample_frame` adds</span>
+<span class="sd">only the slice + resize. That split is deliberate: ``sample_box`` *is* the</span>
+<span class="sd">cross-language crop contract a JS/TS port must reproduce, and the golden-vector</span>
+<span class="sd">fixtures pin it directly.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
@@ -103,6 +109,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">PIL</span><span class="w"> </span><span class="kn">import</span> <span class="n">Image</span> <span class="k">as</span> <span class="n">PIL_Image</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">burns.path</span><span class="w"> </span><span class="kn">import</span> <span class="n">BurnsPath</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">burns.rect</span><span class="w"> </span><span class="kn">import</span> <span class="n">Rect</span>
 
 
 <div class="viewcode-block" id="even">
@@ -147,23 +154,61 @@
 
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_cover_crop</span><span class="p">(</span><span class="n">frame</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">target_aspect</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Center-crop ``frame`` (H, W[, C]) to ``target_aspect`` (width / height).</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_cover_crop_box</span><span class="p">(</span>
+    <span class="n">x0</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">y0</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">x1</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">y1</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">target_aspect</span><span class="p">:</span> <span class="nb">float</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Center-crop the integer box ``(x0, y0, x1, y1)`` to ``target_aspect``.</span>
 
-<span class="sd">    Returns the largest centered sub-image of the requested AR. A no-op when the</span>
-<span class="sd">    frame already matches (within a 1px tolerance).</span>
+<span class="sd">    Trims the longer dimension symmetrically so the box&#39;s pixel AR becomes</span>
+<span class="sd">    ``target_aspect`` (width / height), keeping it centered — the FCP / iMovie</span>
+<span class="sd">    default. A no-op when the box already matches within a 1px tolerance.</span>
+<span class="sd">    Returns the trimmed box in the same coordinate frame as the input.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">h</span><span class="p">,</span> <span class="n">w</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">x1</span> <span class="o">-</span> <span class="n">x0</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="n">y1</span> <span class="o">-</span> <span class="n">y0</span>
     <span class="n">cur</span> <span class="o">=</span> <span class="n">w</span> <span class="o">/</span> <span class="n">h</span>
     <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">cur</span> <span class="o">-</span> <span class="n">target_aspect</span><span class="p">)</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="n">w</span><span class="p">,</span> <span class="n">h</span><span class="p">)):</span>
-        <span class="k">return</span> <span class="n">frame</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">cur</span> <span class="o">&gt;</span> <span class="n">target_aspect</span><span class="p">:</span>  <span class="c1"># too wide — trim left/right</span>
         <span class="n">new_w</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">h</span> <span class="o">*</span> <span class="n">target_aspect</span><span class="p">)))</span>
-        <span class="n">x0</span> <span class="o">=</span> <span class="p">(</span><span class="n">w</span> <span class="o">-</span> <span class="n">new_w</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
-        <span class="k">return</span> <span class="n">frame</span><span class="p">[:,</span> <span class="n">x0</span> <span class="p">:</span> <span class="n">x0</span> <span class="o">+</span> <span class="n">new_w</span><span class="p">]</span>
+        <span class="n">nx0</span> <span class="o">=</span> <span class="n">x0</span> <span class="o">+</span> <span class="p">(</span><span class="n">w</span> <span class="o">-</span> <span class="n">new_w</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">nx0</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">nx0</span> <span class="o">+</span> <span class="n">new_w</span><span class="p">,</span> <span class="n">y1</span><span class="p">)</span>
     <span class="n">new_h</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">w</span> <span class="o">/</span> <span class="n">target_aspect</span><span class="p">)))</span>  <span class="c1"># too tall — trim top/bottom</span>
-    <span class="n">y0</span> <span class="o">=</span> <span class="p">(</span><span class="n">h</span> <span class="o">-</span> <span class="n">new_h</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
-    <span class="k">return</span> <span class="n">frame</span><span class="p">[</span><span class="n">y0</span> <span class="p">:</span> <span class="n">y0</span> <span class="o">+</span> <span class="n">new_h</span><span class="p">]</span>
+    <span class="n">ny0</span> <span class="o">=</span> <span class="n">y0</span> <span class="o">+</span> <span class="p">(</span><span class="n">h</span> <span class="o">-</span> <span class="n">new_h</span><span class="p">)</span> <span class="o">//</span> <span class="mi">2</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">ny0</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">ny0</span> <span class="o">+</span> <span class="n">new_h</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="sample_box">
+<a class="viewcode-back" href="../../module_docs/burns/_frame.html#burns._frame.sample_box">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">sample_box</span><span class="p">(</span>
+    <span class="n">path</span><span class="p">:</span> <span class="n">BurnsPath</span><span class="p">,</span>
+    <span class="n">t</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">img_w</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">img_h</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">out_w</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">out_h</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;The integer crop box ``(x0, y0, x1, y1)`` read from the source image.</span>
+
+<span class="sd">    Pure integer geometry — steps 1-3 of the module mapping: evaluate the path</span>
+<span class="sd">    to a :class:`~burns.rect.Rect`, map it to a clamped pixel box via</span>
+<span class="sd">    :meth:`Rect.to_pixels`, then cover-crop that box to the output aspect ratio.</span>
+<span class="sd">    No image array is touched, so this is the exact, side-effect-free crop</span>
+<span class="sd">    contract a cross-language renderer must reproduce; the golden vectors pin it.</span>
+
+<span class="sd">    The box is half-open (``img_np[y0:y1, x0:x1]``).</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; p = BurnsPath.from_start_end(Rect(0, 0, 1, 1), Rect(0, 0, 1, 1))</span>
+<span class="sd">        &gt;&gt;&gt; sample_box(p, 0.0, 64, 48, 64, 48)  # output AR == image AR</span>
+<span class="sd">        (0, 0, 64, 48)</span>
+<span class="sd">        &gt;&gt;&gt; sample_box(p, 0.0, 64, 48, 48, 48)  # square output cover-crops wide</span>
+<span class="sd">        (8, 0, 56, 48)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">rect</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+    <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span> <span class="o">=</span> <span class="n">rect</span><span class="o">.</span><span class="n">to_pixels</span><span class="p">(</span><span class="n">img_w</span><span class="p">,</span> <span class="n">img_h</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_cover_crop_box</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">out_w</span> <span class="o">/</span> <span class="n">out_h</span><span class="p">)</span></div>
+
 
 
 <div class="viewcode-block" id="sample_frame">
@@ -181,13 +226,12 @@
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Render the single frame at normalized time ``t in [0, 1]``.</span>
 
-<span class="sd">    See the module docstring for the four-step mapping. Returns an</span>
-<span class="sd">    ``(out_h, out_w, C)`` uint8 array.</span>
+<span class="sd">    See the module docstring for the four-step mapping: :func:`sample_box` does</span>
+<span class="sd">    the pure geometry (steps 1-3); this adds the slice + resize (step 4).</span>
+<span class="sd">    Returns an ``(out_h, out_w, C)`` uint8 array.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">rect</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
-    <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span> <span class="o">=</span> <span class="n">rect</span><span class="o">.</span><span class="n">to_pixels</span><span class="p">(</span><span class="n">img_w</span><span class="p">,</span> <span class="n">img_h</span><span class="p">)</span>
+    <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span> <span class="o">=</span> <span class="n">sample_box</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">img_w</span><span class="p">,</span> <span class="n">img_h</span><span class="p">,</span> <span class="n">out_w</span><span class="p">,</span> <span class="n">out_h</span><span class="p">)</span>
     <span class="n">crop</span> <span class="o">=</span> <span class="n">img_np</span><span class="p">[</span><span class="n">y0</span><span class="p">:</span><span class="n">y1</span><span class="p">,</span> <span class="n">x0</span><span class="p">:</span><span class="n">x1</span><span class="p">]</span>
-    <span class="n">crop</span> <span class="o">=</span> <span class="n">_cover_crop</span><span class="p">(</span><span class="n">crop</span><span class="p">,</span> <span class="n">out_w</span> <span class="o">/</span> <span class="n">out_h</span><span class="p">)</span>
     <span class="n">crop_img</span> <span class="o">=</span> <span class="n">PIL_Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="n">crop</span><span class="p">)</span><span class="o">.</span><span class="n">resize</span><span class="p">((</span><span class="n">out_w</span><span class="p">,</span> <span class="n">out_h</span><span class="p">),</span> <span class="n">resample</span><span class="o">=</span><span class="n">resample</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">crop_img</span><span class="p">)</span></div>
 

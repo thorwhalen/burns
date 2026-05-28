@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>burns.render &mdash; burns 0.0.2 documentation</title>
+  <title>burns.render &mdash; burns 0.0.3 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=e3a6060d"></script>
+      <script src="../../_static/documentation_options.js?v=47de8214"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -271,9 +271,7 @@
             <span class="p">)</span>
         <span class="n">image</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">duration</span> <span class="o">=</span> <span class="n">panel</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">BurnsPath</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;panel </span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">: path must be a BurnsPath, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
-            <span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;panel </span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">: path must be a BurnsPath, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="n">duration</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">duration</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">duration</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;panel </span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">: duration_s must be &gt; 0, got </span><span class="si">{</span><span class="n">duration</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -306,11 +304,7 @@
             <span class="n">pr</span> <span class="o">=</span> <span class="n">panel_renders</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
             <span class="n">local_norm</span> <span class="o">=</span> <span class="mf">1.0</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">pr</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span>
-                <span class="n">p</span>
-                <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">panel_renders</span>
-                <span class="k">if</span> <span class="n">t</span> <span class="o">&lt;</span> <span class="n">p</span><span class="p">[</span><span class="s2">&quot;film_offset&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">p</span><span class="p">[</span><span class="s2">&quot;duration&quot;</span><span class="p">]</span>
-            <span class="p">)</span>
+            <span class="n">pr</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">panel_renders</span> <span class="k">if</span> <span class="n">t</span> <span class="o">&lt;</span> <span class="n">p</span><span class="p">[</span><span class="s2">&quot;film_offset&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">p</span><span class="p">[</span><span class="s2">&quot;duration&quot;</span><span class="p">])</span>
             <span class="n">local_norm</span> <span class="o">=</span> <span class="p">(</span><span class="n">t</span> <span class="o">-</span> <span class="n">pr</span><span class="p">[</span><span class="s2">&quot;film_offset&quot;</span><span class="p">])</span> <span class="o">/</span> <span class="n">pr</span><span class="p">[</span><span class="s2">&quot;duration&quot;</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">sample_frame</span><span class="p">(</span>
             <span class="n">pr</span><span class="p">[</span><span class="s2">&quot;path&quot;</span><span class="p">],</span>

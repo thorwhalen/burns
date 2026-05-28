@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>burns.backends &mdash; burns 0.0.2 documentation</title>
+  <title>burns.backends &mdash; burns 0.0.3 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=e3a6060d"></script>
+      <script src="../../_static/documentation_options.js?v=47de8214"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -165,9 +165,7 @@
 
     <span class="k">def</span><span class="w"> </span><span class="nf">make_frame</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
         <span class="c1"># moviepy drives t in seconds; the path&#39;s clock is normalized.</span>
-        <span class="k">return</span> <span class="n">sample_frame</span><span class="p">(</span>
-            <span class="n">path</span><span class="p">,</span> <span class="n">t</span> <span class="o">/</span> <span class="n">duration</span><span class="p">,</span> <span class="n">img_np</span><span class="p">,</span> <span class="n">img_w</span><span class="p">,</span> <span class="n">img_h</span><span class="p">,</span> <span class="n">out_w</span><span class="p">,</span> <span class="n">out_h</span>
-        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">sample_frame</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">t</span> <span class="o">/</span> <span class="n">duration</span><span class="p">,</span> <span class="n">img_np</span><span class="p">,</span> <span class="n">img_w</span><span class="p">,</span> <span class="n">img_h</span><span class="p">,</span> <span class="n">out_w</span><span class="p">,</span> <span class="n">out_h</span><span class="p">)</span>
 
     <span class="n">clip</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">VideoClip</span><span class="p">(</span><span class="n">make_frame</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="n">duration</span><span class="p">)</span><span class="o">.</span><span class="n">with_fps</span><span class="p">(</span><span class="n">fps</span><span class="p">)</span>
     <span class="n">write_kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;bitrate&quot;</span><span class="p">,</span> <span class="s2">&quot;5000k&quot;</span><span class="p">)</span>
