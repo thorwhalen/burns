@@ -38,7 +38,9 @@ from burns._frame import sample_box
 from burns.easing import CSS_BEZIERS
 
 # Where the committed fixture lives (the SSOT the test loads).
-FIXTURE_PATH = Path(__file__).resolve().parent.parent / "tests" / "golden" / "vectors.json"
+FIXTURE_PATH = (
+    Path(__file__).resolve().parent.parent / "tests" / "golden" / "vectors.json"
+)
 
 # Equivalence tolerance for the float-valued evaluate rects. The pixel boxes are
 # compared as exact integers (no eps), so they are not governed by this.
@@ -66,7 +68,9 @@ def _named_paths() -> dict[str, BurnsPath]:
         Rect(0, 0, 1, 1), Rect(0, 0, 0.5, 0.5), easing="linear"
     )
     paths["push_in_default"] = BurnsPath.push_in()  # zoom 1.3, ease-in-out
-    paths["push_in_off_center"] = BurnsPath.push_in(1.5, to=(0.7, 0.35), easing="ease-out")
+    paths["push_in_off_center"] = BurnsPath.push_in(
+        1.5, to=(0.7, 0.35), easing="ease-out"
+    )
     # An N-keyframe (3-waypoint) path: pan right, then push in. Linear easing so
     # the per-segment lerp is exercised without the bezier remap muddying it.
     paths["three_keyframe"] = BurnsPath(
@@ -121,7 +125,9 @@ def _evaluate_vectors(paths: dict[str, BurnsPath]) -> list[dict[str, Any]]:
     return vectors
 
 
-def _pixel_box_cases(paths: dict[str, BurnsPath]) -> list[tuple[str, BurnsPath, tuple[int, int]]]:
+def _pixel_box_cases(
+    paths: dict[str, BurnsPath],
+) -> list[tuple[str, BurnsPath, tuple[int, int]]]:
     """``(name, path, output_size)`` cases for the pixel-box vectors.
 
     The image is always ``(IMG_W, IMG_H)``; the interesting axis is output size:
