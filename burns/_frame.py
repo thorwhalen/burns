@@ -12,6 +12,12 @@ crop, because the rule is short and explicit:
    AR, **cover-crop** the window to the output AR (center-cropped — the FCP /
    iMovie default), so frames fill the output without stretching.
 4. Resize the result to the (even-snapped) output size with a quality filter.
+
+Steps 1-3 are pure integer geometry and are isolated in :func:`sample_box`
+(``-> (x0, y0, x1, y1)`` in source-image pixels); :func:`sample_frame` adds
+only the slice + resize. That split is deliberate: ``sample_box`` *is* the
+cross-language crop contract a JS/TS port must reproduce, and the golden-vector
+fixtures pin it directly.
 """
 
 from __future__ import annotations
@@ -20,6 +26,7 @@ import numpy as np
 from PIL import Image as PIL_Image
 
 from burns.path import BurnsPath
+from burns.rect import Rect
 
 
 def even(n: int) -> int:
@@ -58,23 +65,58 @@ def output_size_for(
     return (even(img_w), even(img_h))
 
 
-def _cover_crop(frame: np.ndarray, target_aspect: float) -> np.ndarray:
-    """Center-crop ``frame`` (H, W[, C]) to ``target_aspect`` (width / height).
+def _cover_crop_box(
+    x0: int, y0: int, x1: int, y1: int, target_aspect: float
+) -> tuple[int, int, int, int]:
+    """Center-crop the integer box ``(x0, y0, x1, y1)`` to ``target_aspect``.
 
-    Returns the largest centered sub-image of the requested AR. A no-op when the
-    frame already matches (within a 1px tolerance).
+    Trims the longer dimension symmetrically so the box's pixel AR becomes
+    ``target_aspect`` (width / height), keeping it centered — the FCP / iMovie
+    default. A no-op when the box already matches within a 1px tolerance.
+    Returns the trimmed box in the same coordinate frame as the input.
     """
-    h, w = frame.shape[:2]
+    w = x1 - x0
+    h = y1 - y0
     cur = w / h
     if abs(cur - target_aspect) < (1.0 / max(w, h)):
-        return frame
+        return (x0, y0, x1, y1)
     if cur > target_aspect:  # too wide — trim left/right
         new_w = max(1, int(round(h * target_aspect)))
-        x0 = (w - new_w) // 2
-        return frame[:, x0 : x0 + new_w]
+        nx0 = x0 + (w - new_w) // 2
+        return (nx0, y0, nx0 + new_w, y1)
     new_h = max(1, int(round(w / target_aspect)))  # too tall — trim top/bottom
-    y0 = (h - new_h) // 2
-    return frame[y0 : y0 + new_h]
+    ny0 = y0 + (h - new_h) // 2
+    return (x0, ny0, x1, ny0 + new_h)
+
+
+def sample_box(
+    path: BurnsPath,
+    t: float,
+    img_w: int,
+    img_h: int,
+    out_w: int,
+    out_h: int,
+) -> tuple[int, int, int, int]:
+    """The integer crop box ``(x0, y0, x1, y1)`` read from the source image.
+
+    Pure integer geometry — steps 1-3 of the module mapping: evaluate the path
+    to a :class:`~burns.rect.Rect`, map it to a clamped pixel box via
+    :meth:`Rect.to_pixels`, then cover-crop that box to the output aspect ratio.
+    No image array is touched, so this is the exact, side-effect-free crop
+    contract a cross-language renderer must reproduce; the golden vectors pin it.
+
+    The box is half-open (``img_np[y0:y1, x0:x1]``).
+
+    Examples:
+        >>> p = BurnsPath.from_start_end(Rect(0, 0, 1, 1), Rect(0, 0, 1, 1))
+        >>> sample_box(p, 0.0, 64, 48, 64, 48)  # output AR == image AR
+        (0, 0, 64, 48)
+        >>> sample_box(p, 0.0, 64, 48, 48, 48)  # square output cover-crops wide
+        (8, 0, 56, 48)
+    """
+    rect = path.evaluate(t)
+    x0, y0, x1, y1 = rect.to_pixels(img_w, img_h)
+    return _cover_crop_box(x0, y0, x1, y1, out_w / out_h)
 
 
 def sample_frame(
@@ -90,12 +132,11 @@ def sample_frame(
 ) -> np.ndarray:
     """Render the single frame at normalized time ``t in [0, 1]``.
 
-    See the module docstring for the four-step mapping. Returns an
-    ``(out_h, out_w, C)`` uint8 array.
+    See the module docstring for the four-step mapping: :func:`sample_box` does
+    the pure geometry (steps 1-3); this adds the slice + resize (step 4).
+    Returns an ``(out_h, out_w, C)`` uint8 array.
     """
-    rect = path.evaluate(t)
-    x0, y0, x1, y1 = rect.to_pixels(img_w, img_h)
+    x0, y0, x1, y1 = sample_box(path, t, img_w, img_h, out_w, out_h)
     crop = img_np[y0:y1, x0:x1]
-    crop = _cover_crop(crop, out_w / out_h)
     crop_img = PIL_Image.fromarray(crop).resize((out_w, out_h), resample=resample)
     return np.asarray(crop_img)
