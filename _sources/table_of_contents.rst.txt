@@ -3,6 +3,10 @@
    :caption: Contents:
 
    module_docs/burns
+   module_docs/burns/_frame
    module_docs/burns/_util
-   module_docs/burns/paths
+   module_docs/burns/backends
+   module_docs/burns/easing
+   module_docs/burns/path
+   module_docs/burns/rect
    module_docs/burns/render

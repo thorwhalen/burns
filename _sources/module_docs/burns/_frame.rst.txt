@@ -1,0 +1,4 @@
+burns._frame
+============
+.. automodule:: burns._frame
+   :members:

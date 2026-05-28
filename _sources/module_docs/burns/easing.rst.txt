@@ -1,0 +1,4 @@
+burns.easing
+============
+.. automodule:: burns.easing
+   :members:

@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>burns.render &mdash; burns 0.0.1 documentation</title>
+  <title>burns.render &mdash; burns 0.0.2 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=d45e8c67"></script>
+      <script src="../../_static/documentation_options.js?v=e3a6060d"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -47,8 +47,12 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/burns.html">burns</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/burns/_frame.html">burns._frame</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/burns/_util.html">burns._util</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../module_docs/burns/paths.html">burns.paths</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/burns/backends.html">burns.backends</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/burns/easing.html">burns.easing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/burns/path.html">burns.path</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/burns/rect.html">burns.rect</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/burns/render.html">burns.render</a></li>
 </ul>
 
@@ -79,272 +83,147 @@
   <h1>Source code for burns.render</h1><div class="highlight"><pre>
 <span></span><span class="sd">&quot;&quot;&quot;Ken Burns **renderers** — turn still images into pan/zoom video.</span>
 
-<span class="sd">Two entry points, both backed by a lazy ``moviepy.VideoClip`` so the whole</span>
-<span class="sd">clip is never materialised in memory:</span>
+<span class="sd">Two entry points, both consuming a :class:`~burns.path.BurnsPath` (the</span>
+<span class="sd">render-agnostic motion spec) plus a render-time ``duration``:</span>
 
-<span class="sd">- :func:`ken_burns_video` — one image, a multi-phase pan/zoom, one mp4.</span>
-<span class="sd">- :func:`ken_burns_film` — a sequence of ``(image, phases)`` panels rendered</span>
-<span class="sd">  as a **single** continuous film (no per-panel intermediate files, no concat</span>
-<span class="sd">  seams, no per-panel tail freezes), with an optional pre-built audio track</span>
-<span class="sd">  muxed in.</span>
+<span class="sd">- :func:`ken_burns_video` — one image, one :class:`BurnsPath`, one mp4. Dispatches</span>
+<span class="sd">  to a pluggable backend (see :mod:`burns.backends`); the default ``&quot;pillow&quot;``</span>
+<span class="sd">  backend is a lazy moviepy clip, so the whole video is never held in memory.</span>
+<span class="sd">- :func:`ken_burns_film` — a sequence of ``(image, path, duration)`` panels</span>
+<span class="sd">  rendered as a **single** continuous film (no per-panel intermediate files, no</span>
+<span class="sd">  concat seams, no per-panel tail freezes), with an optional pre-built audio</span>
+<span class="sd">  track muxed in.</span>
 
-<span class="sd">Both consume the ``(cx, cy, s)`` rectangle spec described under</span>
-<span class="sd">:func:`ken_burns_video`. Use :func:`burns.ken_burns_path` to generate cohesive</span>
-<span class="sd">multi-phase paths instead of hand-authoring rectangles.</span>
+<span class="sd">Use :func:`burns.ken_burns_path` (or :meth:`BurnsPath.push_in`) to build paths</span>
+<span class="sd">instead of hand-authoring keyframes.</span>
 <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">moviepy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mp</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">PIL</span><span class="w"> </span><span class="kn">import</span> <span class="n">Image</span> <span class="k">as</span> <span class="n">PIL_Image</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">._util</span><span class="w"> </span><span class="kn">import</span> <span class="n">_auto_video_path</span><span class="p">,</span> <span class="n">_ensure_output_path</span><span class="p">,</span> <span class="n">_non_colliding_key</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">burns._frame</span><span class="w"> </span><span class="kn">import</span> <span class="n">output_size_for</span><span class="p">,</span> <span class="n">sample_frame</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">burns._util</span><span class="w"> </span><span class="kn">import</span> <span class="n">_auto_video_path</span><span class="p">,</span> <span class="n">_ensure_output_path</span><span class="p">,</span> <span class="n">_non_colliding_key</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">burns.backends</span><span class="w"> </span><span class="kn">import</span> <span class="n">DFLT_BACKEND</span><span class="p">,</span> <span class="n">get_backend</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">burns.path</span><span class="w"> </span><span class="kn">import</span> <span class="n">BurnsPath</span><span class="p">,</span> <span class="n">PanelInput</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">burns.rect</span><span class="w"> </span><span class="kn">import</span> <span class="n">Rect</span>
 
 <span class="n">_VIDEO_EXTS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;.mp4&quot;</span><span class="p">,</span> <span class="s2">&quot;.mov&quot;</span><span class="p">,</span> <span class="s2">&quot;.avi&quot;</span><span class="p">,</span> <span class="s2">&quot;.mkv&quot;</span><span class="p">)</span>
 
-
-<span class="k">def</span><span class="w"> </span><span class="nf">_parse_rectangle</span><span class="p">(</span><span class="n">rect</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Normalize a rectangle input to a ``(cx, cy, s)`` tuple.</span>
-
-<span class="sd">    Accepts:</span>
-<span class="sd">        - ``None``: returns ``default``</span>
-<span class="sd">        - single number: ``(0.5, 0.5, value)`` (a centered zoom)</span>
-<span class="sd">        - pair: ``(cx, cy, 1.0)`` (a pan center at full scale)</span>
-<span class="sd">        - triple: ``(cx, cy, s)`` (the full spec)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="n">rect</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">default</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rect</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
-        <span class="k">return</span> <span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">rect</span><span class="p">))</span>
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rect</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
-        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rect</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">rect</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
-        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">rect</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">rect</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">rect</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="mf">1.0</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">rect</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">rect</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">rect</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">rect</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
-    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid rectangle: </span><span class="si">{</span><span class="n">rect</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="c1"># The standard 2-second push-in: full image -&gt; 1.3x center zoom, ease-in-out.</span>
+<span class="n">DEFAULT_BURNS_PATH</span> <span class="o">=</span> <span class="n">BurnsPath</span><span class="o">.</span><span class="n">from_start_end</span><span class="p">(</span>
+    <span class="n">Rect</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="n">Rect</span><span class="o">.</span><span class="n">from_center_zoom</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.3</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="n">DEFAULT_DURATION_S</span> <span class="o">=</span> <span class="mf">2.0</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">_rect_to_box</span><span class="p">(</span><span class="n">cx</span><span class="p">,</span> <span class="n">cy</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">img_w</span><span class="p">,</span> <span class="n">img_h</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert ``(cx, cy, s)`` to a pixel crop box ``(xmin, ymin, xmax, ymax)``.</span>
-
-<span class="sd">    The crop&#39;s width and height in pixels are ``img_w / s`` and ``img_h / s``</span>
-<span class="sd">    respectively — same aspect ratio as the source image, so the resize-back-to-</span>
-<span class="sd">    ``(img_w, img_h)`` step that follows never stretches the frame.</span>
-
-<span class="sd">    Pan-center clamping: when ``(cx, cy)`` would push the crop past an edge, we</span>
-<span class="sd">    clamp the **center**, not the crop box. Clamping the box itself shrinks one</span>
-<span class="sd">    side and breaks the aspect ratio — that was the source of the breathing /</span>
-<span class="sd">    stretching artefact in long pans. By clamping the center, the box &quot;rides</span>
-<span class="sd">    the wall&quot; at the edge but stays the right size.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">half_w</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">/</span> <span class="n">s</span>
-    <span class="n">half_h</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">/</span> <span class="n">s</span>
-    <span class="c1"># Clamp the pan center so the crop box fits inside the image. When zoom</span>
-    <span class="c1"># s &lt;= 1.0, half_w &gt;= 0.5 → the valid range collapses to {0.5} (i.e. the</span>
-    <span class="c1"># only legal center is the image middle); ``max(low, min(high, x))`` is</span>
-    <span class="c1"># robust to that case because ``min(...)`` still returns 0.5.</span>
-    <span class="n">cx</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">half_w</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">half_w</span><span class="p">,</span> <span class="n">cx</span><span class="p">))</span>
-    <span class="n">cy</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">half_h</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">half_h</span><span class="p">,</span> <span class="n">cy</span><span class="p">))</span>
-    <span class="n">xmin</span> <span class="o">=</span> <span class="p">(</span><span class="n">cx</span> <span class="o">-</span> <span class="n">half_w</span><span class="p">)</span> <span class="o">*</span> <span class="n">img_w</span>
-    <span class="n">ymin</span> <span class="o">=</span> <span class="p">(</span><span class="n">cy</span> <span class="o">-</span> <span class="n">half_h</span><span class="p">)</span> <span class="o">*</span> <span class="n">img_h</span>
-    <span class="n">xmax</span> <span class="o">=</span> <span class="p">(</span><span class="n">cx</span> <span class="o">+</span> <span class="n">half_w</span><span class="p">)</span> <span class="o">*</span> <span class="n">img_w</span>
-    <span class="n">ymax</span> <span class="o">=</span> <span class="p">(</span><span class="n">cy</span> <span class="o">+</span> <span class="n">half_h</span><span class="p">)</span> <span class="o">*</span> <span class="n">img_h</span>
-    <span class="c1"># Round (not truncate) for symmetric int conversion — the ±1 px drift</span>
-    <span class="c1"># from truncation can also nudge aspect ratio on extreme zooms.</span>
-    <span class="k">return</span> <span class="p">(</span>
-        <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">xmin</span><span class="p">)),</span>
-        <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">ymin</span><span class="p">)),</span>
-        <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">xmax</span><span class="p">)),</span>
-        <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">ymax</span><span class="p">)),</span>
-    <span class="p">)</span>
-
-
-<span class="n">DEFAULT_KENBURNS_PHASES</span> <span class="o">=</span> <span class="p">(((</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.3</span><span class="p">),</span> <span class="mf">2.0</span><span class="p">),)</span>
-
-
-<div class="viewcode-block" id="ken_burns_video">
-<a class="viewcode-back" href="../../module_docs/burns/render.html#burns.ken_burns_video">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">ken_burns_video</span><span class="p">(</span>
-    <span class="n">image</span><span class="p">,</span>
-    <span class="o">*</span><span class="p">,</span>
-    <span class="n">phases</span><span class="o">=</span><span class="n">DEFAULT_KENBURNS_PHASES</span><span class="p">,</span>
-    <span class="n">fps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span><span class="p">,</span>
-    <span class="n">saveas</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="n">codec</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;libx264&quot;</span><span class="p">,</span>
-    <span class="n">audio_codec</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;aac&quot;</span><span class="p">,</span>
-    <span class="o">**</span><span class="n">write_kwargs</span><span class="p">,</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a Ken Burns effect video from an image with multi-phase pan/zoom.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        image: Path to image file or image object (PIL.Image, np.ndarray)</span>
-<span class="sd">        phases: Iterable of ``(start_rect, end_rect, duration_s)`` phases. The</span>
-<span class="sd">            camera moves linearly from ``start_rect`` to ``end_rect`` over each</span>
-<span class="sd">            phase&#39;s ``duration_s``; phases play back-to-back so total clip</span>
-<span class="sd">            length is the sum of their durations. Default is a single 2-second</span>
-<span class="sd">            standard Ken Burns push-in.</span>
-<span class="sd">        fps: Frames per second (default 30)</span>
-<span class="sd">        saveas: Where to save video (default: image path with &quot;_kenburns&quot; appended before extension)</span>
-<span class="sd">        codec: Video codec (default libx264)</span>
-<span class="sd">        audio_codec: Audio codec (default aac)</span>
-<span class="sd">        **write_kwargs: Passed to write_videofile</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        Path to saved video</span>
-
-<span class="sd">    Rectangle parameterization:</span>
-<span class="sd">        Rect = (cx, cy, s) — pan center (cx, cy) in [0, 1] and zoom scale s &gt; 0.</span>
-<span class="sd">        s = 1: the full image; s &gt; 1: zoomed in (a smaller crop box).</span>
-<span class="sd">        The crop box is clamped to the image, so you cannot zoom out past the</span>
-<span class="sd">        original — express a zoom-out as start s &gt; 1 panning to end s = 1.</span>
-<span class="sd">        Standard Ken Burns: the full image (s=1) zooming in to s=1.3.</span>
-<span class="sd">        Rects accept the same flexible forms as elsewhere: a scalar zoom, a</span>
-<span class="sd">        (cx, cy) pan pair, or the full (cx, cy, s) triple.</span>
-
-<span class="sd">    Phase continuity:</span>
-<span class="sd">        A phase&#39;s ``end_rect`` does not need to match the next phase&#39;s</span>
-<span class="sd">        ``start_rect`` — discontinuities are allowed and produce an</span>
-<span class="sd">        instantaneous cut. For continuous motion, set each phase&#39;s</span>
-<span class="sd">        ``start_rect`` equal to the previous phase&#39;s ``end_rect``.</span>
-
-<span class="sd">    Examples:</span>
-<span class="sd">        &gt;&gt;&gt; ken_burns_video(&quot;photo.jpg&quot;)  # Standard 2s push-in  # doctest: +SKIP</span>
-<span class="sd">        &gt;&gt;&gt; ken_burns_video(  # doctest: +SKIP</span>
-<span class="sd">        ...     &quot;photo.jpg&quot;,</span>
-<span class="sd">        ...     phases=[((0.5, 0.5, 1.0), (0.65, 0.4, 1.2), 5.0)],</span>
-<span class="sd">        ... )</span>
-<span class="sd">        &gt;&gt;&gt; ken_burns_video(  # doctest: +SKIP</span>
-<span class="sd">        ...     &quot;photo.jpg&quot;,</span>
-<span class="sd">        ...     phases=[</span>
-<span class="sd">        ...         ((0.5, 0.5, 1.0), (0.65, 0.4, 1.2), 4.0),</span>
-<span class="sd">        ...         ((0.65, 0.4, 1.2), (0.35, 0.6, 1.2), 4.0),</span>
-<span class="sd">        ...         ((0.35, 0.6, 1.2), (0.5, 0.5, 1.3), 4.0),</span>
-<span class="sd">        ...     ],</span>
-<span class="sd">        ... )</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Accept image as path, PIL.Image, or np.ndarray.</span>
-    <span class="c1"># Track the original image path for output path generation.</span>
-    <span class="n">image_path</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_load_image</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">where</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Decode ``image`` (path / PIL.Image / ndarray) to ``(np, w, h, src_path)``.&quot;&quot;&quot;</span>
+    <span class="n">src_path</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">)):</span>
-        <span class="n">image_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+        <span class="n">src_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
         <span class="n">img</span> <span class="o">=</span> <span class="n">PIL_Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">image</span><span class="p">))</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;RGB&quot;</span><span class="p">)</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
         <span class="n">img</span> <span class="o">=</span> <span class="n">PIL_Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
     <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="s2">&quot;convert&quot;</span><span class="p">):</span>
         <span class="n">img</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;RGB&quot;</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported image type: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">image</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2">: unsupported image type: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">image</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">w</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">size</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">img</span><span class="p">),</span> <span class="n">w</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">src_path</span>
 
-    <span class="n">img_w</span><span class="p">,</span> <span class="n">img_h</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">size</span>
-    <span class="n">img_np</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>  <span class="c1"># preload once for fast per-frame cropping</span>
 
-    <span class="c1"># Normalize phases: each entry → (start_rect, end_rect, duration_s).</span>
-    <span class="n">parsed_phases</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">phase</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">phases</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">phase</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">phase</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;phase </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: expected (start_rect, end_rect, duration_s), got </span><span class="si">{</span><span class="n">phase</span><span class="si">!r}</span><span class="s2">&quot;</span>
-            <span class="p">)</span>
-        <span class="n">start_rect</span> <span class="o">=</span> <span class="n">_parse_rectangle</span><span class="p">(</span><span class="n">phase</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">default</span><span class="o">=</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">))</span>
-        <span class="n">end_rect</span> <span class="o">=</span> <span class="n">_parse_rectangle</span><span class="p">(</span><span class="n">phase</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">default</span><span class="o">=</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.3</span><span class="p">))</span>
-        <span class="n">dur</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">phase</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
-        <span class="k">if</span> <span class="n">dur</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;phase </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: duration_s must be &gt; 0, got </span><span class="si">{</span><span class="n">dur</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="n">parsed_phases</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">start_rect</span><span class="p">,</span> <span class="n">end_rect</span><span class="p">,</span> <span class="n">dur</span><span class="p">))</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">parsed_phases</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;ken_burns_video: phases must be non-empty&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="ken_burns_video">
+<a class="viewcode-back" href="../../module_docs/burns/render.html#burns.ken_burns_video">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">ken_burns_video</span><span class="p">(</span>
+    <span class="n">image</span><span class="p">,</span>
+    <span class="n">path</span><span class="p">:</span> <span class="n">BurnsPath</span> <span class="o">=</span> <span class="n">DEFAULT_BURNS_PATH</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">duration</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DEFAULT_DURATION_S</span><span class="p">,</span>
+    <span class="n">fps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span><span class="p">,</span>
+    <span class="n">saveas</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">output_size</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">backend</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DFLT_BACKEND</span><span class="p">,</span>
+    <span class="n">codec</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;libx264&quot;</span><span class="p">,</span>
+    <span class="n">audio_codec</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;aac&quot;</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">write_kwargs</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Render one image into a pan/zoom video from a :class:`BurnsPath`.</span>
 
-    <span class="n">duration_s</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">parsed_phases</span><span class="p">)</span>
-    <span class="c1"># Cumulative phase-start times for fast lookup at frame time.</span>
-    <span class="n">cum_starts</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">]</span>
-    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">dur</span> <span class="ow">in</span> <span class="n">parsed_phases</span><span class="p">:</span>
-        <span class="n">cum_starts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cum_starts</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">dur</span><span class="p">)</span>
+<span class="sd">    Args:</span>
+<span class="sd">        image: path / ``PIL.Image`` / ``np.ndarray``.</span>
+<span class="sd">        path: the motion spec. Default is a 2-second standard push-in.</span>
+<span class="sd">        duration: clip length in seconds (the path&#39;s clock is normalized, so</span>
+<span class="sd">            duration is supplied here, not baked into the path).</span>
+<span class="sd">        fps: frames per second.</span>
+<span class="sd">        saveas: output path. Default: the source image&#39;s name with</span>
+<span class="sd">            ``_kenburns`` appended (auto-uniquified so an existing file is not</span>
+<span class="sd">            overwritten). Required-ish when ``image`` has no source path —</span>
+<span class="sd">            falls back to a temp file.</span>
+<span class="sd">        output_size: explicit ``(width, height)`` (even-snapped). If omitted and</span>
+<span class="sd">            ``path.output_aspect`` is set, the size is derived from it; otherwise</span>
+<span class="sd">            the source image&#39;s size is used.</span>
+<span class="sd">        backend: registered render backend name (default ``&quot;pillow&quot;``).</span>
+<span class="sd">        codec, audio_codec, **write_kwargs: forwarded to ``write_videofile``.</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_lerp</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="o">*</span> <span class="n">t</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        The output :class:`~pathlib.Path`.</span>
 
-    <span class="k">def</span><span class="w"> </span><span class="nf">_ken_burns_frame</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Render the pan/zoom frame at time ``t`` (seconds), one frame at a time.</span>
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; ken_burns_video(&quot;photo.jpg&quot;)  # 2s push-in  # doctest: +SKIP</span>
+<span class="sd">        &gt;&gt;&gt; from burns import ken_burns_path</span>
+<span class="sd">        &gt;&gt;&gt; ken_burns_video(  # doctest: +SKIP</span>
+<span class="sd">        ...     &quot;photo.jpg&quot;, ken_burns_path(1), duration=5.0, saveas=&quot;out.mp4&quot;</span>
+<span class="sd">        ... )</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">duration</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ken_burns_video: duration must be &gt; 0, got </span><span class="si">{</span><span class="n">duration</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">img_np</span><span class="p">,</span> <span class="n">img_w</span><span class="p">,</span> <span class="n">img_h</span><span class="p">,</span> <span class="n">src_path</span> <span class="o">=</span> <span class="n">_load_image</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">where</span><span class="o">=</span><span class="s2">&quot;ken_burns_video&quot;</span><span class="p">)</span>
+    <span class="n">out_w</span><span class="p">,</span> <span class="n">out_h</span> <span class="o">=</span> <span class="n">output_size_for</span><span class="p">(</span>
+        <span class="n">img_w</span><span class="p">,</span> <span class="n">img_h</span><span class="p">,</span> <span class="n">output_aspect</span><span class="o">=</span><span class="n">path</span><span class="o">.</span><span class="n">output_aspect</span><span class="p">,</span> <span class="n">output_size</span><span class="o">=</span><span class="n">output_size</span>
+    <span class="p">)</span>
+    <span class="n">output_path</span> <span class="o">=</span> <span class="n">_resolve_output</span><span class="p">(</span><span class="n">saveas</span><span class="p">,</span> <span class="n">src_path</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">get_backend</span><span class="p">(</span><span class="n">backend</span><span class="p">)(</span>
+        <span class="n">img_np</span><span class="p">,</span>
+        <span class="n">img_w</span><span class="p">,</span>
+        <span class="n">img_h</span><span class="p">,</span>
+        <span class="n">path</span><span class="p">,</span>
+        <span class="n">duration</span><span class="o">=</span><span class="n">duration</span><span class="p">,</span>
+        <span class="n">fps</span><span class="o">=</span><span class="n">fps</span><span class="p">,</span>
+        <span class="n">output</span><span class="o">=</span><span class="n">output_path</span><span class="p">,</span>
+        <span class="n">out_w</span><span class="o">=</span><span class="n">out_w</span><span class="p">,</span>
+        <span class="n">out_h</span><span class="o">=</span><span class="n">out_h</span><span class="p">,</span>
+        <span class="n">codec</span><span class="o">=</span><span class="n">codec</span><span class="p">,</span>
+        <span class="n">audio_codec</span><span class="o">=</span><span class="n">audio_codec</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">write_kwargs</span><span class="p">,</span>
+    <span class="p">)</span></div>
 
-<span class="sd">        Computed lazily so the whole clip is never materialised in memory.</span>
-<span class="sd">        Picks the active phase by ``t`` and lerps linearly within it; clamps</span>
-<span class="sd">        to the last phase&#39;s end-rect once ``t`` reaches the total duration.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">t</span> <span class="o">&gt;=</span> <span class="n">duration_s</span><span class="p">:</span>
-            <span class="n">start_rect</span><span class="p">,</span> <span class="n">end_rect</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">parsed_phases</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-            <span class="n">cx</span><span class="p">,</span> <span class="n">cy</span><span class="p">,</span> <span class="n">s</span> <span class="o">=</span> <span class="n">end_rect</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># Linear scan is fine — a film typically has &lt; 20 phases per image.</span>
-            <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="p">(</span><span class="n">start_rect</span><span class="p">,</span> <span class="n">end_rect</span><span class="p">,</span> <span class="n">dur</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">parsed_phases</span><span class="p">):</span>
-                <span class="k">if</span> <span class="n">t</span> <span class="o">&lt;</span> <span class="n">cum_starts</span><span class="p">[</span><span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]:</span>
-                    <span class="n">local_t</span> <span class="o">=</span> <span class="p">(</span><span class="n">t</span> <span class="o">-</span> <span class="n">cum_starts</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span> <span class="o">/</span> <span class="n">dur</span>
-                    <span class="n">cx</span> <span class="o">=</span> <span class="n">_lerp</span><span class="p">(</span><span class="n">start_rect</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">end_rect</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">local_t</span><span class="p">)</span>
-                    <span class="n">cy</span> <span class="o">=</span> <span class="n">_lerp</span><span class="p">(</span><span class="n">start_rect</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">end_rect</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">local_t</span><span class="p">)</span>
-                    <span class="n">s</span> <span class="o">=</span> <span class="n">_lerp</span><span class="p">(</span><span class="n">start_rect</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">end_rect</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">local_t</span><span class="p">)</span>
-                    <span class="k">break</span>
-            <span class="k">else</span><span class="p">:</span>  <span class="c1"># pragma: no cover — covered by the t &gt;= duration_s branch</span>
-                <span class="n">start_rect</span><span class="p">,</span> <span class="n">end_rect</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">parsed_phases</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-                <span class="n">cx</span><span class="p">,</span> <span class="n">cy</span><span class="p">,</span> <span class="n">s</span> <span class="o">=</span> <span class="n">end_rect</span>
-        <span class="n">xmin</span><span class="p">,</span> <span class="n">ymin</span><span class="p">,</span> <span class="n">xmax</span><span class="p">,</span> <span class="n">ymax</span> <span class="o">=</span> <span class="n">_rect_to_box</span><span class="p">(</span><span class="n">cx</span><span class="p">,</span> <span class="n">cy</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">img_w</span><span class="p">,</span> <span class="n">img_h</span><span class="p">)</span>
-        <span class="n">crop</span> <span class="o">=</span> <span class="n">img_np</span><span class="p">[</span><span class="n">ymin</span><span class="p">:</span><span class="n">ymax</span><span class="p">,</span> <span class="n">xmin</span><span class="p">:</span><span class="n">xmax</span><span class="p">]</span>
-        <span class="n">crop_img</span> <span class="o">=</span> <span class="n">PIL_Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="n">crop</span><span class="p">)</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span>
-            <span class="p">(</span><span class="n">img_w</span><span class="p">,</span> <span class="n">img_h</span><span class="p">),</span> <span class="n">resample</span><span class="o">=</span><span class="n">PIL_Image</span><span class="o">.</span><span class="n">BICUBIC</span>
-        <span class="p">)</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">crop_img</span><span class="p">)</span>
 
-    <span class="c1"># Determine output path.</span>
-    <span class="k">if</span> <span class="n">saveas</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">image_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="c1"># Append &quot;_kenburns&quot; to the source image&#39;s filename.</span>
-            <span class="n">output_path</span> <span class="o">=</span> <span class="n">_auto_video_path</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">image_path</span><span class="p">),</span> <span class="s2">&quot;_kenburns&quot;</span><span class="p">,</span> <span class="n">ext</span><span class="o">=</span><span class="s2">&quot;.mp4&quot;</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># Fallback to temp directory when there is no source path.</span>
-            <span class="n">output_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">tempfile</span><span class="o">.</span><span class="n">gettempdir</span><span class="p">())</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;kenburns_</span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">()</span><span class="si">}</span><span class="s2">.mp4&quot;</span>
-    <span class="k">else</span><span class="p">:</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_resolve_output</span><span class="p">(</span><span class="n">saveas</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">src_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Pick the output path: explicit ``saveas``, else auto-name from source.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">saveas</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">output_path</span> <span class="o">=</span> <span class="n">_ensure_output_path</span><span class="p">(</span><span class="n">saveas</span><span class="p">)</span>
-        <span class="c1"># Ensure it has a video extension.</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">output_path</span><span class="o">.</span><span class="n">suffix</span> <span class="ow">or</span> <span class="n">output_path</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_VIDEO_EXTS</span><span class="p">:</span>
             <span class="n">output_path</span> <span class="o">=</span> <span class="n">output_path</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s2">&quot;.mp4&quot;</span><span class="p">)</span>
-
-    <span class="c1"># Avoid overwriting an existing auto-generated path.</span>
-    <span class="k">if</span> <span class="n">saveas</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">directory</span> <span class="o">=</span> <span class="n">output_path</span><span class="o">.</span><span class="n">parent</span>
-        <span class="n">filename</span> <span class="o">=</span> <span class="n">output_path</span><span class="o">.</span><span class="n">name</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">existing_files</span> <span class="o">=</span> <span class="p">(</span>
-                <span class="nb">set</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">directory</span><span class="p">))</span> <span class="k">if</span> <span class="n">directory</span> <span class="k">else</span> <span class="nb">set</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">))</span>
-            <span class="p">)</span>
-        <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
-            <span class="n">existing_files</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
-        <span class="k">if</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">existing_files</span><span class="p">:</span>
-            <span class="n">output_path</span> <span class="o">=</span> <span class="n">directory</span> <span class="o">/</span> <span class="n">_non_colliding_key</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">existing_files</span><span class="p">)</span>
-
-    <span class="c1"># Create the clip lazily: frames are computed on demand during encoding.</span>
-    <span class="n">clip</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">VideoClip</span><span class="p">(</span><span class="n">_ken_burns_frame</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="n">duration_s</span><span class="p">)</span><span class="o">.</span><span class="n">with_fps</span><span class="p">(</span><span class="n">fps</span><span class="p">)</span>
-
-    <span class="c1"># Set default kwargs for better compatibility.</span>
-    <span class="n">write_kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;bitrate&quot;</span><span class="p">,</span> <span class="s2">&quot;5000k&quot;</span><span class="p">)</span>
-    <span class="n">write_kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;preset&quot;</span><span class="p">,</span> <span class="s2">&quot;medium&quot;</span><span class="p">)</span>
-    <span class="n">write_kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;logger&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>  <span class="c1"># Suppress verbose output</span>
-
-    <span class="n">clip</span><span class="o">.</span><span class="n">write_videofile</span><span class="p">(</span>
-        <span class="nb">str</span><span class="p">(</span><span class="n">output_path</span><span class="p">),</span> <span class="n">codec</span><span class="o">=</span><span class="n">codec</span><span class="p">,</span> <span class="n">audio_codec</span><span class="o">=</span><span class="n">audio_codec</span><span class="p">,</span> <span class="o">**</span><span class="n">write_kwargs</span>
-    <span class="p">)</span>
-    <span class="n">clip</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Saved Ken Burns video to: </span><span class="si">{</span><span class="n">output_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">output_path</span></div>
-
-
-
-<span class="c1"># --------------------------------------------------------------------- #</span>
-<span class="c1"># Multi-panel Ken Burns film</span>
-<span class="c1"># --------------------------------------------------------------------- #</span>
+        <span class="k">return</span> <span class="n">output_path</span>
+    <span class="k">if</span> <span class="n">src_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">tempfile</span><span class="o">.</span><span class="n">gettempdir</span><span class="p">())</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;kenburns_</span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">()</span><span class="si">}</span><span class="s2">.mp4&quot;</span>
+    <span class="n">output_path</span> <span class="o">=</span> <span class="n">_auto_video_path</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">src_path</span><span class="p">),</span> <span class="s2">&quot;_kenburns&quot;</span><span class="p">,</span> <span class="n">ext</span><span class="o">=</span><span class="s2">&quot;.mp4&quot;</span><span class="p">)</span>
+    <span class="n">directory</span> <span class="o">=</span> <span class="n">output_path</span><span class="o">.</span><span class="n">parent</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">existing</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">directory</span><span class="p">))</span> <span class="k">if</span> <span class="n">directory</span> <span class="k">else</span> <span class="nb">set</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">))</span>
+    <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+        <span class="n">existing</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">output_path</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">existing</span><span class="p">:</span>
+        <span class="n">output_path</span> <span class="o">=</span> <span class="n">directory</span> <span class="o">/</span> <span class="n">_non_colliding_key</span><span class="p">(</span><span class="n">output_path</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">existing</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">output_path</span>
 
 
 <div class="viewcode-block" id="ken_burns_film">
@@ -359,151 +238,89 @@
     <span class="n">audio_codec</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;aac&quot;</span><span class="p">,</span>
     <span class="o">**</span><span class="n">write_kwargs</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Render an N-panel Ken Burns film in a single pass — no per-panel</span>
-<span class="sd">    intermediate files, no concat seams, no per-panel tail freezes.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Render an N-panel Ken Burns film in a single pass.</span>
 
-<span class="sd">    Each panel is one ``(image, phases)`` pair where ``image`` is a path /</span>
-<span class="sd">    PIL.Image / np.ndarray and ``phases`` is the same shape as in</span>
-<span class="sd">    :func:`ken_burns_video`. The film plays panels back-to-back; the camera</span>
-<span class="sd">    cuts at panel boundaries (different image) but motion never pauses on</span>
-<span class="sd">    a static frame within a panel.</span>
+<span class="sd">    Each panel is an ``(image, path, duration_s)`` triple</span>
+<span class="sd">    (:data:`burns.PanelInput`): ``image`` is a path / ``PIL.Image`` /</span>
+<span class="sd">    ``np.ndarray``, ``path`` a :class:`BurnsPath`, ``duration_s`` how long the</span>
+<span class="sd">    panel occupies the film. Panels play back-to-back; the camera cuts at panel</span>
+<span class="sd">    boundaries but motion never pauses on a static frame within a panel.</span>
+
+<span class="sd">    A single ``VideoClip`` (rather than per-panel render + concatenate) avoids</span>
+<span class="sd">    the concat re-encode seam and per-panel tail freeze, and keeps frame</span>
+<span class="sd">    generation lazy via one global ``make_frame(t)`` closure.</span>
 
 <span class="sd">    Args:</span>
-<span class="sd">        panels: iterable of ``(image, phases)`` pairs. Each panel&#39;s total</span>
-<span class="sd">            duration = sum of its phase durations. Film total = sum across</span>
-<span class="sd">            panels.</span>
-<span class="sd">        saveas: output mp4 path (required — multi-panel films don&#39;t have a</span>
-<span class="sd">            single source image to derive an auto-name from).</span>
-<span class="sd">        fps: frame rate of the film.</span>
-<span class="sd">        audio_path: optional pre-built audio track (already concatenated,</span>
-<span class="sd">            already matching the film duration). When supplied it is muxed</span>
-<span class="sd">            in. Per-panel audio is the caller&#39;s job to assemble — keep</span>
-<span class="sd">            the renderer pure visual.</span>
+<span class="sd">        panels: iterable of ``(image, path, duration_s)`` triples.</span>
+<span class="sd">        saveas: output mp4 path (required — a film has no single source image).</span>
+<span class="sd">        fps: frame rate.</span>
+<span class="sd">        audio_path: optional pre-built track (already matching the film</span>
+<span class="sd">            duration); muxed in when supplied. Per-panel audio assembly is the</span>
+<span class="sd">            caller&#39;s job — the renderer stays pure visual.</span>
 <span class="sd">        codec, audio_codec, **write_kwargs: forwarded to ``write_videofile``.</span>
 
-<span class="sd">    Why a single VideoClip rather than per-panel render + concatenate:</span>
-
-<span class="sd">    - Concat re-encodes at I-frame boundaries; the last few frames of each</span>
-<span class="sd">      input clip can drop and the next clip&#39;s first frame may freeze</span>
-<span class="sd">      briefly. With one VideoClip the encoder writes a single stream.</span>
-<span class="sd">    - No per-panel tail-pad: the pan reaches the panel&#39;s last frame exactly</span>
-<span class="sd">      when the panel ends; the next frame is already the next panel&#39;s</span>
-<span class="sd">      first.</span>
-<span class="sd">    - Lazy frame generation: a single ``make_frame(t)`` closure dispatches</span>
-<span class="sd">      by global ``t`` to the right (panel, phase) — the whole film is</span>
-<span class="sd">      never materialised in memory.</span>
-
 <span class="sd">    Returns:</span>
-<span class="sd">        Path to the written mp4.</span>
+<span class="sd">        The written mp4 :class:`~pathlib.Path`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Load each panel&#39;s image once; pre-parse phases.</span>
     <span class="n">panel_renders</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">film_duration</span> <span class="o">=</span> <span class="mf">0.0</span>
     <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">panel</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">panels</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">panel</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">panel</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">panel</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">panel</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;panel </span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">: expected (image, phases) pair, got </span><span class="si">{</span><span class="n">panel</span><span class="si">!r}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;panel </span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">: expected (image, path, duration_s) triple, got </span><span class="si">{</span><span class="n">panel</span><span class="si">!r}</span><span class="s2">&quot;</span>
             <span class="p">)</span>
-        <span class="n">image</span><span class="p">,</span> <span class="n">phases</span> <span class="o">=</span> <span class="n">panel</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">)):</span>
-            <span class="n">img</span> <span class="o">=</span> <span class="n">PIL_Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">image</span><span class="p">))</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;RGB&quot;</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
-            <span class="n">img</span> <span class="o">=</span> <span class="n">PIL_Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
-        <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="s2">&quot;convert&quot;</span><span class="p">):</span>
-            <span class="n">img</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;RGB&quot;</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;panel </span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">: unsupported image type: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">image</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="n">img_w</span><span class="p">,</span> <span class="n">img_h</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">size</span>
-        <span class="n">img_np</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
-
-        <span class="n">parsed</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">phase</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">phases</span><span class="p">):</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">phase</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">phase</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;panel </span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">, phase </span><span class="si">{</span><span class="n">j</span><span class="si">}</span><span class="s2">: expected (start, end, dur), got </span><span class="si">{</span><span class="n">phase</span><span class="si">!r}</span><span class="s2">&quot;</span>
-                <span class="p">)</span>
-            <span class="n">s</span> <span class="o">=</span> <span class="n">_parse_rectangle</span><span class="p">(</span><span class="n">phase</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">default</span><span class="o">=</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">))</span>
-            <span class="n">e</span> <span class="o">=</span> <span class="n">_parse_rectangle</span><span class="p">(</span><span class="n">phase</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">default</span><span class="o">=</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.3</span><span class="p">))</span>
-            <span class="n">d</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">phase</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
-            <span class="k">if</span> <span class="n">d</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                    <span class="sa">f</span><span class="s2">&quot;panel </span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">, phase </span><span class="si">{</span><span class="n">j</span><span class="si">}</span><span class="s2">: duration_s must be &gt; 0, got </span><span class="si">{</span><span class="n">d</span><span class="si">}</span><span class="s2">&quot;</span>
-                <span class="p">)</span>
-            <span class="n">parsed</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">s</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">d</span><span class="p">))</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">parsed</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;panel </span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">: phases must be non-empty&quot;</span><span class="p">)</span>
-
-        <span class="n">panel_dur</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">parsed</span><span class="p">)</span>
-        <span class="n">cum</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">]</span>
-        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">parsed</span><span class="p">:</span>
-            <span class="n">cum</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cum</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">d</span><span class="p">)</span>
+        <span class="n">image</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">duration</span> <span class="o">=</span> <span class="n">panel</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">BurnsPath</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;panel </span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">: path must be a BurnsPath, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+        <span class="n">duration</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">duration</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">duration</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;panel </span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">: duration_s must be &gt; 0, got </span><span class="si">{</span><span class="n">duration</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">img_np</span><span class="p">,</span> <span class="n">img_w</span><span class="p">,</span> <span class="n">img_h</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_load_image</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">where</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;panel </span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="n">panel_renders</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
             <span class="p">{</span>
                 <span class="s2">&quot;img_np&quot;</span><span class="p">:</span> <span class="n">img_np</span><span class="p">,</span>
                 <span class="s2">&quot;img_w&quot;</span><span class="p">:</span> <span class="n">img_w</span><span class="p">,</span>
                 <span class="s2">&quot;img_h&quot;</span><span class="p">:</span> <span class="n">img_h</span><span class="p">,</span>
-                <span class="s2">&quot;phases&quot;</span><span class="p">:</span> <span class="n">parsed</span><span class="p">,</span>
-                <span class="s2">&quot;cum_starts&quot;</span><span class="p">:</span> <span class="n">cum</span><span class="p">,</span>
-                <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="n">panel_dur</span><span class="p">,</span>
+                <span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="n">path</span><span class="p">,</span>
+                <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="n">duration</span><span class="p">,</span>
                 <span class="s2">&quot;film_offset&quot;</span><span class="p">:</span> <span class="n">film_duration</span><span class="p">,</span>
+                <span class="s2">&quot;output_aspect&quot;</span><span class="p">:</span> <span class="n">path</span><span class="o">.</span><span class="n">output_aspect</span><span class="p">,</span>
                 <span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">img_w</span><span class="p">,</span> <span class="n">img_h</span><span class="p">),</span>
             <span class="p">}</span>
         <span class="p">)</span>
-        <span class="n">film_duration</span> <span class="o">+=</span> <span class="n">panel_dur</span>
+        <span class="n">film_duration</span> <span class="o">+=</span> <span class="n">duration</span>
 
     <span class="k">if</span> <span class="n">film_duration</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;ken_burns_film: panels must be non-empty&quot;</span><span class="p">)</span>
 
-    <span class="c1"># Common output frame size = first panel&#39;s size. When all panels share the</span>
-    <span class="c1"># same size (common for storyboard demos), every panel is rendered at its</span>
-    <span class="c1"># native size and no letter/pillar-boxing happens.</span>
-    <span class="n">out_w</span><span class="p">,</span> <span class="n">out_h</span> <span class="o">=</span> <span class="n">panel_renders</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">&quot;size&quot;</span><span class="p">]</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="nf">_lerp</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">t</span><span class="p">):</span>
-        <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="o">*</span> <span class="n">t</span>
+    <span class="c1"># Output frame size = first panel&#39;s resolved size (honoring its output_aspect).</span>
+    <span class="n">first</span> <span class="o">=</span> <span class="n">panel_renders</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">out_w</span><span class="p">,</span> <span class="n">out_h</span> <span class="o">=</span> <span class="n">output_size_for</span><span class="p">(</span>
+        <span class="n">first</span><span class="p">[</span><span class="s2">&quot;img_w&quot;</span><span class="p">],</span> <span class="n">first</span><span class="p">[</span><span class="s2">&quot;img_h&quot;</span><span class="p">],</span> <span class="n">output_aspect</span><span class="o">=</span><span class="n">first</span><span class="p">[</span><span class="s2">&quot;output_aspect&quot;</span><span class="p">]</span>
+    <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">make_frame</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Render the film&#39;s frame at global time ``t``.</span>
-
-<span class="sd">        Walks the panel list once per frame (typical film: &lt; 50 panels —</span>
-<span class="sd">        cheap). Within a panel, linearly interpolates between the active</span>
-<span class="sd">        phase&#39;s start and end rect; clamps to the last phase&#39;s end-rect</span>
-<span class="sd">        when ``t`` lands exactly on a boundary (avoids a 1-frame flicker</span>
-<span class="sd">        at panel transitions).</span>
-<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">t</span> <span class="o">&gt;=</span> <span class="n">film_duration</span><span class="p">:</span>
             <span class="n">pr</span> <span class="o">=</span> <span class="n">panel_renders</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-            <span class="n">cx</span><span class="p">,</span> <span class="n">cy</span><span class="p">,</span> <span class="n">s</span> <span class="o">=</span> <span class="n">pr</span><span class="p">[</span><span class="s2">&quot;phases&quot;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">local_norm</span> <span class="o">=</span> <span class="mf">1.0</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">pr</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="k">for</span> <span class="n">candidate</span> <span class="ow">in</span> <span class="n">panel_renders</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">t</span> <span class="o">&lt;</span> <span class="n">candidate</span><span class="p">[</span><span class="s2">&quot;film_offset&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">candidate</span><span class="p">[</span><span class="s2">&quot;duration&quot;</span><span class="p">]:</span>
-                    <span class="n">pr</span> <span class="o">=</span> <span class="n">candidate</span>
-                    <span class="k">break</span>
-            <span class="k">assert</span> <span class="n">pr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>  <span class="c1"># guarded by t &lt; film_duration</span>
-            <span class="n">local_t</span> <span class="o">=</span> <span class="n">t</span> <span class="o">-</span> <span class="n">pr</span><span class="p">[</span><span class="s2">&quot;film_offset&quot;</span><span class="p">]</span>
-            <span class="n">cx</span> <span class="o">=</span> <span class="n">cy</span> <span class="o">=</span> <span class="n">s</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">dur</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pr</span><span class="p">[</span><span class="s2">&quot;phases&quot;</span><span class="p">]):</span>
-                <span class="k">if</span> <span class="n">local_t</span> <span class="o">&lt;</span> <span class="n">pr</span><span class="p">[</span><span class="s2">&quot;cum_starts&quot;</span><span class="p">][</span><span class="n">idx</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]:</span>
-                    <span class="n">inner</span> <span class="o">=</span> <span class="p">(</span><span class="n">local_t</span> <span class="o">-</span> <span class="n">pr</span><span class="p">[</span><span class="s2">&quot;cum_starts&quot;</span><span class="p">][</span><span class="n">idx</span><span class="p">])</span> <span class="o">/</span> <span class="n">dur</span>
-                    <span class="n">cx</span> <span class="o">=</span> <span class="n">_lerp</span><span class="p">(</span><span class="n">start</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">end</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">inner</span><span class="p">)</span>
-                    <span class="n">cy</span> <span class="o">=</span> <span class="n">_lerp</span><span class="p">(</span><span class="n">start</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">end</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">inner</span><span class="p">)</span>
-                    <span class="n">s</span> <span class="o">=</span> <span class="n">_lerp</span><span class="p">(</span><span class="n">start</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">end</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">inner</span><span class="p">)</span>
-                    <span class="k">break</span>
-            <span class="k">if</span> <span class="n">cx</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># exactly on a boundary</span>
-                <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">pr</span><span class="p">[</span><span class="s2">&quot;phases&quot;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-                <span class="n">cx</span><span class="p">,</span> <span class="n">cy</span><span class="p">,</span> <span class="n">s</span> <span class="o">=</span> <span class="n">end</span>
-
-        <span class="n">img_w</span><span class="p">,</span> <span class="n">img_h</span> <span class="o">=</span> <span class="n">pr</span><span class="p">[</span><span class="s2">&quot;img_w&quot;</span><span class="p">],</span> <span class="n">pr</span><span class="p">[</span><span class="s2">&quot;img_h&quot;</span><span class="p">]</span>
-        <span class="n">xmin</span><span class="p">,</span> <span class="n">ymin</span><span class="p">,</span> <span class="n">xmax</span><span class="p">,</span> <span class="n">ymax</span> <span class="o">=</span> <span class="n">_rect_to_box</span><span class="p">(</span><span class="n">cx</span><span class="p">,</span> <span class="n">cy</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">img_w</span><span class="p">,</span> <span class="n">img_h</span><span class="p">)</span>
-        <span class="n">crop</span> <span class="o">=</span> <span class="n">pr</span><span class="p">[</span><span class="s2">&quot;img_np&quot;</span><span class="p">][</span><span class="n">ymin</span><span class="p">:</span><span class="n">ymax</span><span class="p">,</span> <span class="n">xmin</span><span class="p">:</span><span class="n">xmax</span><span class="p">]</span>
-        <span class="c1"># Resize the crop back to the film&#39;s output frame size. When panels</span>
-        <span class="c1"># are all the same size (common case), this equals the crop&#39;s own</span>
-        <span class="c1"># (img_w, img_h) and the aspect is preserved exactly.</span>
-        <span class="n">crop_img</span> <span class="o">=</span> <span class="n">PIL_Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="n">crop</span><span class="p">)</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span>
-            <span class="p">(</span><span class="n">out_w</span><span class="p">,</span> <span class="n">out_h</span><span class="p">),</span> <span class="n">resample</span><span class="o">=</span><span class="n">PIL_Image</span><span class="o">.</span><span class="n">BICUBIC</span>
+            <span class="n">pr</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span>
+                <span class="n">p</span>
+                <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">panel_renders</span>
+                <span class="k">if</span> <span class="n">t</span> <span class="o">&lt;</span> <span class="n">p</span><span class="p">[</span><span class="s2">&quot;film_offset&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">p</span><span class="p">[</span><span class="s2">&quot;duration&quot;</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="n">local_norm</span> <span class="o">=</span> <span class="p">(</span><span class="n">t</span> <span class="o">-</span> <span class="n">pr</span><span class="p">[</span><span class="s2">&quot;film_offset&quot;</span><span class="p">])</span> <span class="o">/</span> <span class="n">pr</span><span class="p">[</span><span class="s2">&quot;duration&quot;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">sample_frame</span><span class="p">(</span>
+            <span class="n">pr</span><span class="p">[</span><span class="s2">&quot;path&quot;</span><span class="p">],</span>
+            <span class="n">local_norm</span><span class="p">,</span>
+            <span class="n">pr</span><span class="p">[</span><span class="s2">&quot;img_np&quot;</span><span class="p">],</span>
+            <span class="n">pr</span><span class="p">[</span><span class="s2">&quot;img_w&quot;</span><span class="p">],</span>
+            <span class="n">pr</span><span class="p">[</span><span class="s2">&quot;img_h&quot;</span><span class="p">],</span>
+            <span class="n">out_w</span><span class="p">,</span>
+            <span class="n">out_h</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">crop_img</span><span class="p">)</span>
 
     <span class="n">output_path</span> <span class="o">=</span> <span class="n">_ensure_output_path</span><span class="p">(</span><span class="n">saveas</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">output_path</span><span class="o">.</span><span class="n">suffix</span> <span class="ow">or</span> <span class="n">output_path</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_VIDEO_EXTS</span><span class="p">:</span>
@@ -511,22 +328,15 @@
 
     <span class="n">clip</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">VideoClip</span><span class="p">(</span><span class="n">make_frame</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="n">film_duration</span><span class="p">)</span><span class="o">.</span><span class="n">with_fps</span><span class="p">(</span><span class="n">fps</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">audio_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">audio_clip</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">AudioFileClip</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">audio_path</span><span class="p">))</span>
-        <span class="n">clip</span> <span class="o">=</span> <span class="n">clip</span><span class="o">.</span><span class="n">with_audio</span><span class="p">(</span><span class="n">audio_clip</span><span class="p">)</span>
+        <span class="n">clip</span> <span class="o">=</span> <span class="n">clip</span><span class="o">.</span><span class="n">with_audio</span><span class="p">(</span><span class="n">mp</span><span class="o">.</span><span class="n">AudioFileClip</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">audio_path</span><span class="p">)))</span>
 
     <span class="n">write_kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;bitrate&quot;</span><span class="p">,</span> <span class="s2">&quot;5000k&quot;</span><span class="p">)</span>
     <span class="n">write_kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;preset&quot;</span><span class="p">,</span> <span class="s2">&quot;medium&quot;</span><span class="p">)</span>
     <span class="n">write_kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;logger&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
-
     <span class="n">clip</span><span class="o">.</span><span class="n">write_videofile</span><span class="p">(</span>
         <span class="nb">str</span><span class="p">(</span><span class="n">output_path</span><span class="p">),</span> <span class="n">codec</span><span class="o">=</span><span class="n">codec</span><span class="p">,</span> <span class="n">audio_codec</span><span class="o">=</span><span class="n">audio_codec</span><span class="p">,</span> <span class="o">**</span><span class="n">write_kwargs</span>
     <span class="p">)</span>
     <span class="n">clip</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-
-    <span class="nb">print</span><span class="p">(</span>
-        <span class="sa">f</span><span class="s2">&quot;Saved Ken Burns film (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">panel_renders</span><span class="p">)</span><span class="si">}</span><span class="s2"> panels, &quot;</span>
-        <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">film_duration</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2">s) to: </span><span class="si">{</span><span class="n">output_path</span><span class="si">}</span><span class="s2">&quot;</span>
-    <span class="p">)</span>
     <span class="k">return</span> <span class="n">output_path</span></div>
 
 </pre></div>

@@ -1,0 +1,177 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>burns._frame &mdash; burns 0.0.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=e3a6060d"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="burns._util" href="_util.html" />
+    <link rel="prev" title="burns" href="../burns.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            burns
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../burns.html">burns</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">burns._frame</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#burns._frame.even"><code class="docutils literal notranslate"><span class="pre">even()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#burns._frame.output_size_for"><code class="docutils literal notranslate"><span class="pre">output_size_for()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#burns._frame.sample_frame"><code class="docutils literal notranslate"><span class="pre">sample_frame()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="_util.html">burns._util</a></li>
+<li class="toctree-l1"><a class="reference internal" href="backends.html">burns.backends</a></li>
+<li class="toctree-l1"><a class="reference internal" href="easing.html">burns.easing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="path.html">burns.path</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rect.html">burns.rect</a></li>
+<li class="toctree-l1"><a class="reference internal" href="render.html">burns.render</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">burns</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">burns._frame</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/module_docs/burns/_frame.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-burns._frame">
+<span id="burns-frame"></span><h1>burns._frame<a class="headerlink" href="#module-burns._frame" title="Link to this heading"></a></h1>
+<p>The single point where a <a class="reference internal" href="path.html#burns.path.BurnsPath" title="burns.path.BurnsPath"><code class="xref py py-class docutils literal notranslate"><span class="pre">BurnsPath</span></code></a> meets pixels.</p>
+<p>Every render backend — and the multi-panel film renderer — samples frames
+through <a class="reference internal" href="#burns._frame.sample_frame" title="burns._frame.sample_frame"><code class="xref py py-func docutils literal notranslate"><span class="pre">sample_frame()</span></code></a>, so the spec-to-pixel mapping is defined <em>once</em>.
+Pinning it here is what lets a future JS/TS implementation reproduce the exact
+crop, because the rule is short and explicit:</p>
+<ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">path.evaluate(t)</span></code> -&gt; a normalized <a class="reference internal" href="rect.html#burns.rect.Rect" title="burns.rect.Rect"><code class="xref py py-class docutils literal notranslate"><span class="pre">Rect</span></code></a> window.</p></li>
+<li><p>The window maps to an integer pixel box via <code class="xref py py-meth docutils literal notranslate"><span class="pre">Rect.to_pixels()</span></code> (which
+clamps it inside the image).</p></li>
+<li><p>If the requested output aspect ratio differs from the cropped window’s pixel
+AR, <strong>cover-crop</strong> the window to the output AR (center-cropped — the FCP /
+iMovie default), so frames fill the output without stretching.</p></li>
+<li><p>Resize the result to the (even-snapped) output size with a quality filter.</p></li>
+</ol>
+<dl class="py function">
+<dt class="sig sig-object py" id="burns._frame.even">
+<span class="sig-prename descclassname"><span class="pre">burns._frame.</span></span><span class="sig-name descname"><span class="pre">even</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="reference internal" href="../../_modules/burns/_frame.html#even"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#burns._frame.even" title="Link to this definition"></a></dt>
+<dd><p>Round <code class="docutils literal notranslate"><span class="pre">n</span></code> down to the nearest positive even integer (H.264 needs even
+width/height for yuv420p).</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">even</span><span class="p">(</span><span class="mi">101</span><span class="p">),</span> <span class="n">even</span><span class="p">(</span><span class="mi">100</span><span class="p">),</span> <span class="n">even</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="go">(100, 100, 2)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="burns._frame.output_size_for">
+<span class="sig-prename descclassname"><span class="pre">burns._frame.</span></span><span class="sig-name descname"><span class="pre">output_size_for</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img_w</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_h</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_aspect</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/burns/_frame.html#output_size_for"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#burns._frame.output_size_for" title="Link to this definition"></a></dt>
+<dd><p>Resolve the (even) output frame size.</p>
+<p>Priority: an explicit <code class="docutils literal notranslate"><span class="pre">output_size</span></code> wins; else derive from
+<code class="docutils literal notranslate"><span class="pre">output_aspect</span></code> keeping the image’s height; else the image’s own size.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">output_size_for</span><span class="p">(</span><span class="mi">800</span><span class="p">,</span> <span class="mi">600</span><span class="p">,</span> <span class="n">output_aspect</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="go">(800, 600)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">output_size_for</span><span class="p">(</span><span class="mi">800</span><span class="p">,</span> <span class="mi">600</span><span class="p">,</span> <span class="n">output_aspect</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+<span class="go">(600, 600)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">output_size_for</span><span class="p">(</span><span class="mi">801</span><span class="p">,</span> <span class="mi">599</span><span class="p">,</span> <span class="n">output_aspect</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+<span class="go">(800, 598)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="burns._frame.sample_frame">
+<span class="sig-prename descclassname"><span class="pre">burns._frame.</span></span><span class="sig-name descname"><span class="pre">sample_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="path.html#burns.path.BurnsPath" title="burns.path.BurnsPath"><span class="pre">BurnsPath</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_np</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_w</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_h</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_w</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_h</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">resample</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../../_modules/burns/_frame.html#sample_frame"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#burns._frame.sample_frame" title="Link to this definition"></a></dt>
+<dd><p>Render the single frame at normalized time <code class="docutils literal notranslate"><span class="pre">t</span> <span class="pre">in</span> <span class="pre">[0,</span> <span class="pre">1]</span></code>.</p>
+<p>See the module docstring for the four-step mapping. Returns an
+<code class="docutils literal notranslate"><span class="pre">(out_h,</span> <span class="pre">out_w,</span> <span class="pre">C)</span></code> uint8 array.</p>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../burns.html" class="btn btn-neutral float-left" title="burns" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="_util.html" class="btn btn-neutral float-right" title="burns._util" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright NO COPYRIGHT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

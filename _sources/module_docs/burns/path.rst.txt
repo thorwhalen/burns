@@ -1,0 +1,4 @@
+burns.path
+==========
+.. automodule:: burns.path
+   :members:

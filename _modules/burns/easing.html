@@ -1,0 +1,251 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>burns.easing &mdash; burns 0.0.2 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=e3a6060d"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            burns
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/burns.html">burns</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/burns/_frame.html">burns._frame</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/burns/_util.html">burns._util</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/burns/backends.html">burns.backends</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/burns/easing.html">burns.easing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/burns/path.html">burns.path</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/burns/rect.html">burns.rect</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/burns/render.html">burns.render</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">burns</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">burns.easing</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for burns.easing</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Timing functions (easing) for Ken Burns motion.</span>
+
+<span class="sd">Easing maps normalized clock time ``t in [0, 1]`` to normalized progress</span>
+<span class="sd">``[0, 1]``. It is composed *over* the geometry: a path&#39;s viewport at clock</span>
+<span class="sd">time ``t`` is ``path.evaluate_geometry(easing(t))`` — the After-Effects split</span>
+<span class="sd">of *what shape the motion traces* (the path) from *how fast it moves along it*</span>
+<span class="sd">(the timing). Keeping them orthogonal is the single most useful design lesson</span>
+<span class="sd">from the NLE prior art.</span>
+
+<span class="sd">The public currency is the **CSS timing-function string** — ``&quot;linear&quot;``,</span>
+<span class="sd">``&quot;ease&quot;``, ``&quot;ease-in&quot;``, ``&quot;ease-out&quot;``, ``&quot;ease-in-out&quot;``, or an explicit</span>
+<span class="sd">``&quot;cubic-bezier(x1, y1, x2, y2)&quot;`` — because that vocabulary is understood</span>
+<span class="sd">verbatim by CSS, Remotion&#39;s ``Easing.bezier``, and GSAP&#39;s ``CustomEase`` alike.</span>
+<span class="sd">The cinematic default is ``&quot;ease-in-out&quot;`` (Final Cut Pro&#39;s Ken Burns default),</span>
+<span class="sd">**not** linear.</span>
+
+<span class="sd">:func:`parse_easing` also accepts a 4-tuple of bezier control values or any</span>
+<span class="sd">callable ``float -&gt; float``, so power users can inject an arbitrary curve.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="n">EasingLike</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">float</span><span class="p">],</span> <span class="nb">float</span><span class="p">],</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span>
+
+<span class="c1"># Canonical CSS cubic-bezier control points (verbatim from CSS Timing</span>
+<span class="c1"># Functions Level 1). Each maps a named easing to its (x1, y1, x2, y2).</span>
+<span class="n">CSS_BEZIERS</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;linear&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span>
+    <span class="s2">&quot;ease&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span>
+    <span class="s2">&quot;ease-in&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.42</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span>
+    <span class="s2">&quot;ease-out&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.58</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span>
+    <span class="s2">&quot;ease-in-out&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.42</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.58</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span>
+<span class="p">}</span>
+
+<span class="n">DFLT_EASING</span> <span class="o">=</span> <span class="s2">&quot;ease-in-out&quot;</span>
+
+<span class="n">_BISECTION_ITERS</span> <span class="o">=</span> <span class="mi">60</span>  <span class="c1"># ~2^-60 precision on the bezier x-root; plenty.</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_clamp01</span><span class="p">(</span><span class="n">t</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+    <span class="k">return</span> <span class="mf">0.0</span> <span class="k">if</span> <span class="n">t</span> <span class="o">&lt;</span> <span class="mf">0.0</span> <span class="k">else</span> <span class="mf">1.0</span> <span class="k">if</span> <span class="n">t</span> <span class="o">&gt;</span> <span class="mf">1.0</span> <span class="k">else</span> <span class="n">t</span>
+
+
+<div class="viewcode-block" id="cubic_bezier">
+<a class="viewcode-back" href="../../module_docs/burns/easing.html#burns.cubic_bezier">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">cubic_bezier</span><span class="p">(</span>
+    <span class="n">x1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">y1</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">x2</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">y2</span><span class="p">:</span> <span class="nb">float</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">float</span><span class="p">],</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A CSS-style cubic-bezier easing ``f: [0, 1] -&gt; [0, 1]``.</span>
+
+<span class="sd">    The curve runs from ``(0, 0)`` to ``(1, 1)`` with control points</span>
+<span class="sd">    ``(x1, y1)`` and ``(x2, y2)``. Evaluation inverts ``x(t)`` for the curve</span>
+<span class="sd">    parameter (bisection — robust for any monotone-x curve) then returns</span>
+<span class="sd">    ``y(t)``.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; linear = cubic_bezier(0.0, 0.0, 1.0, 1.0)</span>
+<span class="sd">        &gt;&gt;&gt; round(linear(0.5), 6)</span>
+<span class="sd">        0.5</span>
+<span class="sd">        &gt;&gt;&gt; round(cubic_bezier(0.42, 0.0, 0.58, 1.0)(0.5), 6)  # ease-in-out</span>
+<span class="sd">        0.5</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_bez</span><span class="p">(</span><span class="n">t</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="c1"># Bezier coordinate at parameter t with endpoints 0 and 1.</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">t</span>
+        <span class="k">return</span> <span class="mf">3.0</span> <span class="o">*</span> <span class="n">u</span> <span class="o">*</span> <span class="n">u</span> <span class="o">*</span> <span class="n">t</span> <span class="o">*</span> <span class="n">a</span> <span class="o">+</span> <span class="mf">3.0</span> <span class="o">*</span> <span class="n">u</span> <span class="o">*</span> <span class="n">t</span> <span class="o">*</span> <span class="n">t</span> <span class="o">*</span> <span class="n">b</span> <span class="o">+</span> <span class="n">t</span> <span class="o">*</span> <span class="n">t</span> <span class="o">*</span> <span class="n">t</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_solve_t_for_x</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="n">lo</span><span class="p">,</span> <span class="n">hi</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span>
+        <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">_BISECTION_ITERS</span><span class="p">):</span>
+            <span class="n">mid</span> <span class="o">=</span> <span class="p">(</span><span class="n">lo</span> <span class="o">+</span> <span class="n">hi</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
+            <span class="k">if</span> <span class="n">_bez</span><span class="p">(</span><span class="n">mid</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">x</span><span class="p">:</span>
+                <span class="n">lo</span> <span class="o">=</span> <span class="n">mid</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">hi</span> <span class="o">=</span> <span class="n">mid</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">lo</span> <span class="o">+</span> <span class="n">hi</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">ease</span><span class="p">(</span><span class="n">t</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">_clamp01</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">t</span> <span class="o">==</span> <span class="mf">0.0</span> <span class="ow">or</span> <span class="n">t</span> <span class="o">==</span> <span class="mf">1.0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">t</span>
+        <span class="k">return</span> <span class="n">_bez</span><span class="p">(</span><span class="n">_solve_t_for_x</span><span class="p">(</span><span class="n">t</span><span class="p">),</span> <span class="n">y1</span><span class="p">,</span> <span class="n">y2</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ease</span></div>
+
+
+
+<div class="viewcode-block" id="parse_easing">
+<a class="viewcode-back" href="../../module_docs/burns/easing.html#burns.parse_easing">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">parse_easing</span><span class="p">(</span><span class="n">spec</span><span class="p">:</span> <span class="n">EasingLike</span> <span class="o">=</span> <span class="n">DFLT_EASING</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">float</span><span class="p">],</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Resolve an easing spec to a callable ``f: [0, 1] -&gt; [0, 1]``.</span>
+
+<span class="sd">    Accepts:</span>
+<span class="sd">        - a CSS name (``&quot;linear&quot;``, ``&quot;ease&quot;``, ``&quot;ease-in&quot;``, ``&quot;ease-out&quot;``,</span>
+<span class="sd">          ``&quot;ease-in-out&quot;``);</span>
+<span class="sd">        - a CSS ``&quot;cubic-bezier(x1, y1, x2, y2)&quot;`` string;</span>
+<span class="sd">        - a 4-element sequence ``(x1, y1, x2, y2)``;</span>
+<span class="sd">        - any callable, returned unchanged.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; parse_easing(&quot;linear&quot;)(0.3)</span>
+<span class="sd">        0.3</span>
+<span class="sd">        &gt;&gt;&gt; round(parse_easing(&quot;cubic-bezier(0,0,1,1)&quot;)(0.7), 6)</span>
+<span class="sd">        0.7</span>
+<span class="sd">        &gt;&gt;&gt; parse_easing(lambda t: t * t)(0.5)</span>
+<span class="sd">        0.25</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">callable</span><span class="p">(</span><span class="n">spec</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">spec</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">CSS_BEZIERS</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">cubic_bezier</span><span class="p">(</span><span class="o">*</span><span class="n">CSS_BEZIERS</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">key</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;cubic-bezier&quot;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">cubic_bezier</span><span class="p">(</span><span class="o">*</span><span class="n">_parse_bezier_args</span><span class="p">(</span><span class="n">spec</span><span class="p">))</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;parse_easing: unknown easing </span><span class="si">{</span><span class="n">spec</span><span class="si">!r}</span><span class="s2">. Use a CSS name &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;(</span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">CSS_BEZIERS</span><span class="p">)</span><span class="si">}</span><span class="s2">), a cubic-bezier(...) string, a &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;4-tuple, or a callable.&quot;</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">cubic_bezier</span><span class="p">(</span><span class="o">*</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">spec</span><span class="p">))</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;parse_easing: cannot interpret easing spec </span><span class="si">{</span><span class="n">spec</span><span class="si">!r}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_parse_bezier_args</span><span class="p">(</span><span class="n">spec</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extract the four floats from a ``cubic-bezier(x1, y1, x2, y2)`` string.&quot;&quot;&quot;</span>
+    <span class="n">inside</span> <span class="o">=</span> <span class="n">spec</span><span class="p">[</span><span class="n">spec</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;(&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:</span> <span class="n">spec</span><span class="o">.</span><span class="n">rindex</span><span class="p">(</span><span class="s2">&quot;)&quot;</span><span class="p">)]</span>
+    <span class="n">parts</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">inside</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;parse_easing: cubic-bezier needs 4 values, got </span><span class="si">{</span><span class="n">spec</span><span class="si">!r}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">parts</span><span class="p">)</span>  <span class="c1"># type: ignore[return-value]</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright NO COPYRIGHT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
