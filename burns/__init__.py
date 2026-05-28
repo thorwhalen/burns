@@ -1,48 +1,57 @@
 """burns — Ken Burns pan/zoom video effects.
 
-Turn a still image (or a sequence of stills) into a cinematic pan/zoom film.
+Turn a still image (or a sequence of stills) into a cinematic pan/zoom film,
+driven by one **render-agnostic motion spec** so the same path can feed a Python
+renderer today and an in-browser JS/TS renderer tomorrow.
 
-Three building blocks:
+The core abstraction is a pure, time-parameterized spec:
 
-- :func:`ken_burns_video` — render one image into a multi-phase pan/zoom mp4.
-- :func:`ken_burns_film` — render a sequence of ``(image, phases)`` panels as
-  one continuous film (no concat seams, no per-panel freezes), with optional
-  audio.
-- :func:`ken_burns_path` — generate a cohesive, non-repetitive pan/zoom *path*
-  (the ``phases`` the renderers consume) from a few intent parameters.
+- :class:`Rect` — a normalized ``(x, y, w, h)`` viewport over the image
+  (top-left origin, window-fraction zoom).
+- :class:`BurnsPath` — keyframes + easing, with ``evaluate(t) -> Rect`` (pure,
+  deterministic, frame-count-free) and JSON ``to_dict`` / ``from_dict``.
+- :func:`ken_burns_path` — build a cohesive, deterministic path per sequence
+  index from a little intent (style / zoom / pan / easing).
+
+Two renderers consume a path plus a render-time ``duration``:
+
+- :func:`ken_burns_video` — one image -> one mp4 (pluggable backend).
+- :func:`ken_burns_film` — a sequence of ``(image, path, duration)`` panels ->
+  one continuous mp4 (single encode pass, no seams), with optional audio.
 
 Quickstart:
 
     >>> from burns import ken_burns_video, ken_burns_path
-    >>> ken_burns_video("photo.jpg")  # standard 2s push-in  # doctest: +SKIP
-    >>> ken_burns_video(  # path generated per index/style  # doctest: +SKIP
-    ...     "photo.jpg", phases=ken_burns_path(1, 5.0, style="push", ease=True)
+    >>> ken_burns_video("photo.jpg")  # 2s push-in  # doctest: +SKIP
+    >>> ken_burns_video(  # path per sequence index  # doctest: +SKIP
+    ...     "photo.jpg", ken_burns_path(1, style="push"), duration=5.0
     ... )
-
-Rectangles everywhere are ``(cx, cy, s)`` — pan center in ``[0, 1]`` and zoom
-scale (``1.0`` = full frame). See :func:`ken_burns_video` for the full spec.
 """
 
+from burns.rect import Rect
+from burns.easing import parse_easing, cubic_bezier, CSS_BEZIERS
+from burns.path import BurnsPath, ken_burns_path, PanelInput
 from burns.render import (
     ken_burns_video,
     ken_burns_film,
-    DEFAULT_KENBURNS_PHASES,
+    DEFAULT_BURNS_PATH,
+    DEFAULT_DURATION_S,
 )
-from burns.paths import (
-    ken_burns_path,
-    KenBurnsRect,
-    KenBurnsPhase,
-    KenBurnsPath,
-    PanelInput,
-)
+from burns.backends import RenderBackend, register_backend, get_backend
 
 __all__ = [
+    "Rect",
+    "BurnsPath",
+    "ken_burns_path",
     "ken_burns_video",
     "ken_burns_film",
-    "ken_burns_path",
-    "DEFAULT_KENBURNS_PHASES",
-    "KenBurnsRect",
-    "KenBurnsPhase",
-    "KenBurnsPath",
     "PanelInput",
+    "DEFAULT_BURNS_PATH",
+    "DEFAULT_DURATION_S",
+    "parse_easing",
+    "cubic_bezier",
+    "CSS_BEZIERS",
+    "RenderBackend",
+    "register_backend",
+    "get_backend",
 ]
