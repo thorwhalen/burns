@@ -113,12 +113,17 @@ def mp4_to_gif(mp4: Path, gif: Path, *, width: int = GIF_WIDTH, fps: int = GIF_F
     with tempfile.TemporaryDirectory() as tmp:
         palette = Path(tmp) / "palette.png"
         vf = f"fps={fps},scale={width}:-1:flags=lanczos"
-        _ffmpeg(["-i", str(mp4), "-vf", f"{vf},palettegen=stats_mode=diff", str(palette)])
+        _ffmpeg(
+            ["-i", str(mp4), "-vf", f"{vf},palettegen=stats_mode=diff", str(palette)]
+        )
         _ffmpeg(
             [
-                "-i", str(mp4),
-                "-i", str(palette),
-                "-lavfi", f"{vf}[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=3",
+                "-i",
+                str(mp4),
+                "-i",
+                str(palette),
+                "-lavfi",
+                f"{vf}[x];[x][1:v]paletteuse=dither=bayer:bayer_scale=3",
                 str(gif),
             ]
         )
@@ -126,7 +131,9 @@ def mp4_to_gif(mp4: Path, gif: Path, *, width: int = GIF_WIDTH, fps: int = GIF_F
 
 def main():
     if shutil.which("ffmpeg") is None:
-        raise SystemExit("ffmpeg not found on PATH — install it to build the demo GIFs.")
+        raise SystemExit(
+            "ffmpeg not found on PATH — install it to build the demo GIFs."
+        )
     ASSETS.mkdir(exist_ok=True)
 
     still = ASSETS / "demo_landscape.jpg"
