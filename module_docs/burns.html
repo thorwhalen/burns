@@ -1,0 +1,301 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>burns &mdash; burns 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=d45e8c67"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/toggleprompt.js?v=d7ede5d2"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="burns._util" href="burns/_util.html" />
+    <link rel="prev" title="Welcome to burns’s documentation!" href="../index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            burns
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">burns</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#burns.ken_burns_film"><code class="docutils literal notranslate"><span class="pre">ken_burns_film()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#burns.ken_burns_path"><code class="docutils literal notranslate"><span class="pre">ken_burns_path()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#burns.ken_burns_video"><code class="docutils literal notranslate"><span class="pre">ken_burns_video()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="burns/_util.html">burns._util</a></li>
+<li class="toctree-l1"><a class="reference internal" href="burns/paths.html">burns.paths</a></li>
+<li class="toctree-l1"><a class="reference internal" href="burns/render.html">burns.render</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">burns</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">burns</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/module_docs/burns.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-burns">
+<span id="burns"></span><h1>burns<a class="headerlink" href="#module-burns" title="Link to this heading"></a></h1>
+<p>burns — Ken Burns pan/zoom video effects.</p>
+<p>Turn a still image (or a sequence of stills) into a cinematic pan/zoom film.</p>
+<p>Three building blocks:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#burns.ken_burns_video" title="burns.ken_burns_video"><code class="xref py py-func docutils literal notranslate"><span class="pre">ken_burns_video()</span></code></a> — render one image into a multi-phase pan/zoom mp4.</p></li>
+<li><p><a class="reference internal" href="#burns.ken_burns_film" title="burns.ken_burns_film"><code class="xref py py-func docutils literal notranslate"><span class="pre">ken_burns_film()</span></code></a> — render a sequence of <code class="docutils literal notranslate"><span class="pre">(image,</span> <span class="pre">phases)</span></code> panels as
+one continuous film (no concat seams, no per-panel freezes), with optional
+audio.</p></li>
+<li><p><a class="reference internal" href="#burns.ken_burns_path" title="burns.ken_burns_path"><code class="xref py py-func docutils literal notranslate"><span class="pre">ken_burns_path()</span></code></a> — generate a cohesive, non-repetitive pan/zoom <em>path</em>
+(the <code class="docutils literal notranslate"><span class="pre">phases</span></code> the renderers consume) from a few intent parameters.</p></li>
+</ul>
+<p>Quickstart:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">burns</span><span class="w"> </span><span class="kn">import</span> <span class="n">ken_burns_video</span><span class="p">,</span> <span class="n">ken_burns_path</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ken_burns_video</span><span class="p">(</span><span class="s2">&quot;photo.jpg&quot;</span><span class="p">)</span>  <span class="c1"># standard 2s push-in</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ken_burns_video</span><span class="p">(</span>  <span class="c1"># path generated per index/style</span>
+<span class="gp">... </span>    <span class="s2">&quot;photo.jpg&quot;</span><span class="p">,</span> <span class="n">phases</span><span class="o">=</span><span class="n">ken_burns_path</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">&quot;push&quot;</span><span class="p">,</span> <span class="n">ease</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Rectangles everywhere are <code class="docutils literal notranslate"><span class="pre">(cx,</span> <span class="pre">cy,</span> <span class="pre">s)</span></code> — pan center in <code class="docutils literal notranslate"><span class="pre">[0,</span> <span class="pre">1]</span></code> and zoom
+scale (<code class="docutils literal notranslate"><span class="pre">1.0</span></code> = full frame). See <a class="reference internal" href="#burns.ken_burns_video" title="burns.ken_burns_video"><code class="xref py py-func docutils literal notranslate"><span class="pre">ken_burns_video()</span></code></a> for the full spec.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="burns.ken_burns_film">
+<span class="sig-prename descclassname"><span class="pre">burns.</span></span><span class="sig-name descname"><span class="pre">ken_burns_film</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">panels</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">saveas</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">audio_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">codec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'libx264'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">audio_codec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'aac'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">write_kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Path</span></span></span><a class="reference internal" href="../_modules/burns/render.html#ken_burns_film"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#burns.ken_burns_film" title="Link to this definition"></a></dt>
+<dd><p>Render an N-panel Ken Burns film in a single pass — no per-panel
+intermediate files, no concat seams, no per-panel tail freezes.</p>
+<p>Each panel is one <code class="docutils literal notranslate"><span class="pre">(image,</span> <span class="pre">phases)</span></code> pair where <code class="docutils literal notranslate"><span class="pre">image</span></code> is a path /
+PIL.Image / np.ndarray and <code class="docutils literal notranslate"><span class="pre">phases</span></code> is the same shape as in
+<a class="reference internal" href="#burns.ken_burns_video" title="burns.ken_burns_video"><code class="xref py py-func docutils literal notranslate"><span class="pre">ken_burns_video()</span></code></a>. The film plays panels back-to-back; the camera
+cuts at panel boundaries (different image) but motion never pauses on
+a static frame within a panel.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>panels</strong> – iterable of <code class="docutils literal notranslate"><span class="pre">(image,</span> <span class="pre">phases)</span></code> pairs. Each panel’s total
+duration = sum of its phase durations. Film total = sum across
+panels.</p></li>
+<li><p><strong>saveas</strong> – output mp4 path (required — multi-panel films don’t have a
+single source image to derive an auto-name from).</p></li>
+<li><p><strong>fps</strong> – frame rate of the film.</p></li>
+<li><p><strong>audio_path</strong> – optional pre-built audio track (already concatenated,
+already matching the film duration). When supplied it is muxed
+in. Per-panel audio is the caller’s job to assemble — keep
+the renderer pure visual.</p></li>
+<li><p><strong>codec</strong> – forwarded to <code class="docutils literal notranslate"><span class="pre">write_videofile</span></code>.</p></li>
+<li><p><strong>audio_codec</strong> – forwarded to <code class="docutils literal notranslate"><span class="pre">write_videofile</span></code>.</p></li>
+<li><p><strong>**write_kwargs</strong> – <p>forwarded to <code class="docutils literal notranslate"><span class="pre">write_videofile</span></code>.</p>
+</p></li>
+</ul>
+</dd>
+</dl>
+<p>Why a single VideoClip rather than per-panel render + concatenate:</p>
+<ul class="simple">
+<li><p>Concat re-encodes at I-frame boundaries; the last few frames of each
+input clip can drop and the next clip’s first frame may freeze
+briefly. With one VideoClip the encoder writes a single stream.</p></li>
+<li><p>No per-panel tail-pad: the pan reaches the panel’s last frame exactly
+when the panel ends; the next frame is already the next panel’s
+first.</p></li>
+<li><p>Lazy frame generation: a single <code class="docutils literal notranslate"><span class="pre">make_frame(t)</span></code> closure dispatches
+by global <code class="docutils literal notranslate"><span class="pre">t</span></code> to the right (panel, phase) — the whole film is
+never materialised in memory.</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Path to the written mp4.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="burns.ken_burns_path">
+<span class="sig-prename descclassname"><span class="pre">burns.</span></span><span class="sig-name descname"><span class="pre">ken_burns_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration_s</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">style</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'push'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zoom</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pan</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.03</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ease</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/burns/paths.html#ken_burns_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#burns.ken_burns_path" title="Link to this definition"></a></dt>
+<dd><p>A deterministic pan/zoom path for one image.</p>
+<p>Two named styles, opt-in ease curve:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">style=&quot;push&quot;</span></code> (default) — the “cinematic push”. One slow zoom
+(dominant motion) plus a subtle pan toward an off-center focal
+point. Odd indices push <em>in</em>, even indices pull <em>out</em> — a sequence
+of images has visual rhythm without changing direction <em>within</em>
+a shot.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">style=&quot;drift&quot;</span></code> — pure horizontal pan, no zoom variance,
+alternating direction per index. Useful for museum-style sequences
+where the dominant motion should be pan, not zoom.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ease=True</span></code> — splits the single-phase motion into three phases
+(slow-start, mid, slow-end) approximating a quadratic ease.
+Velocity changes; direction and total magnitude do not.</p></li>
+</ul>
+<p>Per-index deterministic: same args always return the same path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>index</strong> – the image’s 1-based position in the sequence (seeds the
+focal-point direction and the push-in/pull-out alternation).</p></li>
+<li><p><strong>duration_s</strong> – total time the path should cover, in seconds.</p></li>
+<li><p><strong>style</strong> – <code class="docutils literal notranslate"><span class="pre">&quot;push&quot;</span></code> (default) or <code class="docutils literal notranslate"><span class="pre">&quot;drift&quot;</span></code>.</p></li>
+<li><p><strong>zoom</strong> – the zoomed-end scale (&gt; 1.0). Ignored for <code class="docutils literal notranslate"><span class="pre">&quot;drift&quot;</span></code> —
+drift uses a single constant zoom end-to-end, derived from
+<code class="docutils literal notranslate"><span class="pre">pan</span></code> so the lateral slide is actually visible.</p></li>
+<li><p><strong>pan</strong> – how far the framing drifts off-center, in [0, 1] image
+units. For <code class="docutils literal notranslate"><span class="pre">&quot;push&quot;</span></code> it controls focal-point offset; for
+<code class="docutils literal notranslate"><span class="pre">&quot;drift&quot;</span></code> it is the total horizontal distance covered.</p></li>
+<li><p><strong>ease</strong> – when True, split the single phase into the slow-fast-slow
+3-phase ease curve.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A <code class="xref py py-data docutils literal notranslate"><span class="pre">KenBurnsPath</span></code> — a list of <code class="docutils literal notranslate"><span class="pre">(start_rect,</span> <span class="pre">end_rect,</span>
+<span class="pre">duration_s)</span></code> phases whose durations sum to <code class="docutils literal notranslate"><span class="pre">duration_s</span></code>.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ken_burns_path</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">)</span>
+<span class="go">[((0.5, 0.5, 1.0), (0.4788, 0.5212, 1.1), 5.0)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ken_burns_path</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span>  <span class="c1"># one phase, full duration</span>
+<span class="go">5.0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">ken_burns_path</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">6.0</span><span class="p">,</span> <span class="n">ease</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>  <span class="c1"># slow-fast-slow</span>
+<span class="go">3</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="burns.ken_burns_video">
+<span class="sig-prename descclassname"><span class="pre">burns.</span></span><span class="sig-name descname"><span class="pre">ken_burns_video</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">phases</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(((0.5,</span> <span class="pre">0.5,</span> <span class="pre">1.0),</span> <span class="pre">(0.5,</span> <span class="pre">0.5,</span> <span class="pre">1.3),</span> <span class="pre">2.0),)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">saveas</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">codec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'libx264'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">audio_codec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'aac'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">write_kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Path</span></span></span><a class="reference internal" href="../_modules/burns/render.html#ken_burns_video"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#burns.ken_burns_video" title="Link to this definition"></a></dt>
+<dd><p>Create a Ken Burns effect video from an image with multi-phase pan/zoom.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image</strong> – Path to image file or image object (PIL.Image, np.ndarray)</p></li>
+<li><p><strong>phases</strong> – Iterable of <code class="docutils literal notranslate"><span class="pre">(start_rect,</span> <span class="pre">end_rect,</span> <span class="pre">duration_s)</span></code> phases. The
+camera moves linearly from <code class="docutils literal notranslate"><span class="pre">start_rect</span></code> to <code class="docutils literal notranslate"><span class="pre">end_rect</span></code> over each
+phase’s <code class="docutils literal notranslate"><span class="pre">duration_s</span></code>; phases play back-to-back so total clip
+length is the sum of their durations. Default is a single 2-second
+standard Ken Burns push-in.</p></li>
+<li><p><strong>fps</strong> – Frames per second (default 30)</p></li>
+<li><p><strong>saveas</strong> – Where to save video (default: image path with “_kenburns” appended before extension)</p></li>
+<li><p><strong>codec</strong> – Video codec (default libx264)</p></li>
+<li><p><strong>audio_codec</strong> – Audio codec (default aac)</p></li>
+<li><p><strong>**write_kwargs</strong> – Passed to write_videofile</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Path to saved video</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Rectangle parameterization:</dt><dd><p>Rect = (cx, cy, s) — pan center (cx, cy) in [0, 1] and zoom scale s &gt; 0.
+s = 1: the full image; s &gt; 1: zoomed in (a smaller crop box).
+The crop box is clamped to the image, so you cannot zoom out past the
+original — express a zoom-out as start s &gt; 1 panning to end s = 1.
+Standard Ken Burns: the full image (s=1) zooming in to s=1.3.
+Rects accept the same flexible forms as elsewhere: a scalar zoom, a
+(cx, cy) pan pair, or the full (cx, cy, s) triple.</p>
+</dd>
+<dt>Phase continuity:</dt><dd><p>A phase’s <code class="docutils literal notranslate"><span class="pre">end_rect</span></code> does not need to match the next phase’s
+<code class="docutils literal notranslate"><span class="pre">start_rect</span></code> — discontinuities are allowed and produce an
+instantaneous cut. For continuous motion, set each phase’s
+<code class="docutils literal notranslate"><span class="pre">start_rect</span></code> equal to the previous phase’s <code class="docutils literal notranslate"><span class="pre">end_rect</span></code>.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ken_burns_video</span><span class="p">(</span><span class="s2">&quot;photo.jpg&quot;</span><span class="p">)</span>  <span class="c1"># Standard 2s push-in</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ken_burns_video</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;photo.jpg&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">phases</span><span class="o">=</span><span class="p">[((</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.65</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">),</span> <span class="mf">5.0</span><span class="p">)],</span>
+<span class="gp">... </span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ken_burns_video</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="s2">&quot;photo.jpg&quot;</span><span class="p">,</span>
+<span class="gp">... </span>    <span class="n">phases</span><span class="o">=</span><span class="p">[</span>
+<span class="gp">... </span>        <span class="p">((</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.65</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">),</span> <span class="mf">4.0</span><span class="p">),</span>
+<span class="gp">... </span>        <span class="p">((</span><span class="mf">0.65</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.35</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">),</span> <span class="mf">4.0</span><span class="p">),</span>
+<span class="gp">... </span>        <span class="p">((</span><span class="mf">0.35</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">1.2</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.3</span><span class="p">),</span> <span class="mf">4.0</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="p">],</span>
+<span class="gp">... </span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../index.html" class="btn btn-neutral float-left" title="Welcome to burns’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="burns/_util.html" class="btn btn-neutral float-right" title="burns._util" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright NO COPYRIGHT.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

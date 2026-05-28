@@ -1,0 +1,8 @@
+.. toctree::
+   :maxdepth: 2
+   :caption: Contents:
+
+   module_docs/burns
+   module_docs/burns/_util
+   module_docs/burns/paths
+   module_docs/burns/render

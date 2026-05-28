@@ -1,0 +1,4 @@
+burns.render
+============
+.. automodule:: burns.render
+   :members:
