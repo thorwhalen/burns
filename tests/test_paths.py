@@ -1,139 +1,177 @@
-"""Tests for the deterministic Ken Burns path builder (``ken_burns_path``)."""
+"""Tests for the render-agnostic motion spec: Rect, easing, and BurnsPath.
+
+These exercise the pure ``t -> Rect`` core (no rendering, no I/O), which is the
+single source of truth a future JS/TS implementation must match.
+"""
 
 import pytest
 
-from burns import ken_burns_path
+from burns import BurnsPath, Rect, ken_burns_path, parse_easing
+from burns.easing import CSS_BEZIERS
+
+
+class TestRect:
+    def test_full_image(self):
+        full = Rect(0, 0, 1, 1)
+        assert full.center == (0.5, 0.5)
+        assert full.zoom == 1.0
+        assert full.is_contained()
+
+    def test_from_center_zoom_is_centered_and_contained(self):
+        r = Rect.from_center_zoom(0.5, 0.5, 2.0)
+        assert r == Rect(0.25, 0.25, 0.5, 0.5)
+        assert r.is_contained()
+
+    def test_clamped_rides_the_wall_keeping_size(self):
+        # Sliding past an edge must keep w/h (no breathing) — only the corner moves.
+        r = Rect(0.8, 0.0, 0.5, 0.5).clamped()
+        assert (r.w, r.h) == (0.5, 0.5)
+        assert r.x == 0.5 and r.is_contained()
+
+    def test_to_pixels_rounds_inside_image(self):
+        assert Rect(0, 0, 1, 1).to_pixels(100, 80) == (0, 0, 100, 80)
+        assert Rect.from_center_zoom(0.5, 0.5, 2.0).to_pixels(100, 80) == (25, 20, 75, 60)
+
+    def test_lerp(self):
+        mid = Rect(0, 0, 1, 1).lerp(Rect(0.25, 0.25, 0.5, 0.5), 0.5)
+        assert mid == Rect(0.125, 0.125, 0.75, 0.75)
+
+
+class TestEasing:
+    def test_named_easings_resolve(self):
+        for name in CSS_BEZIERS:
+            f = parse_easing(name)
+            assert abs(f(0.0)) < 1e-9 and abs(f(1.0) - 1.0) < 1e-9
+
+    def test_linear_is_identity(self):
+        f = parse_easing("linear")
+        for t in (0.0, 0.25, 0.5, 0.75, 1.0):
+            assert abs(f(t) - t) < 1e-6
+
+    def test_ease_in_out_is_symmetric_and_slow_at_ends(self):
+        f = parse_easing("ease-in-out")
+        assert abs(f(0.5) - 0.5) < 1e-6  # symmetric midpoint
+        assert f(0.1) < 0.1 and f(0.9) > 0.9  # slow-in, slow-out
+
+    def test_cubic_bezier_string(self):
+        f = parse_easing("cubic-bezier(0, 0, 1, 1)")
+        assert abs(f(0.7) - 0.7) < 1e-6
+
+    def test_tuple_and_callable(self):
+        assert abs(parse_easing((0, 0, 1, 1))(0.3) - 0.3) < 1e-6
+        assert parse_easing(lambda t: t * t)(0.5) == 0.25
+
+    def test_unknown_raises(self):
+        with pytest.raises(ValueError, match="unknown easing"):
+            parse_easing("boing")
+
+
+class TestBurnsPath:
+    def test_evaluate_endpoints(self):
+        p = BurnsPath.from_start_end(Rect(0, 0, 1, 1), Rect(0, 0, 0.5, 0.5))
+        assert p.evaluate(0.0) == Rect(0, 0, 1, 1)
+        assert p.evaluate(1.0) == Rect(0, 0, 0.5, 0.5)
+
+    def test_evaluate_clamps_out_of_range_t(self):
+        p = BurnsPath.from_start_end(Rect(0, 0, 1, 1), Rect(0, 0, 0.5, 0.5))
+        assert p.evaluate(-1.0) == p.evaluate(0.0)
+        assert p.evaluate(2.0) == p.evaluate(1.0)
+
+    def test_linear_midpoint(self):
+        p = BurnsPath.from_start_end(
+            Rect(0, 0, 1, 1), Rect(0, 0, 0.5, 0.5), easing="linear"
+        )
+        assert p.evaluate(0.5) == Rect(0, 0, 0.75, 0.75)
+
+    def test_easing_composes_over_geometry(self):
+        # ease-in-out: at t=0.5 progress is exactly 0.5 (symmetric), so the
+        # eased midpoint equals the linear midpoint; but at t=0.1 it lags.
+        eased = BurnsPath.from_start_end(Rect(0, 0, 1, 1), Rect(0, 0, 0, 0))
+        linear = BurnsPath.from_start_end(
+            Rect(0, 0, 1, 1), Rect(0, 0, 0, 0), easing="linear"
+        )
+        assert eased.evaluate(0.5).w == pytest.approx(linear.evaluate(0.5).w)
+        assert eased.evaluate(0.1).w > linear.evaluate(0.1).w  # slow start
+
+    def test_reversed_swaps_endpoints(self):
+        p = BurnsPath.from_start_end(Rect(0, 0, 1, 1), Rect(0, 0, 0.5, 0.5))
+        r = p.reversed()
+        assert r.evaluate(0.0) == Rect(0, 0, 0.5, 0.5)
+        assert r.evaluate(1.0) == Rect(0, 0, 1, 1)
+
+    def test_multi_keyframe(self):
+        p = BurnsPath(
+            keyframes=(
+                (0.0, Rect(0, 0, 1, 1)),
+                (0.5, Rect(0.25, 0.25, 0.5, 0.5)),
+                (1.0, Rect(0, 0, 1, 1)),
+            ),
+            easing="linear",
+        )
+        assert p.evaluate(0.5) == Rect(0.25, 0.25, 0.5, 0.5)
+
+    def test_serialization_round_trip(self):
+        p = BurnsPath.push_in(1.4, to=(0.6, 0.4), output_aspect=1.5)
+        assert BurnsPath.from_dict(p.to_dict()) == p
+
+    def test_serialized_shape(self):
+        d = BurnsPath.from_start_end(Rect(0, 0, 1, 1), Rect(0, 0, 0.5, 0.5)).to_dict()
+        assert d["version"] == 1
+        assert d["easing"] == "ease-in-out"
+        assert d["keyframes"][0] == {"t": 0.0, "rect": {"x": 0.0, "y": 0.0, "w": 1.0, "h": 1.0}}
+
+    def test_callable_easing_is_not_serializable(self):
+        p = BurnsPath.from_start_end(Rect(0, 0, 1, 1), Rect(0, 0, 0.5, 0.5), easing=lambda t: t)
+        with pytest.raises(ValueError, match="not serializable"):
+            p.to_dict()
+
+    def test_bad_keyframes_raise(self):
+        with pytest.raises(ValueError, match="non-empty"):
+            BurnsPath(keyframes=())
+        with pytest.raises(ValueError, match="strictly increase"):
+            BurnsPath(keyframes=((0.0, Rect(0, 0, 1, 1)), (0.0, Rect(0, 0, 1, 1))))
 
 
 class TestKenBurnsPath:
-    """The deterministic per-index "cinematic push" pan/zoom path."""
-
     def test_is_deterministic(self):
-        assert ken_burns_path(3, 6.0) == ken_burns_path(3, 6.0)
+        assert ken_burns_path(3) == ken_burns_path(3)
 
-    def test_single_phase_spanning_full_duration(self):
-        # Cinematic-push policy: one continuous linear motion per image.
-        # Direction changes within a shot break the contemplative feel,
-        # so the generator never produces multi-phase paths without ease.
-        path = ken_burns_path(1, 6.0)
-        assert len(path) == 1
-        assert abs(path[0][2] - 6.0) < 1e-9
+    def test_two_keyframe_start_end(self):
+        assert ken_burns_path(1).duration_keyframes == 2
 
-    def test_odd_index_is_push_in_even_is_pull_out(self):
-        # Visual rhythm comes from alternating push-in / pull-out per
-        # index, NOT from changing direction within a shot.
-        odd = ken_burns_path(1, 5.0)
-        even = ken_burns_path(2, 5.0)
-        (odd_start, odd_end, _) = odd[0]
-        (even_start, even_end, _) = even[0]
-        # Odd: starts at full image, ends zoomed in.
-        assert odd_start[2] == 1.0 and odd_end[2] > 1.0
-        # Even: starts zoomed, ends at full image.
-        assert even_start[2] > 1.0 and even_end[2] == 1.0
+    def test_odd_pushes_in_even_pulls_out(self):
+        odd = ken_burns_path(1)
+        even = ken_burns_path(2)
+        # Odd: starts at the full image, ends zoomed in.
+        assert odd.evaluate(0.0).zoom == pytest.approx(1.0)
+        assert odd.evaluate(1.0).zoom > 1.0
+        # Even: starts zoomed, ends at the full image.
+        assert even.evaluate(0.0).zoom > 1.0
+        assert even.evaluate(1.0).zoom == pytest.approx(1.0)
 
-    def test_focal_offset_uses_pan_arg(self):
-        path = ken_burns_path(1, 5.0, pan=0.05, zoom=1.10)
-        (_, end, _) = path[0]
-        # Pan offset magnitude (sqrt(dx^2 + dy^2)) ≈ pan arg.
-        dx, dy = end[0] - 0.5, end[1] - 0.5
-        magnitude = (dx * dx + dy * dy) ** 0.5
-        assert abs(magnitude - 0.05) < 1e-3
+    def test_focal_offset_uses_pan(self):
+        end = ken_burns_path(1, pan=0.03, zoom=1.15).evaluate(1.0)
+        cx, cy = end.center
+        magnitude = ((cx - 0.5) ** 2 + (cy - 0.5) ** 2) ** 0.5
+        assert magnitude == pytest.approx(0.03, abs=2e-3)
 
-    def test_rectangles_are_cx_cy_scale_triples(self):
-        path = ken_burns_path(1, 8.0, zoom=1.15, pan=0.04)
-        for start_rect, end_rect, dur in path:
-            assert dur > 0.0
-            for rect in (start_rect, end_rect):
-                assert len(rect) == 3
-                cx, cy, s = rect
-                assert 0.0 <= cx <= 1.0 and 0.0 <= cy <= 1.0 and s > 0.0
+    def test_drift_is_horizontal_and_alternates(self):
+        odd = ken_burns_path(1, style="drift", pan=0.1)
+        even = ken_burns_path(2, style="drift", pan=0.1)
+        # No vertical motion.
+        assert odd.evaluate(0.0).center[1] == pytest.approx(odd.evaluate(1.0).center[1])
+        # Opposite horizontal directions.
+        odd_dx = odd.evaluate(1.0).center[0] - odd.evaluate(0.0).center[0]
+        even_dx = even.evaluate(1.0).center[0] - even.evaluate(0.0).center[0]
+        assert odd_dx * even_dx < 0
 
-    def test_invalid_duration_raises(self):
-        with pytest.raises(ValueError, match="duration_s must be"):
-            ken_burns_path(1, 0.0)
+    def test_easing_passthrough(self):
+        assert ken_burns_path(1, easing="linear").easing == "linear"
 
-    # --- ease=True: 3-phase velocity curve ------------------------------
+    def test_invalid_style_raises(self):
+        with pytest.raises(ValueError, match="style must be"):
+            ken_burns_path(1, style="spin")
 
-    def test_ease_splits_into_three_phases_preserving_total_duration(self):
-        """An `ease=True` path is 3 phases (slow-fast-slow) summing to duration_s."""
-        path = ken_burns_path(1, 8.0, ease=True)
-        assert len(path) == 3
-        assert abs(sum(phase[2] for phase in path) - 8.0) < 1e-9
-        # 25% / 50% / 25% time distribution.
-        assert abs(path[0][2] - 2.0) < 1e-6
-        assert abs(path[1][2] - 4.0) < 1e-6
-        assert abs(path[2][2] - 2.0) < 1e-6
-
-    def test_ease_endpoints_match_the_no_ease_motion(self):
-        """Ease changes velocity, not direction or magnitude."""
-        plain = ken_burns_path(1, 8.0)[0]
-        eased = ken_burns_path(1, 8.0, ease=True)
-        # Eased starts where plain starts and ends where plain ends.
-        assert eased[0][0] == plain[0]   # start rect
-        assert eased[-1][1] == plain[1]  # end rect
-        # The two intermediate split points are between start and end.
-        assert eased[0][1] == eased[1][0]  # chain continuity
-        assert eased[1][1] == eased[2][0]
-
-    def test_ease_intermediate_points_are_slow_fast_slow(self):
-        """10% / 70% / 20% of motion across the 3 phases."""
-        eased = ken_burns_path(1, 8.0, ease=True)
-        # In phase 0 we cover 10% of total motion in 25% of total time:
-        # zoom interpolates from 1.0 → 1.0 + 0.1 * (zoom_end - 1.0)
-        # where zoom_end = 1.10 by default.
-        # So phase-0 end scale is 1.0 + 0.10 * 0.10 = 1.010.
-        # Phase 1 covers next 70% (cumulative 80%): scale 1.0 + 0.80 * 0.10 = 1.08.
-        # Phase 2 covers final 20% (cumulative 100%): scale 1.10.
-        scale_after_phase_0 = eased[0][1][2]
-        scale_after_phase_1 = eased[1][1][2]
-        scale_after_phase_2 = eased[2][1][2]
-        assert abs(scale_after_phase_0 - 1.010) < 1e-6
-        assert abs(scale_after_phase_1 - 1.080) < 1e-6
-        assert abs(scale_after_phase_2 - 1.100) < 1e-6
-
-    def test_ease_works_for_pull_out_too(self):
-        """Even-index images (pull-out) get the same 3-phase split."""
-        path = ken_burns_path(2, 8.0, ease=True)
-        assert len(path) == 3
-        # Pull-out: scale at start is the zoomed value, end is 1.0.
-        assert path[0][0][2] == 1.10
-        assert abs(path[-1][1][2] - 1.0) < 1e-9
-
-    # --- style="drift": lateral pan -------------------------------------
-
-    def test_drift_style_is_horizontal_pan(self):
-        """Drift moves only along x — no vertical pan, no zoom change."""
-        path = ken_burns_path(1, 6.0, style="drift")
-        assert len(path) == 1
-        start, end, dur = path[0]
-        # No vertical motion (cy stays at the center).
-        assert start[1] == 0.5
-        assert end[1] == 0.5
-        # There IS horizontal motion.
-        assert start[0] != end[0]
-        # And the zoom stays the same end-to-end (no zoom-in / pull-out).
-        assert start[2] == end[2]
-        assert abs(dur - 6.0) < 1e-9
-
-    def test_drift_style_alternates_direction_per_index(self):
-        """Visual rhythm: image n drifts opposite of image n+1."""
-        odd = ken_burns_path(1, 5.0, style="drift")[0]
-        even = ken_burns_path(2, 5.0, style="drift")[0]
-        odd_dir = odd[1][0] - odd[0][0]
-        even_dir = even[1][0] - even[0][0]
-        # Opposite signs.
-        assert odd_dir * even_dir < 0
-
-    def test_drift_style_supports_ease(self):
-        """style=drift + ease=True: a 3-phase horizontal pan with the same curve."""
-        path = ken_burns_path(1, 8.0, style="drift", ease=True)
-        assert len(path) == 3
-        # Vertical never changes.
-        for start, end, _ in path:
-            assert start[1] == end[1] == 0.5
-        # Total duration preserved.
-        assert abs(sum(phase[2] for phase in path) - 8.0) < 1e-9
-
-    def test_unknown_style_raises(self):
-        with pytest.raises(ValueError, match="style"):
-            ken_burns_path(1, 6.0, style="not-a-real-style")
+    def test_output_aspect_carried(self):
+        p = ken_burns_path(1, output_aspect=16 / 9)
+        assert p.output_aspect == pytest.approx(16 / 9)

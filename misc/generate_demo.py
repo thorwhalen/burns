@@ -6,7 +6,7 @@ Run from the repo root:
 
 Produces (committed under ``assets/``):
     - ``demo_landscape.jpg`` — a synthetic sunset landscape (the input still)
-    - ``demo_push.gif``      — ``ken_burns_path(..., style="push", ease=True)``
+    - ``demo_push.gif``      — ``ken_burns_path(..., style="push")``
     - ``demo_drift.gif``     — ``ken_burns_path(..., style="drift")``
 
 The image is generated procedurally (no external assets), so the demo is fully
@@ -139,7 +139,8 @@ def main():
 
         push_mp4 = ken_burns_video(
             still,
-            phases=ken_burns_path(1, 4.0, zoom=1.4, pan=0.06, ease=True),
+            ken_burns_path(1, zoom=1.4, pan=0.06),
+            duration=4.0,
             fps=24,
             saveas=str(tmp / "push.mp4"),
         )
@@ -148,7 +149,8 @@ def main():
 
         drift_mp4 = ken_burns_video(
             still,
-            phases=ken_burns_path(2, 4.0, style="drift", pan=0.14),
+            ken_burns_path(2, style="drift", pan=0.14),
+            duration=4.0,
             fps=24,
             saveas=str(tmp / "drift.mp4"),
         )
