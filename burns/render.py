@@ -183,9 +183,7 @@ def ken_burns_film(
             )
         image, path, duration = panel
         if not isinstance(path, BurnsPath):
-            raise ValueError(
-                f"panel {idx}: path must be a BurnsPath, got {type(path)}"
-            )
+            raise ValueError(f"panel {idx}: path must be a BurnsPath, got {type(path)}")
         duration = float(duration)
         if duration <= 0:
             raise ValueError(f"panel {idx}: duration_s must be > 0, got {duration}")
@@ -218,11 +216,7 @@ def ken_burns_film(
             pr = panel_renders[-1]
             local_norm = 1.0
         else:
-            pr = next(
-                p
-                for p in panel_renders
-                if t < p["film_offset"] + p["duration"]
-            )
+            pr = next(p for p in panel_renders if t < p["film_offset"] + p["duration"])
             local_norm = (t - pr["film_offset"]) / pr["duration"]
         return sample_frame(
             pr["path"],

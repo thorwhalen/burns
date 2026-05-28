@@ -77,9 +77,7 @@ def pillow_backend(
 
     def make_frame(t):
         # moviepy drives t in seconds; the path's clock is normalized.
-        return sample_frame(
-            path, t / duration, img_np, img_w, img_h, out_w, out_h
-        )
+        return sample_frame(path, t / duration, img_np, img_w, img_h, out_w, out_h)
 
     clip = mp.VideoClip(make_frame, duration=duration).with_fps(fps)
     write_kwargs.setdefault("bitrate", "5000k")

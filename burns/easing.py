@@ -126,7 +126,5 @@ def _parse_bezier_args(spec: str) -> tuple[float, float, float, float]:
     inside = spec[spec.index("(") + 1 : spec.rindex(")")]
     parts = [p.strip() for p in inside.split(",")]
     if len(parts) != 4:
-        raise ValueError(
-            f"parse_easing: cubic-bezier needs 4 values, got {spec!r}"
-        )
+        raise ValueError(f"parse_easing: cubic-bezier needs 4 values, got {spec!r}")
     return tuple(float(p) for p in parts)  # type: ignore[return-value]

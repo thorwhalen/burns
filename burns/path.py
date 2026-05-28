@@ -85,7 +85,10 @@ class BurnsPath:
     output_aspect: Union[float, None] = None
     version: int = SPEC_VERSION
     _ease: Callable[[float], float] = field(
-        default=None, init=False, repr=False, compare=False  # type: ignore[assignment]
+        default=None,
+        init=False,
+        repr=False,
+        compare=False,  # type: ignore[assignment]
     )
 
     def __post_init__(self) -> None:
@@ -200,7 +203,12 @@ class BurnsPath:
             True
         """
         keyframes = tuple(
-            (kf["t"], Rect(kf["rect"]["x"], kf["rect"]["y"], kf["rect"]["w"], kf["rect"]["h"]))
+            (
+                kf["t"],
+                Rect(
+                    kf["rect"]["x"], kf["rect"]["y"], kf["rect"]["w"], kf["rect"]["h"]
+                ),
+            )
             for kf in d["keyframes"]
         )
         easing = d.get("easing", DFLT_EASING)
@@ -255,7 +263,8 @@ class BurnsPath:
         cx, cy = to
         aspect = output_aspect if output_aspect is not None else 1.0
         return cls.from_start_end(
-            Rect(0.0, 0.0, 1.0, 1.0) if output_aspect is None
+            Rect(0.0, 0.0, 1.0, 1.0)
+            if output_aspect is None
             else Rect.from_center_zoom(0.5, 0.5, 1.0, aspect=aspect),
             Rect.from_center_zoom(cx, cy, zoom, aspect=aspect),
             easing=easing,
