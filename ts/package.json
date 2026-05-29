@@ -63,7 +63,7 @@
     "ci": {
       "subdir": "ts",
       "packageManager": "pnpm",
-      "nodeVersions": ["20", "22", "24"],
+      "nodeVersions": ["22", "24"],
       "publishNode": "24",
       "lintCommand": "npm run typecheck --if-present",
       "testCommand": "npm test --if-present",
