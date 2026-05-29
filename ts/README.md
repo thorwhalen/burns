@@ -102,9 +102,13 @@ which is why the e2e suite is local-only and not in CI.
 
 ## Publishing
 
-`npm` releases are wired through `.github/workflows/publish-ts.yml` (manual
-dispatch, dry-run by default; or a `kenburnz-v*` tag). See that file's header
-for the OIDC Trusted-Publishing setup and the first-publish bootstrap.
+`npm` releases go through wads's reusable NPM CI (`.github/workflows/npm-ci.yml`
+→ `i2mint/wads/.github/workflows/npm-ci.yml`), configured by the `wads.ci` block
+in `package.json`. Publishing is opt-in: bump the `version`, then push to `main`
+with **`[publish-npm]`** in the commit message. It uses OIDC trusted publishing +
+provenance (configure the trusted publisher on the npm package page once;
+`NPM_TOKEN` is only a first-publish fallback) and a version-already-published
+guard. kenburnz is a pnpm package, so the workflow runs the pnpm path.
 
 ## License
 

@@ -29,7 +29,7 @@
   ],
   "scripts": {
     "build": "tsup",
-    "prepublishOnly": "pnpm build",
+    "prepublishOnly": "npm run build",
     "test": "vitest run",
     "test:e2e": "playwright test",
     "typecheck": "tsc --noEmit"
@@ -58,5 +58,24 @@
       "optional": true
     }
   },
-  "packageManager": "pnpm@11.1.1"
+  "packageManager": "pnpm@11.1.1",
+  "wads": {
+    "ci": {
+      "subdir": "ts",
+      "packageManager": "pnpm",
+      "nodeVersions": ["20", "22", "24"],
+      "publishNode": "24",
+      "lintCommand": "npm run typecheck --if-present",
+      "testCommand": "npm test --if-present",
+      "buildCommand": "npm run build --if-present",
+      "publish": {
+        "enabled": true,
+        "marker": "[publish-npm]",
+        "registry": "https://registry.npmjs.org",
+        "provenance": true,
+        "trustedPublishing": true,
+        "access": "public"
+      }
+    }
+  }
 }
