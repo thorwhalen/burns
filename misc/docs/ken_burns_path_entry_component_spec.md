@@ -3,6 +3,15 @@
 *Author: Thor Whalen*
 *Date: 28 May 2026*
 
+> **Status: implemented** (in `ts/`, package `kenburnz`). Headless core at
+> `kenburnz/component` (zod schemas, geometry, preset catalog, pure state
+> machine), default vanilla DOM renderer at `kenburnz/vanilla`
+> (`mountPathEntry`). Wire-format JSON Schema committed at
+> `ts/schemas/burns-path.schema.json`. Usage + a "bring your own renderer" guide
+> are in `ts/README.md` (Path-entry component); a live demo is at
+> `ts/demo/path-entry.html` (`cd ts/demo && pnpm dev`). See the `burns` skill
+> (`.claude/skills/burns/SKILL.md`) for the agent-facing summary.
+
 > A specification for a **headless, schema-first UI component** that lets a user upload an image, define a Ken Burns motion path (in its simplest "Start rect → End rect" form, with presets for the common cases), and emit a serializable spec the host application can submit to any rendering backend. The component owns *interaction logic and state*, not look-and-feel; it ships with a default renderer that hosts may replace.
 >
 > This document describes *what* to build, not *how*. The output spec emitted by this component is the same `BurnsPath` JSON described in the architecture report (one source of truth across Python and JS/TS).
@@ -194,6 +203,20 @@ The emitted value is the same shape used everywhere else in the system — the `
   }
 }
 ```
+
+> **Implementation note (the wire format is the architecture doc's shape).**
+> The example above is illustrative; the *authoritative* wire shape is the one
+> in the architecture report (§ "Spec JSON") — the same shape `BurnsPath.toDict()`
+> emits and the golden vectors pin: snake_case, `output_aspect` as a single
+> **number** (`num / den`) or `null`, no top-level duration. The path-entry
+> component emits exactly that, **extended with two optional, additive fields**
+> it authors: `duration_ms` (the UI-set duration; the architecture doc treats
+> duration as a render-call option, so it lives here only as advisory carry-on)
+> and `meta` (`preset_id`, `preset_params`, and `output_aspect_ratio` — the
+> exact `num/den` the user entered, preserved for display + round-trip). These
+> additive fields are ignored by `evaluate` and by backends that don't need
+> them, so Python parity is preserved. The committed JSON Schema
+> (`ts/schemas/burns-path.schema.json`) is generated from this contract.
 
 Key points:
 

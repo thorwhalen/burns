@@ -19,17 +19,29 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./component": {
+      "types": "./dist/component/index.d.ts",
+      "import": "./dist/component/index.js",
+      "require": "./dist/component/index.cjs"
+    },
+    "./vanilla": {
+      "types": "./dist/component/vanilla.d.ts",
+      "import": "./dist/component/vanilla.js",
+      "require": "./dist/component/vanilla.cjs"
     }
   },
   "publishConfig": {
     "access": "public"
   },
   "files": [
-    "dist"
+    "dist",
+    "schemas"
   ],
   "scripts": {
     "build": "tsup",
     "prepublishOnly": "npm run build",
+    "schema": "tsx scripts/export-json-schema.ts",
     "test": "vitest run",
     "test:e2e": "playwright test",
     "typecheck": "tsc --noEmit"
@@ -46,6 +58,7 @@
     "@types/dom-webcodecs": "^0.1.11",
     "@types/node": "^25.9.1",
     "tsup": "^8.0.0",
+    "tsx": "^4.22.3",
     "typescript": "^5.7.0",
     "vitest": "^3.0.0",
     "webm-muxer": "^5.0.0"
@@ -63,7 +76,10 @@
     "ci": {
       "subdir": "ts",
       "packageManager": "pnpm",
-      "nodeVersions": ["22", "24"],
+      "nodeVersions": [
+        "22",
+        "24"
+      ],
       "publishNode": "24",
       "lintCommand": "npm run typecheck --if-present",
       "testCommand": "npm test --if-present",
@@ -77,5 +93,8 @@
         "access": "public"
       }
     }
+  },
+  "dependencies": {
+    "zod": "^4.4.3"
   }
 }

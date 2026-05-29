@@ -1,6 +1,6 @@
 ---
 name: burns
-description: Use when turning a still image (or a sequence of stills) into a pan/zoom video — the "Ken Burns effect". Triggers on "ken burns", "pan and zoom a photo", "animate a still image", "make a slideshow with motion", "zoom into an image as video", "photo to video", or any use of ken_burns_video / ken_burns_film / ken_burns_path / BurnsPath. Use BEFORE hand-rolling moviepy crop/resize-per-frame logic.
+description: Use when turning a still image (or a sequence of stills) into a pan/zoom video — the "Ken Burns effect" — OR when building a UI to author/select the motion path. Triggers on "ken burns", "pan and zoom a photo", "animate a still image", "make a slideshow with motion", "zoom into an image as video", "photo to video", any use of ken_burns_video / ken_burns_film / ken_burns_path / BurnsPath, AND on the TypeScript side: "kenburnz", "ken burns path entry / selection / cropper UI", "author a BurnsPath", mountPathEntry, or work under ts/. Use BEFORE hand-rolling moviepy crop/resize-per-frame logic or a bespoke crop-rect UI.
 ---
 
 # burns — Ken Burns pan/zoom video effects
@@ -90,6 +90,62 @@ panels = [("a.jpg", ken_burns_path(1), 4.0),
           ("c.jpg", ken_burns_path(3), 4.0)]
 ken_burns_film(panels, saveas="film.mp4", fps=30, audio_path="narration.mp3")
 ```
+
+## TypeScript port (`kenburnz`, in `ts/`)
+
+The same render-agnostic spec is mirrored in TypeScript under `ts/` (published
+as **`kenburnz`**), pinned bit-for-bit to the Python side by the shared
+golden-vector fixture (`tests/golden/vectors.json`). Same vocabulary: `Rect`,
+`BurnsPath.evaluate(t)`, `sampleBox`, CSS easing strings. Plus browser-only
+extras: `cssPreviewAt` (zero-cost CSS-transform preview) and a WebCodecs
+exporter. **Never change `BurnsPath.toDict()` field names** — that's the
+cross-language wire contract.
+
+## Path-entry component — authoring a `BurnsPath` (headless, schema-first)
+
+For *authoring* a path in a UI (not rendering it), `kenburnz` ships a headless,
+schema-first component. Spec: `misc/docs/ken_burns_path_entry_component_spec.md`.
+Two entry points:
+
+- **`kenburnz/component`** — DOM-free core. zod schemas (`Config` / `Value` /
+  `State`), pure geometry (AR-lock, containment clamp, `rectFromDrag`,
+  `translateRect`, `scaleRect`, `rectReadout`), the data-driven preset catalog,
+  and a **pure reducer** `reduce(state, event, catalog)` + selectors
+  (`resolveStartEnd`, `editTargets`, `toValue`). Build any renderer on top.
+- **`kenburnz/vanilla`** — the default vanilla DOM renderer:
+  `mountPathEntry(el, config, { onChange, onSubmit }) → handle`. AR-locked crop
+  rect over a dim matte, handles, rule-of-thirds, drag/pan/resize, keyboard
+  nudge, duration/easing/swap/aspect controls, side-by-side / overlay / tabbed
+  layouts. Theme via `--kb-*` CSS custom properties. A *replaceable example*,
+  not privileged.
+
+```ts
+import { mountPathEntry } from 'kenburnz/vanilla';
+const handle = mountPathEntry(el, {
+  image: { src, width: 1920, height: 1080 },
+  targetAspect: { num: 16, den: 9, locked: true },
+}, { onSubmit: (value) => submit(value) });   // value = the BurnsPath JSON
+```
+
+**The emitted `Value`** is the wire shape `BurnsPath.toDict()` emits (snake_case,
+`output_aspect: number|null`) **plus** two optional additive fields the UI
+authors: `duration_ms` and `meta` (`preset_id`, `preset_params`,
+`output_aspect_ratio`). Additive fields are ignored by `evaluate` and by
+backends that don't need them — Python parity is preserved. A JSON Schema of
+this contract is committed under `ts/schemas/burns-path.schema.json`
+(regenerate with `pnpm schema`).
+
+- The crop rect is AR-locked to the **output** aspect (not the image's): in
+  normalized image units, `w/h = output_aspect / image_aspect`, so the rendered
+  window (after cover-crop) is exactly what the user drew.
+- Presets are **data** (`{ id, label, icon, arity, params?, derive }`) — add an
+  entry, don't edit the core. Default set: zoom in/out + 4 pans + drift
+  (arity 0); push-in-to / pull-out-from / enter-/exit-edge / reveal-around
+  (arity 1); custom (arity 2).
+- To write your own renderer: `initState` → `reduce` on `Event`s → draw
+  `resolveStartEnd` / `editTargets`; `kenburnz/vanilla`'s source is the worked
+  example. README "Path-entry component" section has the full guide.
+- Demo: `cd ts/demo && pnpm dev` → `/path-entry.html`.
 
 ## Gotchas
 

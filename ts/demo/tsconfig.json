@@ -11,7 +11,9 @@
     "verbatimModuleSyntax": true,
     "baseUrl": ".",
     "paths": {
-      "kenburnz": ["../src/index.ts"]
+      "kenburnz": ["../src/index.ts"],
+      "kenburnz/component": ["../src/component/index.ts"],
+      "kenburnz/vanilla": ["../src/component/vanilla.ts"]
     }
   },
   "include": ["src", "vite.config.ts"]
