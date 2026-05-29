@@ -1,0 +1,30 @@
+# wads NPM CI — calls the reusable workflow hosted in i2mint/wads.
+#
+# All configuration lives in ts/package.json under the "wads" key (wads.ci.*).
+# This workflow only runs when the JS/TS subdirectory changes, so it never
+# collides with the Python ci.yml.
+#
+# Publishing to npm is OPT-IN: wads.ci.publish.enabled is true here, so a push
+# to the default branch (main) whose commit message contains "[publish-npm]"
+# publishes kenburnz. Publishing uses OIDC trusted publishing by default
+# (configure the trusted publisher for this repo + workflow filename on
+# npmjs.com); NPM_TOKEN is the fallback (e.g. the first publish of a new name).
+name: NPM CI
+on:
+  push:
+    paths:
+      - "ts/**"
+      - ".github/workflows/npm-ci.yml"
+  pull_request:
+    paths:
+      - "ts/**"
+jobs:
+  npm-ci:
+    uses: i2mint/wads/.github/workflows/npm-ci.yml@master
+    permissions:
+      contents: read
+      id-token: write # npm provenance / OIDC trusted publishing
+    with:
+      package-dir: ts
+    secrets:
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

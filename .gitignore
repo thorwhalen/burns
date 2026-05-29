@@ -118,3 +118,18 @@ venv.bak/
 
 # PyCharm
 .idea
+
+# kenburnz (ts/) Node artifacts
+ts/node_modules/
+ts/dist/
+ts/coverage/
+ts/*.tsbuildinfo
+ts/demo/node_modules/
+ts/demo/dist/
+# Generated browser-verification reference renders (regenerated from Python,
+# never committed — see misc/gen_preview_reference.py).
+ts/demo/public/reference/
+# Playwright headed-parity test artifacts.
+ts/test-results/
+ts/playwright-report/
+ts/.playwright/

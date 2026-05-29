@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>kenburnz — browser verification</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>kenburnz browser verification</h1>
+      <p>
+        Each scenario shows the <strong>CSS preview</strong> (live
+        <code>cssPreviewAt(t)</code> on an <code>&lt;img&gt;</code>) beside the
+        <strong>Python reference frame</strong> rendered by
+        <code>burns.sample_frame</code> for the same <code>t</code>. They should
+        frame the identical window. Scrub <code>t</code>; the reference snaps to
+        the nearest sampled time. The cover-crop scenarios
+        (<code>push_in_square</code>, <code>pan_widescreen</code>) are where the
+        geometry is most likely to look wrong.
+      </p>
+      <p id="status" class="status"></p>
+    </header>
+    <main id="app"></main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

@@ -1,0 +1,81 @@
+{
+  "name": "kenburnz",
+  "version": "0.0.1",
+  "description": "TypeScript port of the burns BurnsPath motion spec — pure evaluate(t) + cover-crop geometry, WebCodecs export, and CSS preview. Conforms to the cross-language golden vectors.",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thorwhalen/burns.git",
+    "directory": "ts"
+  },
+  "homepage": "https://github.com/thorwhalen/burns/tree/main/ts#readme",
+  "bugs": "https://github.com/thorwhalen/burns/issues",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "prepublishOnly": "npm run build",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "ken-burns",
+    "pan-zoom",
+    "webcodecs",
+    "animation",
+    "video"
+  ],
+  "devDependencies": {
+    "@playwright/test": "^1.49.0",
+    "@types/dom-webcodecs": "^0.1.11",
+    "@types/node": "^25.9.1",
+    "tsup": "^8.0.0",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0",
+    "webm-muxer": "^5.0.0"
+  },
+  "peerDependencies": {
+    "webm-muxer": "^5.0.0"
+  },
+  "peerDependenciesMeta": {
+    "webm-muxer": {
+      "optional": true
+    }
+  },
+  "packageManager": "pnpm@11.1.1",
+  "wads": {
+    "ci": {
+      "subdir": "ts",
+      "packageManager": "pnpm",
+      "nodeVersions": ["22", "24"],
+      "publishNode": "24",
+      "lintCommand": "npm run typecheck --if-present",
+      "testCommand": "npm test --if-present",
+      "buildCommand": "npm run build --if-present",
+      "publish": {
+        "enabled": true,
+        "marker": "[publish-npm]",
+        "registry": "https://registry.npmjs.org",
+        "provenance": true,
+        "trustedPublishing": true,
+        "access": "public"
+      }
+    }
+  }
+}
