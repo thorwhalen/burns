@@ -1,0 +1,5 @@
+# Allow esbuild (vitest/tsup's transform engine) to run its postinstall, which
+# fetches the platform-native binary. Without this, pnpm 11 reports
+# ERR_PNPM_IGNORED_BUILDS and `pnpm test` / `pnpm build` exit non-zero.
+allowBuilds:
+  esbuild: true

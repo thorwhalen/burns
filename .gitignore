@@ -118,3 +118,9 @@ venv.bak/
 
 # PyCharm
 .idea
+
+# kenburnz (ts/) Node artifacts
+ts/node_modules/
+ts/dist/
+ts/coverage/
+ts/*.tsbuildinfo
