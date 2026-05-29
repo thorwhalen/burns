@@ -1,0 +1,19 @@
+{
+  "name": "kenburnz-demo",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Browser-verification harness for kenburnz: side-by-side CSS preview vs Python reference frames, plus a live WebCodecs->WebM export. Not published.",
+  "scripts": {
+    "reference": "python3 ../../misc/gen_preview_reference.py",
+    "predev": "pnpm reference",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "vite": "^6.0.0",
+    "webm-muxer": "^5.0.0"
+  }
+}

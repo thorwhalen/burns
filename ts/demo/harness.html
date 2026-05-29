@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>kenburnz parity harness</title>
+  </head>
+  <body>
+    <!-- Headless of UI: this page exists only so the Playwright parity test can
+         call kenburnz in a real browser (WebCodecs/OffscreenCanvas) via the
+         window.kb API set up by harness.ts. Not part of the human demo. -->
+    <p id="ready">loading…</p>
+    <script type="module" src="/src/harness.ts"></script>
+  </body>
+</html>

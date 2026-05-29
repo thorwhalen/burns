@@ -41,4 +41,12 @@ export {
   exportWebCodecsVideo,
   isWebCodecsSupported,
   type WebCodecsExportOptions,
+  type WebCodecsExportResult,
 } from './render-webcodecs.js';
+export {
+  createWebmMuxer,
+  exportWebmBlob,
+  type WebmMuxer,
+  type WebmExportOptions,
+  type WebmExportResult,
+} from './mux-webm.js';
