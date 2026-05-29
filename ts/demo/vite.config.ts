@@ -8,6 +8,12 @@ import { defineConfig } from 'vite';
 export default defineConfig({
   resolve: {
     alias: {
+      'kenburnz/vanilla': fileURLToPath(
+        new URL('../src/component/vanilla.ts', import.meta.url),
+      ),
+      'kenburnz/component': fileURLToPath(
+        new URL('../src/component/index.ts', import.meta.url),
+      ),
       kenburnz: fileURLToPath(new URL('../src/index.ts', import.meta.url)),
     },
   },

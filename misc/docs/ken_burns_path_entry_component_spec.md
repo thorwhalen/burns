@@ -195,6 +195,20 @@ The emitted value is the same shape used everywhere else in the system — the `
 }
 ```
 
+> **Implementation note (the wire format is the architecture doc's shape).**
+> The example above is illustrative; the *authoritative* wire shape is the one
+> in the architecture report (§ "Spec JSON") — the same shape `BurnsPath.toDict()`
+> emits and the golden vectors pin: snake_case, `output_aspect` as a single
+> **number** (`num / den`) or `null`, no top-level duration. The path-entry
+> component emits exactly that, **extended with two optional, additive fields**
+> it authors: `duration_ms` (the UI-set duration; the architecture doc treats
+> duration as a render-call option, so it lives here only as advisory carry-on)
+> and `meta` (`preset_id`, `preset_params`, and `output_aspect_ratio` — the
+> exact `num/den` the user entered, preserved for display + round-trip). These
+> additive fields are ignored by `evaluate` and by backends that don't need
+> them, so Python parity is preserved. The committed JSON Schema
+> (`ts/schemas/burns-path.schema.json`) is generated from this contract.
+
 Key points:
 
 - `rect` is **normalised `[0, 1]`, top-left origin, y-down** — matches `videopython.BoundingBox`, CSS `transform-origin` semantics, and FFmpeg coordinates. Spec is resolution-independent.

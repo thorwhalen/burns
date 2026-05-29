@@ -126,6 +126,7 @@ ts/coverage/
 ts/*.tsbuildinfo
 ts/demo/node_modules/
 ts/demo/dist/
+ts/demo/.vite/
 # Generated browser-verification reference renders (regenerated from Python,
 # never committed — see misc/gen_preview_reference.py).
 ts/demo/public/reference/

@@ -1,0 +1,187 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Ken Burns path-entry component config",
+  "type": "object",
+  "properties": {
+    "image": {
+      "type": "object",
+      "properties": {
+        "src": {
+          "type": "string"
+        },
+        "width": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "height": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      },
+      "required": [
+        "src",
+        "width",
+        "height"
+      ],
+      "additionalProperties": false
+    },
+    "targetAspect": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "num": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "den": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            },
+            "locked": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "num",
+            "den",
+            "locked"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "string",
+          "const": "match-image"
+        }
+      ]
+    },
+    "duration": {
+      "type": "object",
+      "properties": {
+        "defaultMs": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "minMs": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "maxMs": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "editable": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "defaultMs",
+        "editable"
+      ],
+      "additionalProperties": false
+    },
+    "easing": {
+      "type": "object",
+      "properties": {
+        "default": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            }
+          ]
+        },
+        "editable": {
+          "type": "boolean"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "required": [
+        "default",
+        "editable"
+      ],
+      "additionalProperties": false
+    },
+    "presets": {
+      "anyOf": [
+        {
+          "type": "string",
+          "const": "default"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      ]
+    },
+    "allowCustom": {
+      "type": "boolean"
+    },
+    "dualView": {
+      "type": "string",
+      "enum": [
+        "side-by-side",
+        "overlay",
+        "tabbed"
+      ]
+    },
+    "i18n": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "theme": {}
+  },
+  "required": [
+    "image"
+  ],
+  "additionalProperties": false
+}
