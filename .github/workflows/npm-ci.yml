@@ -9,9 +9,6 @@
 # publishes kenburnz. Publishing uses OIDC trusted publishing by default
 # (configure the trusted publisher for this repo + workflow filename on
 # npmjs.com); NPM_TOKEN is the fallback (e.g. the first publish of a new name).
-#
-# TEMP: pinned to @feat/npm-ci-pnpm (i2mint/wads PR #36) to validate the pnpm
-# path before that lands. Re-pin to @master once the PR merges.
 name: NPM CI
 on:
   push:
@@ -23,7 +20,7 @@ on:
       - "ts/**"
 jobs:
   npm-ci:
-    uses: i2mint/wads/.github/workflows/npm-ci.yml@feat/npm-ci-pnpm
+    uses: i2mint/wads/.github/workflows/npm-ci.yml@master
     permissions:
       contents: read
       id-token: write # npm provenance / OIDC trusted publishing
