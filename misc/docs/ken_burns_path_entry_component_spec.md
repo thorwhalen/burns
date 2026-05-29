@@ -3,6 +3,15 @@
 *Author: Thor Whalen*
 *Date: 28 May 2026*
 
+> **Status: implemented** (in `ts/`, package `kenburnz`). Headless core at
+> `kenburnz/component` (zod schemas, geometry, preset catalog, pure state
+> machine), default vanilla DOM renderer at `kenburnz/vanilla`
+> (`mountPathEntry`). Wire-format JSON Schema committed at
+> `ts/schemas/burns-path.schema.json`. Usage + a "bring your own renderer" guide
+> are in `ts/README.md` (Path-entry component); a live demo is at
+> `ts/demo/path-entry.html` (`cd ts/demo && pnpm dev`). See the `burns` skill
+> (`.claude/skills/burns/SKILL.md`) for the agent-facing summary.
+
 > A specification for a **headless, schema-first UI component** that lets a user upload an image, define a Ken Burns motion path (in its simplest "Start rect → End rect" form, with presets for the common cases), and emit a serializable spec the host application can submit to any rendering backend. The component owns *interaction logic and state*, not look-and-feel; it ships with a default renderer that hosts may replace.
 >
 > This document describes *what* to build, not *how*. The output spec emitted by this component is the same `BurnsPath` JSON described in the architecture report (one source of truth across Python and JS/TS).
