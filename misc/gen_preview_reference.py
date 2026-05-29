@@ -174,9 +174,7 @@ def generate(out_dir: Path) -> Path:
             frame = sample_frame(path, t, img_np, IMG_W, IMG_H, out_w, out_h)
             fname = f"t{t:.4f}.png"
             PIL_Image.fromarray(frame).save(scene_dir / fname)
-            frames.append(
-                {"t": t, "file": f"{name}/{fname}", "box": list(box)}
-            )
+            frames.append({"t": t, "file": f"{name}/{fname}", "box": list(box)})
 
         manifest["scenarios"].append(
             {
@@ -198,11 +196,7 @@ def generate(out_dir: Path) -> Path:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     default_out = (
-        Path(__file__).resolve().parent.parent
-        / "ts"
-        / "demo"
-        / "public"
-        / "reference"
+        Path(__file__).resolve().parent.parent / "ts" / "demo" / "public" / "reference"
     )
     parser.add_argument(
         "--out-dir",
@@ -214,8 +208,7 @@ def main() -> None:
     manifest_path = generate(args.out_dir)
     scenarios = json.loads(manifest_path.read_text())["scenarios"]
     print(
-        f"Wrote {manifest_path} "
-        f"({len(scenarios)} scenarios x {len(T_SAMPLES)} frames)"
+        f"Wrote {manifest_path} ({len(scenarios)} scenarios x {len(T_SAMPLES)} frames)"
     )
 
 
