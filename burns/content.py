@@ -19,6 +19,7 @@ stays dependency-light and deterministic. Boxes everywhere are normalized
 ``(x, y, w, h)`` in ``[0, 1]`` with a top-left origin — the same convention as
 :class:`~burns.rect.Rect`.
 """
+
 from __future__ import annotations
 
 from typing import Any, Callable, Iterable, Optional, Sequence, Union
@@ -60,7 +61,9 @@ def _gray_array(image: Any, downscale: int):
     w, h = img.size
     scale = downscale / max(w, h)
     if scale < 1.0:
-        img = img.resize((max(1, int(w * scale)), max(1, int(h * scale))), PIL_Image.BILINEAR)
+        img = img.resize(
+            (max(1, int(w * scale)), max(1, int(h * scale))), PIL_Image.BILINEAR
+        )
     return np.asarray(img, dtype="float32")
 
 
@@ -105,12 +108,16 @@ def salient_box(
     bx, by = x0 / W, y0 / H
     bw, bh = max((x1 - x0) / W, 1e-3), max((y1 - y0) / H, 1e-3)
     # pad
-    bx = _clamp(bx - bw * pad); by = _clamp(by - bh * pad)
-    bw = min(1 - bx, bw * (1 + 2 * pad)); bh = min(1 - by, bh * (1 + 2 * pad))
+    bx = _clamp(bx - bw * pad)
+    by = _clamp(by - bh * pad)
+    bw = min(1 - bx, bw * (1 + 2 * pad))
+    bh = min(1 - by, bh * (1 + 2 * pad))
     # enforce a minimum footprint (keep it centered on the salient centroid)
     cx, cy = bx + bw / 2, by + bh / 2
-    bw = max(bw, min_size); bh = max(bh, min_size)
-    bx = _clamp(cx - bw / 2, 0, 1 - bw); by = _clamp(cy - bh / 2, 0, 1 - bh)
+    bw = max(bw, min_size)
+    bh = max(bh, min_size)
+    bx = _clamp(cx - bw / 2, 0, 1 - bw)
+    by = _clamp(cy - bh / 2, 0, 1 - bh)
     return (float(bx), float(by), float(bw), float(bh))
 
 
@@ -165,19 +172,23 @@ def content_aware_path(
     faces = list(faces or [])
     keep = _union(faces) if faces else (subject if subject else (0.15, 0.15, 0.7, 0.7))
     kx, ky, kw, kh = keep
-    kx = _clamp(kx - kw * keep_pad); ky = _clamp(ky - kh * keep_pad)
-    kw = min(1 - kx, kw * (1 + 2 * keep_pad)); kh = min(1 - ky, kh * (1 + 2 * keep_pad))
+    kx = _clamp(kx - kw * keep_pad)
+    ky = _clamp(ky - kh * keep_pad)
+    kw = min(1 - kx, kw * (1 + 2 * keep_pad))
+    kh = min(1 - ky, kh * (1 + 2 * keep_pad))
     cx, cy = kx + kw / 2, ky + kh / 2
 
     imgA = img_w / img_h
-    if imgA >= A:                     # image wider than output: width is the limit
+    if imgA >= A:  # image wider than output: width is the limit
         wmax, hmax = A * img_h / img_w, 1.0
     else:
         wmax, hmax = 1.0, (img_w / A) / img_h
 
     def window(z: float) -> Rect:
-        w = min(wmax / z, 1.0); h = min(hmax / z, 1.0)
-        x = _clamp(cx - w / 2, 0, 1 - w); y = _clamp(cy - h / 2, 0, 1 - h)
+        w = min(wmax / z, 1.0)
+        h = min(hmax / z, 1.0)
+        x = _clamp(cx - w / 2, 0, 1 - w)
+        y = _clamp(cy - h / 2, 0, 1 - h)
         return Rect(x, y, w, h)
 
     # largest zoom at which the whole keep-region still fits the window
@@ -185,7 +196,7 @@ def content_aware_path(
     z_in = max(min_zoom + 0.02, min(zoom, z_fit * 0.98))
     z_in = max(z_in, 1.0)
     z_out = max(1.0, min(z_in - 0.12, z_fit * 0.98))
-    if z_out >= z_in:                 # keep-region too large to zoom — gentle move
+    if z_out >= z_in:  # keep-region too large to zoom — gentle move
         z_out = max(1.0, z_in - 0.06)
 
     if mode == "in":
@@ -193,9 +204,13 @@ def content_aware_path(
     elif mode == "out":
         push = False
     else:
-        push = (index % 2 == 1)
-    start, end = (window(z_out), window(z_in)) if push else (window(z_in), window(z_out))
-    return BurnsPath.from_start_end(start, end, easing=easing, output_aspect=output_aspect)
+        push = index % 2 == 1
+    start, end = (
+        (window(z_out), window(z_in)) if push else (window(z_in), window(z_out))
+    )
+    return BurnsPath.from_start_end(
+        start, end, easing=easing, output_aspect=output_aspect
+    )
 
 
 def content_aware_path_for(
@@ -226,5 +241,12 @@ def content_aware_path_for(
     iw, ih = img.size
     detected = list(faces) or (list(faces_detector(img)) if faces_detector else [])
     subject = salient_box(img)
-    return content_aware_path(iw, ih, subject=subject, faces=detected, index=index,
-                              output_aspect=output_aspect, **kwargs)
+    return content_aware_path(
+        iw,
+        ih,
+        subject=subject,
+        faces=detected,
+        index=index,
+        output_aspect=output_aspect,
+        **kwargs,
+    )
