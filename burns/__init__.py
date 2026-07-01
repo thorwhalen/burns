@@ -31,6 +31,12 @@ Quickstart:
 from burns.rect import Rect
 from burns.easing import parse_easing, cubic_bezier, CSS_BEZIERS
 from burns.path import BurnsPath, ken_burns_path, PanelInput
+from burns.content import (
+    content_aware_path,
+    content_aware_path_for,
+    salient_box,
+    FacesDetector,
+)
 from burns.render import (
     ken_burns_video,
     ken_burns_film,
@@ -43,6 +49,10 @@ __all__ = [
     "Rect",
     "BurnsPath",
     "ken_burns_path",
+    "content_aware_path",
+    "content_aware_path_for",
+    "salient_box",
+    "FacesDetector",
     "ken_burns_video",
     "ken_burns_film",
     "PanelInput",
