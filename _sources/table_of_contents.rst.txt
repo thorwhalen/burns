@@ -6,6 +6,7 @@
    module_docs/burns/_frame
    module_docs/burns/_util
    module_docs/burns/backends
+   module_docs/burns/content
    module_docs/burns/easing
    module_docs/burns/path
    module_docs/burns/rect

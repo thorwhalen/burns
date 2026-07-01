@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>&lt;no title&gt; &mdash; burns 0.0.6 documentation</title>
+  <title>&lt;no title&gt; &mdash; burns 0.0.7 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=1fd71caa"></script>
+      <script src="_static/documentation_options.js?v=bbaf98b3"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -51,6 +51,7 @@
 <li class="toctree-l1"><a class="reference internal" href="module_docs/burns/_frame.html">burns._frame</a></li>
 <li class="toctree-l1"><a class="reference internal" href="module_docs/burns/_util.html">burns._util</a></li>
 <li class="toctree-l1"><a class="reference internal" href="module_docs/burns/backends.html">burns.backends</a></li>
+<li class="toctree-l1"><a class="reference internal" href="module_docs/burns/content.html">burns.content</a></li>
 <li class="toctree-l1"><a class="reference internal" href="module_docs/burns/easing.html">burns.easing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="module_docs/burns/path.html">burns.path</a></li>
 <li class="toctree-l1"><a class="reference internal" href="module_docs/burns/rect.html">burns.rect</a></li>
@@ -88,6 +89,8 @@
 <li class="toctree-l2"><a class="reference internal" href="module_docs/burns.html#burns.BurnsPath"><code class="docutils literal notranslate"><span class="pre">BurnsPath</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="module_docs/burns.html#burns.Rect"><code class="docutils literal notranslate"><span class="pre">Rect</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="module_docs/burns.html#burns.RenderBackend"><code class="docutils literal notranslate"><span class="pre">RenderBackend</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/burns.html#burns.content_aware_path"><code class="docutils literal notranslate"><span class="pre">content_aware_path()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/burns.html#burns.content_aware_path_for"><code class="docutils literal notranslate"><span class="pre">content_aware_path_for()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="module_docs/burns.html#burns.cubic_bezier"><code class="docutils literal notranslate"><span class="pre">cubic_bezier()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="module_docs/burns.html#burns.get_backend"><code class="docutils literal notranslate"><span class="pre">get_backend()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="module_docs/burns.html#burns.ken_burns_film"><code class="docutils literal notranslate"><span class="pre">ken_burns_film()</span></code></a></li>
@@ -95,6 +98,7 @@
 <li class="toctree-l2"><a class="reference internal" href="module_docs/burns.html#burns.ken_burns_video"><code class="docutils literal notranslate"><span class="pre">ken_burns_video()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="module_docs/burns.html#burns.parse_easing"><code class="docutils literal notranslate"><span class="pre">parse_easing()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="module_docs/burns.html#burns.register_backend"><code class="docutils literal notranslate"><span class="pre">register_backend()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/burns.html#burns.salient_box"><code class="docutils literal notranslate"><span class="pre">salient_box()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="module_docs/burns/_frame.html">burns._frame</a><ul>
@@ -110,6 +114,13 @@
 <li class="toctree-l2"><a class="reference internal" href="module_docs/burns/backends.html#burns.backends.get_backend"><code class="docutils literal notranslate"><span class="pre">get_backend()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="module_docs/burns/backends.html#burns.backends.pillow_backend"><code class="docutils literal notranslate"><span class="pre">pillow_backend()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="module_docs/burns/backends.html#burns.backends.register_backend"><code class="docutils literal notranslate"><span class="pre">register_backend()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="module_docs/burns/content.html">burns.content</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/burns/content.html#burns.content.FacesDetector"><code class="docutils literal notranslate"><span class="pre">FacesDetector</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/burns/content.html#burns.content.content_aware_path"><code class="docutils literal notranslate"><span class="pre">content_aware_path()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/burns/content.html#burns.content.content_aware_path_for"><code class="docutils literal notranslate"><span class="pre">content_aware_path_for()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/burns/content.html#burns.content.salient_box"><code class="docutils literal notranslate"><span class="pre">salient_box()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="module_docs/burns/easing.html">burns.easing</a><ul>
@@ -142,7 +153,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright NO COPYRIGHT.</p>
+    <p></p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

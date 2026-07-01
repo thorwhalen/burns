@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Index &mdash; burns 0.0.6 documentation</title>
+  <title>Index &mdash; burns 0.0.7 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=1fd71caa"></script>
+      <script src="_static/documentation_options.js?v=bbaf98b3"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -50,6 +50,7 @@
 <li class="toctree-l1"><a class="reference internal" href="module_docs/burns/_frame.html">burns._frame</a></li>
 <li class="toctree-l1"><a class="reference internal" href="module_docs/burns/_util.html">burns._util</a></li>
 <li class="toctree-l1"><a class="reference internal" href="module_docs/burns/backends.html">burns.backends</a></li>
+<li class="toctree-l1"><a class="reference internal" href="module_docs/burns/content.html">burns.content</a></li>
 <li class="toctree-l1"><a class="reference internal" href="module_docs/burns/easing.html">burns.easing</a></li>
 <li class="toctree-l1"><a class="reference internal" href="module_docs/burns/path.html">burns.path</a></li>
 <li class="toctree-l1"><a class="reference internal" href="module_docs/burns/rect.html">burns.rect</a></li>
@@ -146,14 +147,21 @@
 </li>
       </ul></li>
       <li>
+    burns.content
+
+      <ul>
+        <li><a href="module_docs/burns/content.html#module-burns.content">module</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
     burns.easing
 
       <ul>
         <li><a href="module_docs/burns/easing.html#module-burns.easing">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     burns.path
 
@@ -199,8 +207,20 @@
         <li><a href="module_docs/burns/rect.html#burns.rect.Rect.clamped">(burns.rect.Rect method)</a>
 </li>
       </ul></li>
+      <li><a href="module_docs/burns.html#burns.content_aware_path">content_aware_path() (in module burns)</a>
+
+      <ul>
+        <li><a href="module_docs/burns/content.html#burns.content.content_aware_path">(in module burns.content)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="module_docs/burns.html#burns.content_aware_path_for">content_aware_path_for() (in module burns)</a>
+
+      <ul>
+        <li><a href="module_docs/burns/content.html#burns.content.content_aware_path_for">(in module burns.content)</a>
+</li>
+      </ul></li>
       <li><a href="module_docs/burns.html#burns.cubic_bezier">cubic_bezier() (in module burns)</a>
 
       <ul>
@@ -241,20 +261,22 @@
 <h2 id="F">F</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="module_docs/burns/content.html#burns.content.FacesDetector">FacesDetector (in module burns.content)</a>
+</li>
       <li><a href="module_docs/burns.html#burns.Rect.from_center_zoom">from_center_zoom() (burns.Rect class method)</a>
 
       <ul>
         <li><a href="module_docs/burns/rect.html#burns.rect.Rect.from_center_zoom">(burns.rect.Rect class method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="module_docs/burns.html#burns.BurnsPath.from_dict">from_dict() (burns.BurnsPath class method)</a>
 
       <ul>
         <li><a href="module_docs/burns/path.html#burns.path.BurnsPath.from_dict">(burns.path.BurnsPath class method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="module_docs/burns.html#burns.BurnsPath.from_start_end">from_start_end() (burns.BurnsPath class method)</a>
 
       <ul>
@@ -341,6 +363,8 @@
 </li>
         <li><a href="module_docs/burns/backends.html#module-burns.backends">burns.backends</a>
 </li>
+        <li><a href="module_docs/burns/content.html#module-burns.content">burns.content</a>
+</li>
         <li><a href="module_docs/burns/easing.html#module-burns.easing">burns.easing</a>
 </li>
         <li><a href="module_docs/burns/path.html#module-burns.path">burns.path</a>
@@ -418,10 +442,16 @@
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="module_docs/burns/_frame.html#burns._frame.sample_box">sample_box() (in module burns._frame)</a>
+      <li><a href="module_docs/burns.html#burns.salient_box">salient_box() (in module burns)</a>
+
+      <ul>
+        <li><a href="module_docs/burns/content.html#burns.content.salient_box">(in module burns.content)</a>
 </li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="module_docs/burns/_frame.html#burns._frame.sample_box">sample_box() (in module burns._frame)</a>
+</li>
       <li><a href="module_docs/burns/_frame.html#burns._frame.sample_frame">sample_frame() (in module burns._frame)</a>
 </li>
   </ul></td>
@@ -468,7 +498,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright NO COPYRIGHT.</p>
+    <p></p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
