@@ -134,8 +134,9 @@ detailed part of the frame.
 
 **Faces, when you have a detector.** `burns` ships no face model. Detection is
 *injected*, so you choose the dependency: pass boxes you already have, or a
-`faces_detector` callable that takes the image and returns normalized
-`(x, y, w, h)` boxes.
+`faces_detector` callable that returns normalized `(x, y, w, h)` boxes. The
+detector always receives a `PIL.Image` — whatever you passed as `image` is
+opened or converted first.
 
 ```python
 # boxes you already have (faces win over the saliency estimate)
@@ -165,11 +166,13 @@ Start and end windows are both centered on the keep-region (sliding inside the
 image edges when they'd overhang) and sized to the output aspect, so the
 renderer's cover-crop is a no-op — what you frame is what shows.
 
-The requested `zoom` is **capped** so the padded keep-region stays inside the
-frame: a subject that already fills the picture gets a deliberately gentle move
-rather than a crop that cuts it off. `index` keeps the same rhythm as
-`ken_burns_path` (odd pushes in, even pulls out); `mode="in"` / `mode="out"`
-overrides it.
+The requested `zoom` is **capped** so the padded keep-region normally stays
+inside the frame — but a `min_zoom + 0.02` floor wins over that cap, so a
+keep-region that fills the picture is cropped slightly rather than yielding no
+motion at all. If a subject that fills the frame must stay whole, tighten the
+keep-region (a smaller `keep_pad`, or explicit boxes); raising `zoom` cannot do
+it. `index` keeps the same rhythm as `ken_burns_path` (odd pushes in, even pulls
+out); `mode="in"` / `mode="out"` overrides it.
 
 ## Multi-image films
 

@@ -83,10 +83,12 @@ duration-free `BurnsPath` out, same render call. Boxes everywhere are normalized
   falls away. Falls back to a centered `(0.15, 0.15, 0.7, 0.7)` box when the
   image is too uniform to decide.
 
-**No optional dependencies and no bundled face model.** `salient_box` uses only
-numpy + Pillow (already required). Detection is *injected*:
+**No extra install for this feature, and no bundled face model.** `salient_box`
+uses only numpy + Pillow (already required). Detection is *injected*:
 `FacesDetector = Callable[[Any], Sequence[Box]]` — OpenCV, ONNX, a vision model,
-or hand-authored boxes. Omit it and you get saliency-only motion: no error, no
+or hand-authored boxes. The detector is always called with a `PIL.Image`
+(`content_aware_path_for` opens/converts the input first), whatever type you
+passed as `image`. Omit it and you get saliency-only motion: no error, no
 warning, just a less specific keep-region.
 
 ```python
