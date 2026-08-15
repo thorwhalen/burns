@@ -7,7 +7,7 @@ The [Ken Burns effect](https://en.wikipedia.org/wiki/Ken_Burns_effect) animates 
 static photograph by slowly panning across it and zooming in or out, giving still
 images a sense of motion. `burns` does exactly that, with a tiny API and no
 configuration required — and a clean, render-agnostic motion spec underneath so
-the same path can drive Python today and other renderers later.
+the same path drives the Python renderer here and the TypeScript one in `ts/`.
 
 ```bash
 pip install burns
@@ -115,6 +115,62 @@ ken_burns_video("photo.jpg", ken_burns_path(2, style="drift"), duration=5.0)
 ken_burns_video("photo.jpg", ken_burns_path(1, easing="linear"), duration=6.0)
 ```
 
+## Content-aware motion
+
+`ken_burns_path` frames by index, not by what is in the picture — so it will
+happily drift across empty sky. `content_aware_path_for` looks at the image
+first and builds a path that keeps the subject framed:
+
+```python
+from burns import ken_burns_video, content_aware_path_for
+
+ken_burns_video("photo.jpg", content_aware_path_for("photo.jpg", index=1), duration=5.0)
+```
+
+No extra install: the subject estimate is a gradient-magnitude ("busyness")
+heuristic over numpy + Pillow, which `burns` already requires. Flat regions —
+sky, walls, water — have low gradient and fall away, so the box tracks the
+detailed part of the frame.
+
+**Faces, when you have a detector.** `burns` ships no face model. Detection is
+*injected*, so you choose the dependency: pass boxes you already have, or a
+`faces_detector` callable that takes the image and returns normalized
+`(x, y, w, h)` boxes.
+
+```python
+# boxes you already have (faces win over the saliency estimate)
+path = content_aware_path_for("group.jpg", faces=[(0.31, 0.22, 0.09, 0.12)])
+
+# or a detector — anything callable: OpenCV, ONNX, a vision model, a lookup
+path = content_aware_path_for("group.jpg", faces_detector=my_detector, index=2)
+```
+
+With neither `faces` nor `faces_detector` you simply get saliency-only,
+sky-avoiding motion — no error, no warning, just a less specific keep-region.
+
+**The geometry on its own.** `content_aware_path` is the pixel-free core: give
+it the image size and a keep-region and it returns the `BurnsPath`. Reach for it
+when the boxes come from somewhere else — a UI, a database, an upstream vision
+pipeline.
+
+```python
+from burns import content_aware_path
+
+path = content_aware_path(
+    1920, 1080, subject=(0.60, 0.55, 0.20, 0.25), index=1, output_aspect=16 / 9
+)
+```
+
+Start and end windows are both centered on the keep-region (sliding inside the
+image edges when they'd overhang) and sized to the output aspect, so the
+renderer's cover-crop is a no-op — what you frame is what shows.
+
+The requested `zoom` is **capped** so the padded keep-region stays inside the
+frame: a subject that already fills the picture gets a deliberately gentle move
+rather than a crop that cuts it off. `index` keeps the same rhythm as
+`ken_burns_path` (odd pushes in, even pulls out); `mode="in"` / `mode="out"`
+overrides it.
+
 ## Multi-image films
 
 `ken_burns_film` renders a sequence of `(image, path, duration_s)` panels as **one
@@ -136,9 +192,15 @@ ken_burns_film(panels, saveas="film.mp4", fps=30, audio_path="narration.mp3")
 ## Interop: one spec, many renderers
 
 A `BurnsPath` serializes to a small versioned JSON document via `path.to_dict()`
-(and back via `BurnsPath.from_dict(...)`). That is the wire format: the same spec
-can be evaluated by this Python renderer, or by a JS/TS renderer / CSS preview
-that mirrors the trivial `evaluate(t)` math — no renderer owns the motion.
+(and back via `BurnsPath.from_dict(...)`). That is the wire format, and it is
+already shared across two languages: [`kenburnz`](https://www.npmjs.com/package/kenburnz)
+is a TypeScript port of the same `evaluate(t)` math, living in this repo's
+[`ts/`](ts) directory and published to npm. It is pinned to the Python side by a
+shared golden-vector fixture, and adds browser-only pieces: a zero-cost CSS
+transform preview, a WebCodecs `.webm` exporter, and `mountPathEntry` — a
+headless component for *authoring* a path in a UI. It is young (0.0.1), and its
+browser-only paths are verified locally rather than in CI. No renderer owns the
+motion.
 
 ## API
 
@@ -147,5 +209,8 @@ that mirrors the trivial `evaluate(t)` math — no renderer owns the motion.
 | `Rect(x, y, w, h)` | A normalized viewport over the image. `.from_center_zoom`, `.clamped`, `.to_pixels`, `.zoom`, `.center`. |
 | `BurnsPath` | The motion spec. `.evaluate(t) -> Rect`, `.from_start_end`, `.push_in`, `.reversed`, `.to_dict` / `.from_dict`. |
 | `ken_burns_path(index, *, style="push", zoom=1.10, pan=0.03, easing="ease-in-out", output_aspect=None)` | Deterministic per-index `BurnsPath` for a sequence. |
+| `salient_box(image, *, downscale=320, threshold_pct=72.0, trim_pct=4.0, pad=0.05, min_size=0.35)` | Estimate the busy/detailed region of an image as a normalized `(x, y, w, h)` box. |
+| `content_aware_path(img_w, img_h, *, subject=None, faces=(), index=0, output_aspect=None, zoom=1.3, min_zoom=1.05, keep_pad=0.18, mode="auto", easing="ease-in-out")` | Pure geometry: a `BurnsPath` that keeps a keep-region framed. |
+| `content_aware_path_for(image, *, faces=(), faces_detector=None, index=0, output_aspect=None, **kwargs)` | The same, deriving subject (`salient_box`) and faces from the image itself. |
 | `ken_burns_video(image, path=DEFAULT_BURNS_PATH, *, duration=2.0, fps=30, saveas=None, output_size=None, backend="pillow", ...)` | Render one image into a pan/zoom mp4. |
 | `ken_burns_film(panels, *, saveas, fps=30, audio_path=None, ...)` | Render `(image, path, duration_s)` panels as one continuous film. |

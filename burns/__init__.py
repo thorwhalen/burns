@@ -1,8 +1,8 @@
 """burns — Ken Burns pan/zoom video effects.
 
 Turn a still image (or a sequence of stills) into a cinematic pan/zoom film,
-driven by one **render-agnostic motion spec** so the same path can feed a Python
-renderer today and an in-browser JS/TS renderer tomorrow.
+driven by one **render-agnostic motion spec** so the same path feeds the Python
+renderer here and the in-browser TypeScript port (``kenburnz``, in ``ts/``).
 
 The core abstraction is a pure, time-parameterized spec:
 
@@ -12,6 +12,8 @@ The core abstraction is a pure, time-parameterized spec:
   deterministic, frame-count-free) and JSON ``to_dict`` / ``from_dict``.
 - :func:`ken_burns_path` — build a cohesive, deterministic path per sequence
   index from a little intent (style / zoom / pan / easing).
+- :func:`content_aware_path_for` — the content-aware counterpart: keep the
+  subject (via :func:`salient_box`) and any injected face boxes framed.
 
 Two renderers consume a path plus a render-time ``duration``:
 
