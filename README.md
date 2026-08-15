@@ -28,8 +28,12 @@ Starting from a single still image:
 ```python
 from burns import ken_burns_video, ken_burns_path
 
-ken_burns_video("demo_landscape.jpg", ken_burns_path(1, zoom=1.4, pan=0.06), duration=4.0)
-ken_burns_video("demo_landscape.jpg", ken_burns_path(2, style="drift", pan=0.14), duration=4.0)
+ken_burns_video(
+    "demo_landscape.jpg", ken_burns_path(1, zoom=1.4, pan=0.06), duration=4.0
+)
+ken_burns_video(
+    "demo_landscape.jpg", ken_burns_path(2, style="drift", pan=0.14), duration=4.0
+)
 ```
 
 | `style="push"` — eased zoom-in | `style="drift"` — lateral pan |
@@ -46,7 +50,7 @@ A standard 2-second push-in, written next to the source image:
 ```python
 from burns import ken_burns_video
 
-ken_burns_video("photo.jpg")          # → photo_kenburns.mp4
+ken_burns_video("photo.jpg")  # → photo_kenburns.mp4
 ```
 
 That's it. The result is an mp4 that slowly zooms into the center of `photo.jpg`.
@@ -69,18 +73,20 @@ ken_burns_video("photo.jpg", BurnsPath.push_in(1.3, to=(0.65, 0.40)), duration=5
 
 # The canonical two-rectangle (Start → End) case, full control:
 path = BurnsPath.from_start_end(
-    Rect(0, 0, 1, 1),                       # start: whole image
-    Rect.from_center_zoom(0.65, 0.40, 1.2), # end: zoomed toward upper-right
-    easing="ease-in-out",                   # the cinematic default
+    Rect(0, 0, 1, 1),  # start: whole image
+    Rect.from_center_zoom(0.65, 0.40, 1.2),  # end: zoomed toward upper-right
+    easing="ease-in-out",  # the cinematic default
 )
 ken_burns_video("photo.jpg", path, duration=5.0, saveas="out.mp4")
 
 # N keyframes for a multi-beat move (a hold = two equal keyframes):
-path = BurnsPath(keyframes=[
-    (0.0, Rect(0, 0, 1, 1)),
-    (0.5, Rect.from_center_zoom(0.65, 0.40, 1.2)),
-    (1.0, Rect.from_center_zoom(0.35, 0.60, 1.3)),
-])
+path = BurnsPath(
+    keyframes=[
+        (0.0, Rect(0, 0, 1, 1)),
+        (0.5, Rect.from_center_zoom(0.65, 0.40, 1.2)),
+        (1.0, Rect.from_center_zoom(0.35, 0.60, 1.3)),
+    ]
+)
 ```
 
 **Easing** is a CSS timing function (`"linear"`, `"ease-in-out"` (default),
@@ -92,7 +98,9 @@ to make a widescreen clip from a portrait photo (the renderer cover-crops, never
 stretches):
 
 ```python
-ken_burns_video("portrait.jpg", BurnsPath.push_in(1.4, output_aspect=16/9), duration=6.0)
+ken_burns_video(
+    "portrait.jpg", BurnsPath.push_in(1.4, output_aspect=16 / 9), duration=6.0
+)
 ```
 
 ## Let `burns` design the motion for you

@@ -163,8 +163,11 @@ A layered design with the spec as a pure data core and rendering as injected, pl
 *Python:*
 ```python
 class RenderBackend(Protocol):
-    def render(self, image, path: BurnsPath, *, duration: float, fps: int,
-               output: str, **opts) -> bytes | str: ...
+    def render(
+        self, image, path: BurnsPath, *, duration: float, fps: int, output: str, **opts
+    ) -> bytes | str: ...
+
+
 # registry: {"pillow": ..., "ffmpeg": ..., "zoompan": ..., "kb3d": ...}
 # facade picks/injects: render(image, path, backend="auto", ...)
 ```
@@ -181,9 +184,15 @@ interface RenderBackend {
 
 **Progressive disclosure** (matches the rest of the ecosystem [12][26]): a one-liner for the common case, full control underneath.
 ```python
-ken_burns(img, zoom=1.3, to="center")                       # 90% case
-render(img, BurnsPath(start, end, easing="ease-in-out"),    # full control
-       duration=5, fps=30, output="out.mp4", backend="ffmpeg")
+ken_burns(img, zoom=1.3, to="center")  # 90% case
+render(
+    img,
+    BurnsPath(start, end, easing="ease-in-out"),  # full control
+    duration=5,
+    fps=30,
+    output="out.mp4",
+    backend="ffmpeg",
+)
 ```
 
 ---

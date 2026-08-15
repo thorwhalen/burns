@@ -81,7 +81,8 @@ When output AR ≠ image AR, tools handle it three ways: (a) **cover** the image
 
 **Containment.** Every tool enforces "crop ⊂ image"; `videopython` validates it explicitly:
 ```python
-if region.x + region.width > 1 or region.y + region.height > 1: raise ...
+if region.x + region.width > 1 or region.y + region.height > 1:
+    raise ...
 ```
 [6]. FCP's UI clamps the drag handles; iMovie clamps invisibly.
 

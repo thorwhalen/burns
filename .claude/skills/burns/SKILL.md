@@ -93,6 +93,7 @@ warning, just a less specific keep-region.
 
 ```python
 from burns import content_aware_path_for, ken_burns_video
+
 ken_burns_video("photo.jpg", content_aware_path_for("photo.jpg", index=1), duration=5.0)
 ```
 
@@ -116,9 +117,11 @@ a `BurnsPath`; `duration` is seconds. Returns the output `Path` (auto-named
 `{stem}_kenburns.mp4` next to the source when `saveas` is None).
 
 ```python
-ken_burns_video("photo.jpg")                                   # 2s default push-in
+ken_burns_video("photo.jpg")  # 2s default push-in
 ken_burns_video("photo.jpg", ken_burns_path(1), duration=5.0, saveas="out.mp4")
-ken_burns_video("portrait.jpg", BurnsPath.push_in(1.4, output_aspect=16/9), duration=6)
+ken_burns_video(
+    "portrait.jpg", BurnsPath.push_in(1.4, output_aspect=16 / 9), duration=6
+)
 ```
 
 Backends are pluggable via the `RenderBackend` registry (`register_backend`);
@@ -132,9 +135,11 @@ frames at cuts. `saveas` required. Optional `audio_path` muxes in a pre-built
 track (assemble/pad it to the film duration yourself — renderer stays pure visual).
 
 ```python
-panels = [("a.jpg", ken_burns_path(1), 4.0),
-          ("b.jpg", ken_burns_path(2), 4.0),
-          ("c.jpg", ken_burns_path(3), 4.0)]
+panels = [
+    ("a.jpg", ken_burns_path(1), 4.0),
+    ("b.jpg", ken_burns_path(2), 4.0),
+    ("c.jpg", ken_burns_path(3), 4.0),
+]
 ken_burns_film(panels, saveas="film.mp4", fps=30, audio_path="narration.mp3")
 ```
 
