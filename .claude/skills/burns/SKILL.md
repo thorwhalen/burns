@@ -1,14 +1,15 @@
 ---
 name: burns
-description: Use when turning a still image (or a sequence of stills) into a pan/zoom video — the "Ken Burns effect" — OR when building a UI to author/select the motion path. Triggers on "ken burns", "pan and zoom a photo", "animate a still image", "make a slideshow with motion", "zoom into an image as video", "photo to video", any use of ken_burns_video / ken_burns_film / ken_burns_path / BurnsPath, AND on the TypeScript side: "kenburnz", "ken burns path entry / selection / cropper UI", "author a BurnsPath", mountPathEntry, or work under ts/. Use BEFORE hand-rolling moviepy crop/resize-per-frame logic or a bespoke crop-rect UI.
+description: Use when turning a still image (or a sequence of stills) into a pan/zoom video — the "Ken Burns effect" — OR when building a UI to author/select the motion path. Triggers on "ken burns", "pan and zoom a photo", "animate a still image", "make a slideshow with motion", "zoom into an image as video", "photo to video", any use of ken_burns_video / ken_burns_film / ken_burns_path / BurnsPath; on content-aware framing: "keep the subject/face in frame", "don't pan over the sky", content_aware_path / content_aware_path_for / salient_box; AND on the TypeScript side: "kenburnz", "ken burns path entry / selection / cropper UI", "author a BurnsPath", mountPathEntry, or work under ts/. Use BEFORE hand-rolling moviepy crop/resize-per-frame logic or a bespoke crop-rect UI.
 ---
 
 # burns — Ken Burns pan/zoom video effects
 
 `burns` turns still images into cinematic pan/zoom films, driven by one
-**render-agnostic motion spec** (so the same path can feed the Python renderer
-today and a JS/TS renderer later). Top-level imports:
-`from burns import BurnsPath, Rect, ken_burns_path, ken_burns_video, ken_burns_film`.
+**render-agnostic motion spec** (the same path feeds the Python renderer here
+and the TypeScript port `kenburnz` in `ts/`). Top-level imports:
+`from burns import BurnsPath, Rect, ken_burns_path, ken_burns_video, ken_burns_film`
+plus `content_aware_path, content_aware_path_for, salient_box, FacesDetector`.
 
 Requires `ffmpeg` on PATH (moviepy encodes with it). Deps: numpy, moviepy, pillow.
 
@@ -61,6 +62,52 @@ NOT part of the path** (it's a render-time arg).
 - `style="push"` (default): zoom-led toward an off-center focal point.
 - `style="drift"`: pure horizontal pan, alternating direction per index (`zoom`
   ignored — drift derives its own from `pan`).
+
+## Content-aware paths — when the motion must respect the picture
+
+Use these INSTEAD of `ken_burns_path` when the framing must follow what's *in*
+the image: keep a subject or faces in frame, don't drift over empty sky. Same
+duration-free `BurnsPath` out, same render call. Boxes everywhere are normalized
+`(x, y, w, h)` in `[0, 1]`, top-left origin — the `Rect` convention.
+
+- `content_aware_path_for(image, *, faces=(), faces_detector=None, index=0, output_aspect=None, **kwargs)`
+  — the one to reach for. Reads `image` (path / PIL / ndarray), derives the
+  subject via `salient_box`, takes faces from `faces` or `faces_detector(img)`,
+  delegates to `content_aware_path`. `**kwargs` forward (`zoom`, `min_zoom`,
+  `keep_pad`, `mode`, `easing`) — but **not** `subject`, which it computes.
+- `content_aware_path(img_w, img_h, *, subject=None, faces=(), index=0, output_aspect=None, zoom=1.3, min_zoom=1.05, keep_pad=0.18, mode="auto", easing="ease-in-out")`
+  — the pure-geometry core: touches no pixels, deterministic. Use it when the
+  boxes come from elsewhere (a UI, a DB, an upstream vision pipeline).
+- `salient_box(image, *, downscale=320, threshold_pct=72.0, trim_pct=4.0, pad=0.05, min_size=0.35) -> Box`
+  — gradient-magnitude estimate of the busy/detailed region; flat sky/wall/water
+  falls away. Falls back to a centered `(0.15, 0.15, 0.7, 0.7)` box when the
+  image is too uniform to decide.
+
+**No extra install for this feature, and no bundled face model.** `salient_box`
+uses only numpy + Pillow (already required). Detection is *injected*:
+`FacesDetector = Callable[[Any], Sequence[Box]]` — OpenCV, ONNX, a vision model,
+or hand-authored boxes. The detector is always called with a `PIL.Image`
+(`content_aware_path_for` opens/converts the input first), whatever type you
+passed as `image`. Omit it and you get saliency-only motion: no error, no
+warning, just a less specific keep-region.
+
+```python
+from burns import content_aware_path_for, ken_burns_video
+ken_burns_video("photo.jpg", content_aware_path_for("photo.jpg", index=1), duration=5.0)
+```
+
+Gotchas:
+
+- **`zoom` is a request, not a guarantee** — it's capped so the padded
+  keep-region stays framed. A subject filling the frame therefore yields a
+  near-static move; the fix is a tighter keep-region, not a bigger `zoom`.
+- The `min_zoom + 0.02` floor **wins over** that cap, so a huge keep-region gets
+  slightly cropped rather than producing zero motion.
+- `index` defaults to **0** here (even → pull out); `ken_burns_path`'s `index`
+  is required and 1-based. Same parity rule, different default.
+- Explicit `faces=[...]` short-circuits `faces_detector` — the detector runs
+  only when `faces` is empty. Faces beat `subject`; the keep-region is the
+  **union** of all face boxes.
 
 ## `ken_burns_video(image, path=DEFAULT_BURNS_PATH, *, duration=2.0, fps=30, saveas=None, output_size=None, backend="pillow", ...)`
 
