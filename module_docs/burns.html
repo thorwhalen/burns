@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>burns &mdash; burns 0.0.7 documentation</title>
+  <title>burns &mdash; burns 0.0.8 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../_static/jquery.js?v=5d32c60e"></script>
       <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../_static/documentation_options.js?v=bbaf98b3"></script>
+      <script src="../_static/documentation_options.js?v=53b53b71"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -122,8 +122,8 @@
 <span id="burns"></span><h1>burns<a class="headerlink" href="#module-burns" title="Link to this heading"></a></h1>
 <p>burns — Ken Burns pan/zoom video effects.</p>
 <p>Turn a still image (or a sequence of stills) into a cinematic pan/zoom film,
-driven by one <strong>render-agnostic motion spec</strong> so the same path can feed a Python
-renderer today and an in-browser JS/TS renderer tomorrow.</p>
+driven by one <strong>render-agnostic motion spec</strong> so the same path feeds the Python
+renderer here and the in-browser TypeScript port (<code class="docutils literal notranslate"><span class="pre">kenburnz</span></code>, in <code class="docutils literal notranslate"><span class="pre">ts/</span></code>).</p>
 <p>The core abstraction is a pure, time-parameterized spec:</p>
 <ul class="simple">
 <li><p><a class="reference internal" href="#burns.Rect" title="burns.Rect"><code class="xref py py-class docutils literal notranslate"><span class="pre">Rect</span></code></a> — a normalized <code class="docutils literal notranslate"><span class="pre">(x,</span> <span class="pre">y,</span> <span class="pre">w,</span> <span class="pre">h)</span></code> viewport over the image
@@ -132,6 +132,8 @@ renderer today and an in-browser JS/TS renderer tomorrow.</p>
 deterministic, frame-count-free) and JSON <code class="docutils literal notranslate"><span class="pre">to_dict</span></code> / <code class="docutils literal notranslate"><span class="pre">from_dict</span></code>.</p></li>
 <li><p><a class="reference internal" href="#burns.ken_burns_path" title="burns.ken_burns_path"><code class="xref py py-func docutils literal notranslate"><span class="pre">ken_burns_path()</span></code></a> — build a cohesive, deterministic path per sequence
 index from a little intent (style / zoom / pan / easing).</p></li>
+<li><p><a class="reference internal" href="#burns.content_aware_path_for" title="burns.content_aware_path_for"><code class="xref py py-func docutils literal notranslate"><span class="pre">content_aware_path_for()</span></code></a> — the content-aware counterpart: keep the
+subject (via <a class="reference internal" href="#burns.salient_box" title="burns.salient_box"><code class="xref py py-func docutils literal notranslate"><span class="pre">salient_box()</span></code></a>) and any injected face boxes framed.</p></li>
 </ul>
 <p>Two renderers consume a path plus a render-time <code class="docutils literal notranslate"><span class="pre">duration</span></code>:</p>
 <ul class="simple">
