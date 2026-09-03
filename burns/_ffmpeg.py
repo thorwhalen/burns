@@ -348,10 +348,21 @@ def ffmpeg_backend(
         still = Path(tmp) / "source.png"
         PIL_Image.fromarray(img_np).save(still)
         argv = [
-            binary, "-hide_banner", "-loglevel", "error", "-y",
-            "-loop", "1", "-framerate", str(fps), "-i", str(still),
-            "-t", f"{duration:.6f}",
-            "-vf", fragment,
+            binary,
+            "-hide_banner",
+            "-loglevel",
+            "error",
+            "-y",
+            "-loop",
+            "1",
+            "-framerate",
+            str(fps),
+            "-i",
+            str(still),
+            "-t",
+            f"{duration:.6f}",
+            "-vf",
+            fragment,
             *_encode_args(codec, write_kwargs),
             str(output),
         ]
