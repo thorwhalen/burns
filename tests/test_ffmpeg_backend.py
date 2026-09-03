@@ -18,6 +18,7 @@ in, so these need no system ffmpeg and no network.
 """
 
 import subprocess
+import sys
 
 import numpy as np
 import pytest
@@ -75,15 +76,26 @@ def psnr(a: np.ndarray, b: np.ndarray) -> float:
     return float("inf") if mse == 0 else 10 * np.log10(255**2 / mse)
 
 
-def probe(video, entries):
-    out = subprocess.run(
-        ["ffprobe", "-v", "error", "-count_frames", "-select_streams", "v",
-         "-show_entries", f"stream={entries}", "-of", "csv=p=0", str(video)],
+def probe(video) -> tuple[int, int, int]:
+    """``(width, height, frames)``, read with ffmpeg rather than ffprobe.
+
+    `imageio-ffmpeg` bundles **ffmpeg only**. An earlier version of this helper
+    shelled out to `ffprobe`, which is on a developer's machine via Homebrew and
+    is not on the CI runner — so four tests passed locally and died with
+    `FileNotFoundError` in CI, before the skip guard could even run. Reading the
+    numbers out of ffmpeg's own report keeps these tests dependent on exactly
+    the binary the backend itself uses, and on nothing else.
+    """
+    import re
+
+    proc = subprocess.run(
+        [default_ffmpeg_exe(), "-hide_banner", "-i", str(video), "-f", "null", "-"],
         capture_output=True, text=True,
     )
-    if out.returncode != 0:
-        pytest.skip("ffprobe not available")
-    return out.stdout.strip().rstrip(",").split(",")
+    size = re.search(r"Stream #0:0.*?[ ,](\d{2,5})x(\d{2,5})", proc.stderr)
+    frames = re.findall(r"frame=\s*(\d+)", proc.stderr)
+    assert size and frames, f"could not read {video.name} from:\n{proc.stderr[-900:]}"
+    return int(size.group(1)), int(size.group(2)), int(frames[-1])
 
 
 class TestItIsRegistered:
@@ -99,12 +111,12 @@ class TestItIsRegistered:
     def test_importing_burns_does_not_pull_looks(self):
         """The backend is deferred, so a caller who never asks for it pays
         nothing — the same courtesy `looks` extends its own CLI."""
-        code = (
-            "import sys; import burns; "
-            "print('looks' in sys.modules)"
-        )
+        # `sys.executable`, never a bare "python": on the Windows runner the
+        # bare name resolved to a different interpreter, which had no moviepy
+        # and failed with an error that looked nothing like the real question.
+        code = "import sys; import burns; print('looks' in sys.modules)"
         out = subprocess.run(
-            ["python", "-c", code], capture_output=True, text=True
+            [sys.executable, "-c", code], capture_output=True, text=True
         )
         assert out.stdout.strip() == "False", out.stdout + out.stderr
 
@@ -141,7 +153,7 @@ class TestItFramesTheShotWhereBurnsSaysItShould:
         img = smooth_image(640, 480)
         path = ken_burns_path(0, output_aspect=16 / 9)
         video = render(img, path, tmp_path / "wide.mp4", out_w=1280, out_h=720)
-        assert probe(video, "width,height")[:2] == ["1280", "720"]
+        assert probe(video)[:2] == (1280, 720)
         reference = sample_frame(path, 0.0, img, 640, 480, 1280, 720)
         assert psnr(first_frame(video), reference) > SAME_FRAMING_DB
 
@@ -152,9 +164,9 @@ class TestTheOutputIsWhatWasAskedFor:
             smooth_image(), BurnsPath.push_in(1.2), tmp_path / "a.mp4",
             duration=2.0, fps=25, out_w=1280, out_h=720,
         )
-        width, height, frames = probe(video, "width,height,nb_read_frames")
-        assert (width, height) == ("1280", "720")
-        assert int(frames) == 50, "d=1 is what keeps zoompan 1:1 with the input"
+        width, height, frames = probe(video)
+        assert (width, height) == (1280, 720)
+        assert frames == 50, "d=1 is what keeps zoompan 1:1 with the input"
 
     def test_a_static_path_still_renders(self, tmp_path):
         """No zoom, no pan — it takes the `crop` branch, and `crop` emits the
@@ -163,7 +175,7 @@ class TestTheOutputIsWhatWasAskedFor:
             Rect(0.1, 0.1, 0.7123, 0.7123), Rect(0.1, 0.1, 0.7123, 0.7123)
         )
         video = render(smooth_image(), still, tmp_path / "a.mp4", out_w=640, out_h=480)
-        assert probe(video, "width,height")[:2] == ["640", "480"]
+        assert probe(video)[:2] == (640, 480)
 
 
 class TestSamplingIsMeasuredNotGuessed:
@@ -282,8 +294,8 @@ class TestThroughThePublicFacade:
                 source, wide, saveas=tmp_path / f"{backend}.mp4",
                 duration=1.5, fps=24, backend=backend, output_size=(1280, 720),
             )
-            shapes[backend] = probe(out, "width,height,nb_read_frames")
-        assert shapes["ffmpeg"] == shapes["pillow"] == ["1280", "720", "36"]
+            shapes[backend] = probe(out)
+        assert shapes["ffmpeg"] == shapes["pillow"] == (1280, 720, 36)
 
     def test_an_unknown_backend_still_names_what_is_available(self, tmp_path):
         source = tmp_path / "photo.png"
