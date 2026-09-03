@@ -13,8 +13,29 @@ the same path drives the Python renderer here and the TypeScript one in `ts/`.
 pip install burns
 ```
 
-`burns` needs `ffmpeg` available on your system (moviepy uses it to encode video).
-On macOS: `brew install ffmpeg`. On Debian/Ubuntu: `sudo apt-get install ffmpeg`.
+No system `ffmpeg` is required: `moviepy` brings its own through `imageio-ffmpeg`,
+and both render backends use that binary by default. (An earlier version of this
+paragraph said otherwise; it was never true.)
+
+### Two render backends
+
+`ken_burns_video(..., backend=...)` picks how the frames are made:
+
+| backend | how | when |
+|---|---|---|
+| `"pillow"` *(default)* | one `moviepy` frame at a time, resampled in Python | the quality default, and the only one with no constraints on the path |
+| `"ffmpeg"` | one process: the path is compiled to a filter graph by [`looks`](https://github.com/thorwhalen/looks) and handed to `ffmpeg` | when you want a single decode/encode instead of per-frame Python |
+
+The split follows the rule the two packages share: **`burns` owns the authored
+geometry, `looks` owns compiling it, and `burns` runs the argv.** `looks` never
+starts a process that produces media — that is its own invariant.
+
+The two are **not pixel-identical**: measured ~52 dB apart on a smooth image and
+~34 dB on hard edges, dominated by resampler choice (Pillow's bicubic against
+ffmpeg's scaler) rather than by framing. `pillow` stays the default so switching
+is a decision rather than a surprise, and the ffmpeg path refuses — naming
+`backend="pillow"` — any path it cannot express, rather than rendering
+something else.
 
 ## Demo
 

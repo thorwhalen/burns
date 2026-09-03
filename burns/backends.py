@@ -90,9 +90,27 @@ def pillow_backend(
     return output
 
 
+def _ffmpeg_backend(*args, **kwargs) -> Path:
+    """The ffmpeg backend, imported on first use.
+
+    Deferred so that `import burns` does not pull `looks` in for callers who
+    never ask for this backend — the same courtesy `looks` extends its own CLI.
+    """
+    from burns._ffmpeg import ffmpeg_backend
+
+    return ffmpeg_backend(*args, **kwargs)
+
+
 RENDER_BACKENDS: dict[str, Callable[..., Path]] = {
     "pillow": pillow_backend,
+    "ffmpeg": _ffmpeg_backend,
 }
+
+#: Still `pillow`, deliberately. The two backends are NOT pixel-equivalent
+#: (measured ~47 dB, dominated by resampler choice rather than by anything
+#: either does wrong), so flipping the default would silently change the output
+#: of every existing caller. The speed advantage that motivates the ffmpeg path
+#: is also still unmeasured — see thorwhalen/burns#12.
 DFLT_BACKEND = "pillow"
 
 

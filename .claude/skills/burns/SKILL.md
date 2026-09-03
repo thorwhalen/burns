@@ -124,8 +124,25 @@ ken_burns_video(
 )
 ```
 
-Backends are pluggable via the `RenderBackend` registry (`register_backend`);
-`"pillow"` (lazy moviepy + per-frame Pillow, jitter-free) is the only one today.
+Backends are pluggable via the `RenderBackend` registry (`register_backend`).
+Two ship:
+
+- **`"pillow"` (default)** — lazy moviepy + per-frame Pillow resampling,
+  jitter-free, and the only one with no constraints on the path.
+- **`"ffmpeg"`** — one process. The path is sampled and compiled to a filter
+  graph by [`looks`](https://github.com/thorwhalen/looks), and burns runs the
+  argv. `burns` owns the authored geometry, `looks` owns compiling it.
+
+They are **not pixel-identical**: ~52 dB apart on a smooth image, ~34 dB on hard
+edges, dominated by resampler choice rather than framing. `pillow` stays the
+default so switching is a decision, not a surprise. The ffmpeg path **refuses**
+— naming `backend="pillow"` — any path it cannot express (a zoom past 10x, which
+`zoompan` would otherwise clamp silently), rather than rendering something else.
+
+Two knobs it adds, both keyword-only: `samples=` (how densely the eased path is
+sampled; the default is measured, not fixed) and `ffmpeg_exe=` (which binary —
+the default is the GPL-configured one moviepy bundles, so a commercial shipper
+may want their own).
 
 ## `ken_burns_film(panels, *, saveas, fps=30, audio_path=None, ...)`
 

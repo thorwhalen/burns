@@ -25,6 +25,7 @@ dependencies = [
     "numpy",
     "moviepy",
     "pillow",
+    "looks>=0.0.7",
 ]
 
 [project.license]
