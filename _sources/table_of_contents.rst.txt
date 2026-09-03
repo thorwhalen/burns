@@ -3,6 +3,7 @@
    :caption: Contents:
 
    module_docs/burns
+   module_docs/burns/_ffmpeg
    module_docs/burns/_frame
    module_docs/burns/_util
    module_docs/burns/backends

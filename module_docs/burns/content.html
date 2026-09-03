@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>burns.content &mdash; burns 0.0.8 documentation</title>
+  <title>burns.content &mdash; burns 0.0.9 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=53b53b71"></script>
+      <script src="../../_static/documentation_options.js?v=f7cdbf68"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -50,6 +50,7 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../burns.html">burns</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_ffmpeg.html">burns._ffmpeg</a></li>
 <li class="toctree-l1"><a class="reference internal" href="_frame.html">burns._frame</a></li>
 <li class="toctree-l1"><a class="reference internal" href="_util.html">burns._util</a></li>
 <li class="toctree-l1"><a class="reference internal" href="backends.html">burns.backends</a></li>
@@ -185,7 +186,7 @@ subject. Robust to outliers via percentile trimming. Falls back to a
 centered box when the image is too uniform to decide.</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;uint8&#39;</span><span class="p">);</span> <span class="n">a</span><span class="p">[</span><span class="mi">60</span><span class="p">:</span><span class="mi">90</span><span class="p">,</span> <span class="mi">40</span><span class="p">:</span><span class="mi">70</span><span class="p">]</span> <span class="o">=</span> <span class="mi">255</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">'uint8'</span><span class="p">);</span> <span class="n">a</span><span class="p">[</span><span class="mi">60</span><span class="p">:</span><span class="mi">90</span><span class="p">,</span> <span class="mi">40</span><span class="p">:</span><span class="mi">70</span><span class="p">]</span> <span class="o">=</span> <span class="mi">255</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="n">salient_box</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">min_size</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="mf">0.3</span> <span class="o">&lt;</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="mf">0.45</span> <span class="ow">and</span> <span class="mf">0.55</span> <span class="o">&lt;</span> <span class="n">y</span> <span class="o">&lt;</span> <span class="mf">0.65</span>   <span class="c1"># box around the bright square</span>
 <span class="go">True</span>

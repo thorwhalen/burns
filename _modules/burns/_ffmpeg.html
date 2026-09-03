@@ -1,0 +1,501 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>burns._ffmpeg &mdash; burns 0.0.9 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=f7cdbf68"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            burns
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/burns.html">burns</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/burns/_ffmpeg.html">burns._ffmpeg</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/burns/_frame.html">burns._frame</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/burns/_util.html">burns._util</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/burns/backends.html">burns.backends</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/burns/content.html">burns.content</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/burns/easing.html">burns.easing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/burns/path.html">burns.path</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/burns/rect.html">burns.rect</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/burns/render.html">burns.render</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">burns</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">burns._ffmpeg</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for burns._ffmpeg</h1><div class="highlight"><pre>
+<span></span><span class="sd">"""The FFmpeg render backend: burns samples the path, `looks` compiles it.</span>
+
+<span class="sd">The second backend `burns.backends` has named as its intended extension since it</span>
+<span class="sd">was written. The split is the one RULE G draws across the two packages:</span>
+
+<span class="sd">- **burns owns the authored geometry.** The `BurnsPath`, its easing, the</span>
+<span class="sd">  decision that this is the shot, and — crucially — the cover-crop to the output</span>
+<span class="sd">  aspect that :func:`burns._frame.sample_box` already performs.</span>
+<span class="sd">- **`looks` owns the compilation.** Normalised keyframes in, an ffmpeg filter</span>
+<span class="sd">  fragment out. It never learns what ``ease_in_out`` means.</span>
+<span class="sd">- **burns runs the argv.** `looks` starts no process that produces media; that</span>
+<span class="sd">  is its own invariant, and executing is this module's job.</span>
+
+<span class="sd">The dependency points ``burns -&gt; looks``, which is legal because `looks` declares</span>
+<span class="sd">no dependencies at all and is stdlib-only on import. The reverse stays</span>
+<span class="sd">forbidden: `burns` pulls `moviepy`, which pulls a GPL-configured ffmpeg binary.</span>
+
+<span class="sd">## Why the geometry comes from `sample_box` and not from `path.evaluate`</span>
+
+<span class="sd">The obvious adapter samples `path.evaluate(t)` and hands those rects to `looks`.</span>
+<span class="sd">That would be **wrong**, and wrong in the invisible direction: the pillow backend</span>
+<span class="sd">does not show `evaluate(t)` either — it shows that rect *cover-cropped to the</span>
+<span class="sd">output aspect* (:func:`burns._frame.sample_box`, steps 1-3). Sampling the raw</span>
+<span class="sd">path would frame every clip differently from the default backend whenever the</span>
+<span class="sd">output aspect differs from the image's, which is the common case.</span>
+
+<span class="sd">Reading the window out of `sample_box` instead makes the two backends agree **by</span>
+<span class="sd">construction** rather than by coincidence, and it means this module contains no</span>
+<span class="sd">second copy of the crop contract that the golden vectors pin.</span>
+
+<span class="sd">It also lands the path in exactly the shape `looks` wants: every window carries</span>
+<span class="sd">the output's aspect, so they are all the same shape, and</span>
+<span class="sd">:func:`looks.reframe_motion` can lift the whole path into a frame of that shape.</span>
+
+<span class="sd">## What the sampling costs, measured</span>
+
+<span class="sd">`looks` interpolates **linearly** between the keyframes it is given — that is the</span>
+<span class="sd">seam, not a limitation. So an eased path has to be sampled densely enough that</span>
+<span class="sd">the linear rebuild is indistinguishable from the easing. Measured on the default</span>
+<span class="sd">ease-in-out push-in, max deviation from the true path:</span>
+
+<span class="sd">=====  ==================  =====================</span>
+<span class="sd">n      normalised          at 1920 px</span>
+<span class="sd">=====  ==================  =====================</span>
+<span class="sd">2      0.0280              53.7 px</span>
+<span class="sd">5      0.00773             14.8 px</span>
+<span class="sd">9      0.00199             3.8 px</span>
+<span class="sd">17     0.000496            0.95 px</span>
+<span class="sd">33     0.000125            0.24 px</span>
+<span class="sd">=====  ==================  =====================</span>
+
+<span class="sd">so the default is adaptive: sample until the worst deviation is under half a</span>
+<span class="sd">source pixel, rather than pin a magic number that is wasteful at SD and</span>
+<span class="sd">insufficient at 4K.</span>
+<span class="sd">"""</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Optional</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">PIL</span><span class="w"> </span><span class="kn">import</span> <span class="n">Image</span> <span class="k">as</span> <span class="n">PIL_Image</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">burns._frame</span><span class="w"> </span><span class="kn">import</span> <span class="n">sample_box</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">burns.path</span><span class="w"> </span><span class="kn">import</span> <span class="n">BurnsPath</span>
+
+<span class="c1">#: How far the linear rebuild of an eased path may stray from the path itself,</span>
+<span class="c1">#: in source pixels, before another sample is added. Half a pixel is below what</span>
+<span class="c1">#: any resampler can express, so a tighter tolerance buys nothing visible.</span>
+<span class="n">DFLT_TOLERANCE_PX</span> <span class="o">=</span> <span class="mf">0.5</span>
+
+<span class="c1">#: Sample counts tried, in order. Each reuses the previous set's points, and the</span>
+<span class="c1">#: ceiling is where the measured deviation is already sub-pixel at 4K.</span>
+<span class="n">SAMPLE_LADDER</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">17</span><span class="p">,</span> <span class="mi">33</span><span class="p">,</span> <span class="mi">65</span><span class="p">)</span>
+
+<span class="c1">#: How many points the deviation is measured at. Dense enough that the worst</span>
+<span class="c1">#: excursion of a smooth easing is not stepped over.</span>
+<span class="n">DEVIATION_PROBES</span> <span class="o">=</span> <span class="mi">401</span>
+
+<span class="c1">#: Encoder default matching the pillow backend's, so the two produce comparable</span>
+<span class="c1">#: files rather than differing on a flag nobody chose.</span>
+<span class="n">DFLT_PIX_FMT</span> <span class="o">=</span> <span class="s2">"yuv420p"</span>
+
+<span class="c1">#: `write_videofile` keywords this backend understands, mapped to ffmpeg flags.</span>
+<span class="c1">#: Anything else raises rather than being silently dropped — a caller who gets a</span>
+<span class="c1">#: kwarg ignored has no signal that the backends are not interchangeable.</span>
+<span class="n">WRITE_KWARG_FLAGS</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"bitrate"</span><span class="p">:</span> <span class="s2">"-b:v"</span><span class="p">,</span> <span class="s2">"preset"</span><span class="p">:</span> <span class="s2">"-preset"</span><span class="p">}</span>
+
+<span class="c1">#: Matched to `pillow_backend`'s own `setdefault` calls, so swapping backends</span>
+<span class="c1">#: does not silently change the encode.</span>
+<span class="n">DFLT_WRITE_KWARGS</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"bitrate"</span><span class="p">:</span> <span class="s2">"5000k"</span><span class="p">,</span> <span class="s2">"preset"</span><span class="p">:</span> <span class="s2">"medium"</span><span class="p">}</span>
+
+<span class="c1">#: Accepted and ignored, with a reason. `logger` is moviepy's progress bar and</span>
+<span class="c1">#: has no ffmpeg meaning; the pillow backend defaults it, so a caller forwarding</span>
+<span class="c1">#: its own defaults must not trip the unknown-kwarg refusal.</span>
+<span class="n">WRITE_KWARGS_IGNORED</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"logger"</span><span class="p">,)</span>
+
+
+<div class="viewcode-block" id="FfmpegBackendError">
+<a class="viewcode-back" href="../../module_docs/burns/_ffmpeg.html#burns._ffmpeg.FfmpegBackendError">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">FfmpegBackendError</span><span class="p">(</span><span class="ne">RuntimeError</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""This path or these options cannot be rendered by the ffmpeg backend."""</span></div>
+
+
+
+<div class="viewcode-block" id="default_ffmpeg_exe">
+<a class="viewcode-back" href="../../module_docs/burns/_ffmpeg.html#burns._ffmpeg.default_ffmpeg_exe">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">default_ffmpeg_exe</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""The ffmpeg binary this backend runs.</span>
+
+<span class="sd">    Defaults to the one `imageio-ffmpeg` bundles, which every burns install</span>
+<span class="sd">    already has via moviepy — so the backend needs no new system requirement.</span>
+<span class="sd">    Falls back to a system `ffmpeg` on PATH.</span>
+
+<span class="sd">    **That bundled binary is a ``--enable-gpl`` build.** For most callers that is</span>
+<span class="sd">    irrelevant; for one shipping a commercial product it is exactly the question</span>
+<span class="sd">    `looks` exists to answer, which is why :func:`ffmpeg_backend` takes an</span>
+<span class="sd">    ``ffmpeg_exe`` argument rather than hard-coding this.</span>
+<span class="sd">    """</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">imageio_ffmpeg</span>
+
+        <span class="k">return</span> <span class="n">imageio_ffmpeg</span><span class="o">.</span><span class="n">get_ffmpeg_exe</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>  <span class="c1"># pragma: no cover - depends on the install</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+
+        <span class="n">found</span> <span class="o">=</span> <span class="n">shutil</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s2">"ffmpeg"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">found</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">FfmpegBackendError</span><span class="p">(</span>
+                <span class="s2">"no ffmpeg found. It normally arrives with moviepy via "</span>
+                <span class="s2">"imageio-ffmpeg; install that, put an ffmpeg on PATH, or pass "</span>
+                <span class="s2">"ffmpeg_exe= explicitly."</span>
+            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+        <span class="k">return</span> <span class="n">found</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_window_at</span><span class="p">(</span>
+    <span class="n">path</span><span class="p">:</span> <span class="n">BurnsPath</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">img_w</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">img_h</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">out_w</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">out_h</span><span class="p">:</span> <span class="nb">int</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The window burns actually shows at ``t``, normalised for `looks`.</span>
+
+<span class="sd">    Read out of :func:`sample_box`, so it includes the cover-crop to the output</span>
+<span class="sd">    aspect and agrees with the pillow backend by construction.</span>
+<span class="sd">    """</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">looks.motion</span><span class="w"> </span><span class="kn">import</span> <span class="n">Window</span>
+
+    <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span> <span class="o">=</span> <span class="n">sample_box</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">img_w</span><span class="p">,</span> <span class="n">img_h</span><span class="p">,</span> <span class="n">out_w</span><span class="p">,</span> <span class="n">out_h</span><span class="p">)</span>
+    <span class="n">box_w</span><span class="p">,</span> <span class="n">box_h</span> <span class="o">=</span> <span class="n">x1</span> <span class="o">-</span> <span class="n">x0</span><span class="p">,</span> <span class="n">y1</span> <span class="o">-</span> <span class="n">y0</span>
+
+    <span class="c1"># `sample_box` has already cover-cropped to the output aspect, but it</span>
+    <span class="c1"># returns an INTEGER box for array slicing — so the aspect it hands back</span>
+    <span class="c1"># carries up to a pixel of quantisation, and no two frames agree on it</span>
+    <span class="c1"># exactly. Measured on a 1.35x push-in over 640x480 into 16:9: ratios</span>
+    <span class="c1"># spread across 1.3310-1.3358 where every one of them means 1.3333.</span>
+    <span class="c1">#</span>
+    <span class="c1"># `zoompan` can only show ONE shape, so it needs the aspect that was meant,</span>
+    <span class="c1"># not the aspect that survived rounding. Restore it about the box's centre,</span>
+    <span class="c1"># holding the area, so the correction is split between the two axes and is</span>
+    <span class="c1"># sub-pixel on both. Doing this here rather than loosening looks' tolerance</span>
+    <span class="c1"># is deliberate: a loose tolerance there would silently accept a genuinely</span>
+    <span class="c1"># anisotropic path and render a shape nobody asked for.</span>
+    <span class="n">target</span> <span class="o">=</span> <span class="n">out_w</span> <span class="o">/</span> <span class="n">out_h</span>
+    <span class="n">exact_h</span> <span class="o">=</span> <span class="p">(</span><span class="n">box_w</span> <span class="o">*</span> <span class="n">box_h</span> <span class="o">/</span> <span class="n">target</span><span class="p">)</span> <span class="o">**</span> <span class="mf">0.5</span>
+    <span class="n">exact_w</span> <span class="o">=</span> <span class="n">target</span> <span class="o">*</span> <span class="n">exact_h</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">max</span><span class="p">((</span><span class="n">x0</span> <span class="o">+</span> <span class="n">x1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">exact_w</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="n">img_w</span> <span class="o">-</span> <span class="n">exact_w</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">))</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">max</span><span class="p">((</span><span class="n">y0</span> <span class="o">+</span> <span class="n">y1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">-</span> <span class="n">exact_h</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="nb">max</span><span class="p">(</span><span class="n">img_h</span> <span class="o">-</span> <span class="n">exact_h</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">Window</span><span class="p">(</span><span class="n">x</span> <span class="o">/</span> <span class="n">img_w</span><span class="p">,</span> <span class="n">y</span> <span class="o">/</span> <span class="n">img_h</span><span class="p">,</span> <span class="n">exact_w</span> <span class="o">/</span> <span class="n">img_w</span><span class="p">,</span> <span class="n">exact_h</span> <span class="o">/</span> <span class="n">img_h</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_max_deviation</span><span class="p">(</span>
+    <span class="n">path</span><span class="p">:</span> <span class="n">BurnsPath</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">img_w</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">img_h</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">out_w</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">out_h</span><span class="p">:</span> <span class="nb">int</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""How far an ``n``-sample linear rebuild strays from the eased path.</span>
+
+<span class="sd">    In normalised units, over both axes and both extents. This is what makes the</span>
+<span class="sd">    sampling density a measurement rather than a guess — under-sampling silently</span>
+<span class="sd">    replaces the author's easing with a linear approximation, which still renders</span>
+<span class="sd">    and is simply the wrong motion.</span>
+<span class="sd">    """</span>
+    <span class="c1"># Measured on `path.evaluate` — the SMOOTH authored path — and deliberately</span>
+    <span class="c1"># not on `_window_at`. The latter goes through `sample_box`, whose integer</span>
+    <span class="c1"># quantisation is up to a pixel of noise that no amount of sampling can</span>
+    <span class="c1"># track: measuring there conflates "the easing needs more keyframes" with</span>
+    <span class="c1"># "the box rounded", and the adaptive search then never converges and</span>
+    <span class="c1"># always returns the ladder's top.</span>
+    <span class="n">knots</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">)]</span>
+    <span class="n">samples</span> <span class="o">=</span> <span class="p">[</span><span class="n">path</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">knots</span><span class="p">]</span>
+    <span class="n">worst</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">for</span> <span class="n">probe</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">DEVIATION_PROBES</span><span class="p">):</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">probe</span> <span class="o">/</span> <span class="p">(</span><span class="n">DEVIATION_PROBES</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">true</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+        <span class="c1"># locate the bracketing knots and interpolate linearly between them</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">t</span> <span class="o">*</span> <span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)),</span> <span class="n">n</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">span</span> <span class="o">=</span> <span class="n">knots</span><span class="p">[</span><span class="n">index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">knots</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+        <span class="n">frac</span> <span class="o">=</span> <span class="mf">0.0</span> <span class="k">if</span> <span class="n">span</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="k">else</span> <span class="p">(</span><span class="n">t</span> <span class="o">-</span> <span class="n">knots</span><span class="p">[</span><span class="n">index</span><span class="p">])</span> <span class="o">/</span> <span class="n">span</span>
+        <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">samples</span><span class="p">[</span><span class="n">index</span><span class="p">],</span> <span class="n">samples</span><span class="p">[</span><span class="n">index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"x"</span><span class="p">,</span> <span class="s2">"y"</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">,</span> <span class="s2">"h"</span><span class="p">):</span>
+            <span class="n">rebuilt</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="o">+</span> <span class="n">frac</span> <span class="o">*</span> <span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span> <span class="o">-</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span>
+            <span class="n">worst</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">worst</span><span class="p">,</span> <span class="nb">abs</span><span class="p">(</span><span class="n">rebuilt</span> <span class="o">-</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">true</span><span class="p">,</span> <span class="n">name</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">worst</span>
+
+
+<div class="viewcode-block" id="sample_count">
+<a class="viewcode-back" href="../../module_docs/burns/_ffmpeg.html#burns._ffmpeg.sample_count">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">sample_count</span><span class="p">(</span>
+    <span class="n">path</span><span class="p">:</span> <span class="n">BurnsPath</span><span class="p">,</span>
+    <span class="n">img_w</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">img_h</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">out_w</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">out_h</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">tolerance_px</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DFLT_TOLERANCE_PX</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""How many keyframes this path needs to survive linear interpolation.</span>
+
+<span class="sd">    Climbs :data:`SAMPLE_LADDER` until the worst deviation is under</span>
+<span class="sd">    ``tolerance_px`` source pixels, and returns the ladder's top if none is.</span>
+<span class="sd">    """</span>
+    <span class="n">scale</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">img_w</span><span class="p">,</span> <span class="n">img_h</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">SAMPLE_LADDER</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">_max_deviation</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">img_w</span><span class="p">,</span> <span class="n">img_h</span><span class="p">,</span> <span class="n">out_w</span><span class="p">,</span> <span class="n">out_h</span><span class="p">)</span> <span class="o">*</span> <span class="n">scale</span> <span class="o">&lt;=</span> <span class="n">tolerance_px</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">n</span>
+    <span class="k">return</span> <span class="n">SAMPLE_LADDER</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="keyframes_for">
+<a class="viewcode-back" href="../../module_docs/burns/_ffmpeg.html#burns._ffmpeg.keyframes_for">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">keyframes_for</span><span class="p">(</span>
+    <span class="n">path</span><span class="p">:</span> <span class="n">BurnsPath</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">duration</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">img_w</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">img_h</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">out_w</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">out_h</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">samples</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Sample a `BurnsPath` into the keyframes `looks` compiles.</span>
+
+<span class="sd">    Two clocks meet here and they are not the same one: burns' path is</span>
+<span class="sd">    parameterised on a **normalised** ``t in [0, 1]`` and `looks` keyframes carry</span>
+<span class="sd">    a time in **seconds**. Getting that wrong produces a path that runs in the</span>
+<span class="sd">    first second of a ten-second clip and then holds, which renders fine.</span>
+<span class="sd">    """</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">looks.motion</span><span class="w"> </span><span class="kn">import</span> <span class="n">Keyframe</span>
+
+    <span class="n">n</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">sample_count</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">img_w</span><span class="p">,</span> <span class="n">img_h</span><span class="p">,</span> <span class="n">out_w</span><span class="p">,</span> <span class="n">out_h</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">samples</span> <span class="ow">is</span> <span class="kc">None</span>
+        <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">FfmpegBackendError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"a path needs at least 2 samples, got </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span>
+        <span class="n">Keyframe</span><span class="p">(</span>
+            <span class="n">duration</span> <span class="o">*</span> <span class="p">(</span><span class="n">i</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)),</span>
+            <span class="n">_window_at</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">i</span> <span class="o">/</span> <span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">),</span> <span class="n">img_w</span><span class="p">,</span> <span class="n">img_h</span><span class="p">,</span> <span class="n">out_w</span><span class="p">,</span> <span class="n">out_h</span><span class="p">),</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+    <span class="p">]</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_encode_args</span><span class="p">(</span><span class="n">codec</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">write_kwargs</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="n">unknown</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+        <span class="nb">set</span><span class="p">(</span><span class="n">write_kwargs</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">WRITE_KWARG_FLAGS</span><span class="p">)</span> <span class="o">-</span> <span class="nb">set</span><span class="p">(</span><span class="n">WRITE_KWARGS_IGNORED</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">unknown</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">FfmpegBackendError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"the ffmpeg backend does not understand </span><span class="si">{</span><span class="n">unknown</span><span class="si">}</span><span class="s2">. It is not a "</span>
+            <span class="s2">"drop-in swap for the pillow backend: those keywords are moviepy's "</span>
+            <span class="sa">f</span><span class="s2">"`write_videofile` arguments. Understood here: "</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">WRITE_KWARG_FLAGS</span><span class="p">)</span><span class="si">}</span><span class="s2">; accepted and ignored: "</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">WRITE_KWARGS_IGNORED</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
+        <span class="p">)</span>
+    <span class="c1"># The same defaults the pillow backend sets, for the same reason: without</span>
+    <span class="c1"># them `backend="ffmpeg"` silently re-encodes at a different rate, and the</span>
+    <span class="c1"># measured effect is not subtle — 270 KB against 1084 KB for one 2 s clip,</span>
+    <span class="c1"># which reads as a quality regression rather than as an unset flag.</span>
+    <span class="n">write_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">DFLT_WRITE_KWARGS</span><span class="p">,</span> <span class="o">**</span><span class="n">write_kwargs</span><span class="p">}</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"-c:v"</span><span class="p">,</span> <span class="n">codec</span><span class="p">,</span> <span class="s2">"-pix_fmt"</span><span class="p">,</span> <span class="n">DFLT_PIX_FMT</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">flag</span> <span class="ow">in</span> <span class="n">WRITE_KWARG_FLAGS</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">write_kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">args</span> <span class="o">+=</span> <span class="p">[</span><span class="n">flag</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">write_kwargs</span><span class="p">[</span><span class="n">key</span><span class="p">])]</span>
+    <span class="k">return</span> <span class="n">args</span>
+
+
+<div class="viewcode-block" id="ffmpeg_backend">
+<a class="viewcode-back" href="../../module_docs/burns/_ffmpeg.html#burns._ffmpeg.ffmpeg_backend">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">ffmpeg_backend</span><span class="p">(</span>
+    <span class="n">img_np</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+    <span class="n">img_w</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">img_h</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">path</span><span class="p">:</span> <span class="n">BurnsPath</span><span class="p">,</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">duration</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">fps</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">output</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="n">out_w</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">out_h</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">codec</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">audio_codec</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">samples</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">ffmpeg_exe</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">write_kwargs</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Render one image + path with a single ffmpeg process.</span>
+
+<span class="sd">    One decode, one filter graph, one encode — against the pillow backend's</span>
+<span class="sd">    per-frame Python resampling.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        samples: How many keyframes to sample the path into. ``None`` (default)</span>
+<span class="sd">            measures it: enough that the linear rebuild stays within half a</span>
+<span class="sd">            source pixel of the eased path.</span>
+<span class="sd">        ffmpeg_exe: Which binary. Defaults to :func:`default_ffmpeg_exe`, the one</span>
+<span class="sd">            `imageio-ffmpeg` bundles — note that it is a GPL-configured build.</span>
+<span class="sd">        audio_codec: **Accepted and ignored.** A still image has no audio track,</span>
+<span class="sd">            so nothing is ever encoded; the pillow backend is in the same</span>
+<span class="sd">            position, where the argument reaches `write_videofile` with nothing</span>
+<span class="sd">            to encode. Said out loud rather than left for a reader to assume</span>
+<span class="sd">            audio works.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        FfmpegBackendError: If the path cannot be compiled to a filter fragment,</span>
+<span class="sd">            or an unrecognised `write_videofile` keyword is passed. Both name</span>
+<span class="sd">            ``backend="pillow"`` as the way through, because it is.</span>
+<span class="sd">    """</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">looks.geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">Size</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">looks.motion</span><span class="w"> </span><span class="kn">import</span> <span class="n">MotionError</span><span class="p">,</span> <span class="n">compile_motion</span>
+
+    <span class="n">frames</span> <span class="o">=</span> <span class="n">keyframes_for</span><span class="p">(</span>
+        <span class="n">path</span><span class="p">,</span>
+        <span class="n">duration</span><span class="o">=</span><span class="n">duration</span><span class="p">,</span>
+        <span class="n">img_w</span><span class="o">=</span><span class="n">img_w</span><span class="p">,</span>
+        <span class="n">img_h</span><span class="o">=</span><span class="n">img_h</span><span class="p">,</span>
+        <span class="n">out_w</span><span class="o">=</span><span class="n">out_w</span><span class="p">,</span>
+        <span class="n">out_h</span><span class="o">=</span><span class="n">out_h</span><span class="p">,</span>
+        <span class="n">samples</span><span class="o">=</span><span class="n">samples</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">fragment</span> <span class="o">=</span> <span class="n">compile_motion</span><span class="p">(</span><span class="n">frames</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="n">Size</span><span class="p">(</span><span class="n">out_w</span><span class="p">,</span> <span class="n">out_h</span><span class="p">),</span> <span class="n">fps</span><span class="o">=</span><span class="n">fps</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">MotionError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">FfmpegBackendError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"this path cannot be compiled to an ffmpeg filter: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2"> "</span>
+            <span class="s1">'Render it with backend="pillow", which rasterises every frame in '</span>
+            <span class="s2">"Python and has no such constraint."</span>
+        <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+
+    <span class="n">binary</span> <span class="o">=</span> <span class="n">default_ffmpeg_exe</span><span class="p">()</span> <span class="k">if</span> <span class="n">ffmpeg_exe</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">ffmpeg_exe</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s2">"burns-ffmpeg-"</span><span class="p">)</span> <span class="k">as</span> <span class="n">tmp</span><span class="p">:</span>
+        <span class="c1"># The backend is handed a decoded array, never the source path, so the</span>
+        <span class="c1"># image has to be re-materialised before ffmpeg can open it. PNG because</span>
+        <span class="c1"># it is lossless: re-encoding the source through a lossy format would</span>
+        <span class="c1"># put artefacts under the whole render.</span>
+        <span class="n">still</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span> <span class="o">/</span> <span class="s2">"source.png"</span>
+        <span class="n">PIL_Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="n">img_np</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">still</span><span class="p">)</span>
+        <span class="n">argv</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">binary</span><span class="p">,</span> <span class="s2">"-hide_banner"</span><span class="p">,</span> <span class="s2">"-loglevel"</span><span class="p">,</span> <span class="s2">"error"</span><span class="p">,</span> <span class="s2">"-y"</span><span class="p">,</span>
+            <span class="s2">"-loop"</span><span class="p">,</span> <span class="s2">"1"</span><span class="p">,</span> <span class="s2">"-framerate"</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">fps</span><span class="p">),</span> <span class="s2">"-i"</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">still</span><span class="p">),</span>
+            <span class="s2">"-t"</span><span class="p">,</span> <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">duration</span><span class="si">:</span><span class="s2">.6f</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+            <span class="s2">"-vf"</span><span class="p">,</span> <span class="n">fragment</span><span class="p">,</span>
+            <span class="o">*</span><span class="n">_encode_args</span><span class="p">(</span><span class="n">codec</span><span class="p">,</span> <span class="n">write_kwargs</span><span class="p">),</span>
+            <span class="nb">str</span><span class="p">(</span><span class="n">output</span><span class="p">),</span>
+        <span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">proc</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">argv</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">FfmpegBackendError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">"could not run </span><span class="si">{</span><span class="n">binary</span><span class="si">!r}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">. Pass ffmpeg_exe= a binary that "</span>
+                <span class="s2">"exists, or leave it unset to use the one moviepy brings."</span>
+            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span>
+    <span class="k">if</span> <span class="n">proc</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">FfmpegBackendError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"ffmpeg failed (exit </span><span class="si">{</span><span class="n">proc</span><span class="o">.</span><span class="n">returncode</span><span class="si">}</span><span class="s2">) rendering </span><span class="si">{</span><span class="n">output</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">:</span><span class="se">\n</span><span class="s2">"</span>
+            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">proc</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">strip</span><span class="p">()[</span><span class="o">-</span><span class="mi">1200</span><span class="p">:]</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
+            <span class="sa">f</span><span class="s2">"filter: </span><span class="si">{</span><span class="n">fragment</span><span class="si">}</span><span class="s2">"</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">output</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p></p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

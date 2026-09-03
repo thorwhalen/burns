@@ -1,0 +1,4 @@
+burns._ffmpeg
+=============
+.. automodule:: burns._ffmpeg
+   :members:

@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>burns.path &mdash; burns 0.0.8 documentation</title>
+  <title>burns.path &mdash; burns 0.0.9 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=53b53b71"></script>
+      <script src="../../_static/documentation_options.js?v=f7cdbf68"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -50,6 +50,7 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../burns.html">burns</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_ffmpeg.html">burns._ffmpeg</a></li>
 <li class="toctree-l1"><a class="reference internal" href="_frame.html">burns._frame</a></li>
 <li class="toctree-l1"><a class="reference internal" href="_util.html">burns._util</a></li>
 <li class="toctree-l1"><a class="reference internal" href="backends.html">burns.backends</a></li>
@@ -176,7 +177,7 @@ the eased progress. Pure and deterministic: no image, no I/O, no frame
 count. <code class="docutils literal notranslate"><span class="pre">t</span></code> outside <code class="docutils literal notranslate"><span class="pre">[0,</span> <span class="pre">1]</span></code> clamps to the nearest end.</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">BurnsPath</span><span class="o">.</span><span class="n">from_start_end</span><span class="p">(</span>
-<span class="gp">... </span>    <span class="n">Rect</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">Rect</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span> <span class="n">easing</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span>
+<span class="gp">... </span>    <span class="n">Rect</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">Rect</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span> <span class="n">easing</span><span class="o">=</span><span class="s2">"linear"</span>
 <span class="gp">... </span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">p</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
 <span class="go">Rect(x=0.0, y=0.0, w=0.75, h=0.75)</span>
@@ -243,8 +244,8 @@ cannot be serialized and raises — use a CSS spec for paths that travel.</p>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">BurnsPath</span><span class="o">.</span><span class="n">from_start_end</span><span class="p">(</span><span class="n">Rect</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">Rect</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">.5</span><span class="p">,</span> <span class="mf">.5</span><span class="p">))</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="s2">&quot;version&quot;</span><span class="p">],</span> <span class="n">d</span><span class="p">[</span><span class="s2">&quot;easing&quot;</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">&quot;keyframes&quot;</span><span class="p">])</span>
-<span class="go">(1, &#39;ease-in-out&#39;, 2)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="p">[</span><span class="s2">"version"</span><span class="p">],</span> <span class="n">d</span><span class="p">[</span><span class="s2">"easing"</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s2">"keyframes"</span><span class="p">])</span>
+<span class="go">(1, 'ease-in-out', 2)</span>
 </pre></div>
 </div>
 </dd></dl>

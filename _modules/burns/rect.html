@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>burns.rect &mdash; burns 0.0.8 documentation</title>
+  <title>burns.rect &mdash; burns 0.0.9 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=53b53b71"></script>
+      <script src="../../_static/documentation_options.js?v=f7cdbf68"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -47,6 +47,7 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/burns.html">burns</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/burns/_ffmpeg.html">burns._ffmpeg</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/burns/_frame.html">burns._frame</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/burns/_util.html">burns._util</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/burns/backends.html">burns.backends</a></li>
@@ -82,12 +83,12 @@
            <div itemprop="articleBody">
              
   <h1>Source code for burns.rect</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;The Ken Burns viewport rectangle — the render-agnostic geometric atom.</span>
+<span></span><span class="sd">"""The Ken Burns viewport rectangle — the render-agnostic geometric atom.</span>
 
 <span class="sd">A :class:`Rect` is a normalized region of interest (ROI) over a source image:</span>
 <span class="sd">``(x, y, w, h)`` with **top-left origin, y-down**, every component a fraction</span>
-<span class="sd">of the image in ``[0, 1]``. This is the convention shared by ``videopython``&#39;s</span>
-<span class="sd">``BoundingBox``, CSS ``transform-origin`` semantics, and FFmpeg&#39;s coordinate</span>
+<span class="sd">of the image in ``[0, 1]``. This is the convention shared by ``videopython``'s</span>
+<span class="sd">``BoundingBox``, CSS ``transform-origin`` semantics, and FFmpeg's coordinate</span>
 <span class="sd">origin — adopting it (rather than the older center+magnification spec) is what</span>
 <span class="sd">lets one spec drive a Python renderer, a future JS/TS renderer, and a CSS</span>
 <span class="sd">preview without each reinventing the pixel mapping.</span>
@@ -99,7 +100,7 @@
 <span class="sd">The rect is pure data: no I/O, no image needed to construct or interpolate one.</span>
 <span class="sd">Only :meth:`to_pixels` takes image dimensions, because that is the single point</span>
 <span class="sd">where normalized geometry meets a concrete raster.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
@@ -114,7 +115,7 @@
 <a class="viewcode-back" href="../../module_docs/burns/rect.html#burns.Rect">[docs]</a>
 <span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">Rect</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;A normalized ``(x, y, w, h)`` viewport over a source image.</span>
+<span class="w">    </span><span class="sd">"""A normalized ``(x, y, w, h)`` viewport over a source image.</span>
 
 <span class="sd">    All four components are fractions of the image in ``[0, 1]`` with a</span>
 <span class="sd">    top-left origin. ``(x, y)`` is the top-left corner of the window; ``w`` and</span>
@@ -128,7 +129,7 @@
 <span class="sd">        1.0</span>
 <span class="sd">        &gt;&gt;&gt; Rect.from_center_zoom(0.5, 0.5, 2.0)</span>
 <span class="sd">        Rect(x=0.25, y=0.25, w=0.5, h=0.5)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="n">x</span><span class="p">:</span> <span class="nb">float</span>
     <span class="n">y</span><span class="p">:</span> <span class="nb">float</span>
@@ -138,45 +139,45 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1"># Coerce to float so int literals (Rect(0, 0, 1, 1)) interpolate and</span>
         <span class="c1"># repr consistently, and so window math never silently does int ops.</span>
-        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="s2">&quot;h&quot;</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"x"</span><span class="p">,</span> <span class="s2">"y"</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">,</span> <span class="s2">"h"</span><span class="p">):</span>
             <span class="nb">object</span><span class="o">.</span><span class="fm">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">)))</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">aspect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Aspect ratio of the window *in normalized image units* (``w / h``).</span>
+<span class="w">        </span><span class="sd">"""Aspect ratio of the window *in normalized image units* (``w / h``).</span>
 
 <span class="sd">        Note this is not the rendered-pixel aspect ratio unless the image is</span>
 <span class="sd">        square — the pixel AR is ``(w * img_w) / (h * img_h)``. The render path</span>
 <span class="sd">        reconciles the window with the desired output AR via a cover-crop.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">w</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">h</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">center</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;The window&#39;s center ``(cx, cy)`` in ``[0, 1]`` image units.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">"""The window's center ``(cx, cy)`` in ``[0, 1]`` image units."""</span>
         <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">w</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">h</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">zoom</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Magnification implied by the window, ``1 / max(w, h)``.</span>
+<span class="w">        </span><span class="sd">"""Magnification implied by the window, ``1 / max(w, h)``.</span>
 
 <span class="sd">        ``1.0`` = the full image; ``&gt; 1.0`` = zoomed in. This is the derived</span>
 <span class="sd">        value an FFmpeg ``zoompan`` backend consumes; the window-fraction</span>
 <span class="sd">        ``(w, h)`` is the authoritative, user-facing representation.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">w</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">h</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Rect.is_contained">
 <a class="viewcode-back" href="../../module_docs/burns/rect.html#burns.Rect.is_contained">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">is_contained</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;True when the window lies wholly inside the image.</span>
+<span class="w">        </span><span class="sd">"""True when the window lies wholly inside the image.</span>
 
 <span class="sd">        Examples:</span>
 <span class="sd">            &gt;&gt;&gt; Rect(0.1, 0.1, 0.5, 0.5).is_contained()</span>
 <span class="sd">            True</span>
 <span class="sd">            &gt;&gt;&gt; Rect(0.8, 0.0, 0.5, 0.5).is_contained()</span>
 <span class="sd">            False</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">&gt;=</span> <span class="o">-</span><span class="n">_EPS</span>
             <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">&gt;=</span> <span class="o">-</span><span class="n">_EPS</span>
@@ -187,10 +188,10 @@
 
 <div class="viewcode-block" id="Rect.clamped">
 <a class="viewcode-back" href="../../module_docs/burns/rect.html#burns.Rect.clamped">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">clamped</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Rect&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Slide the window inside the image **without resizing it**.</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">clamped</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Rect"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Slide the window inside the image **without resizing it**.</span>
 
-<span class="sd">        Clamps the top-left corner so the window &quot;rides the wall&quot; at an edge</span>
+<span class="sd">        Clamps the top-left corner so the window "rides the wall" at an edge</span>
 <span class="sd">        rather than shrinking — shrinking the box would change its aspect ratio</span>
 <span class="sd">        and make the rendered frame breathe/stretch. Windows larger than the</span>
 <span class="sd">        image in a dimension are centered in that dimension.</span>
@@ -200,7 +201,7 @@
 <span class="sd">            Rect(x=0.5, y=0.0, w=0.5, h=0.5)</span>
 <span class="sd">            &gt;&gt;&gt; Rect(-0.2, 0.3, 0.4, 0.4).clamped()</span>
 <span class="sd">            Rect(x=0.0, y=0.3, w=0.4, h=0.4)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">x</span> <span class="o">=</span> <span class="n">_clamp_corner</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">w</span><span class="p">)</span>
         <span class="n">y</span> <span class="o">=</span> <span class="n">_clamp_corner</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">h</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">Rect</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">w</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">h</span><span class="p">)</span></div>
@@ -208,13 +209,13 @@
 
 <div class="viewcode-block" id="Rect.lerp">
 <a class="viewcode-back" href="../../module_docs/burns/rect.html#burns.Rect.lerp">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">lerp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;Rect&quot;</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Rect&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Linearly interpolate toward ``other`` by ``t`` in ``[0, 1]``.</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">lerp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">"Rect"</span><span class="p">,</span> <span class="n">t</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Rect"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Linearly interpolate toward ``other`` by ``t`` in ``[0, 1]``.</span>
 
 <span class="sd">        Examples:</span>
 <span class="sd">            &gt;&gt;&gt; Rect(0, 0, 1, 1).lerp(Rect(0.25, 0.25, 0.5, 0.5), 0.5)</span>
 <span class="sd">            Rect(x=0.125, y=0.125, w=0.75, h=0.75)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">return</span> <span class="n">Rect</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">+</span> <span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">)</span> <span class="o">*</span> <span class="n">t</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">+</span> <span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">)</span> <span class="o">*</span> <span class="n">t</span><span class="p">,</span>
@@ -226,7 +227,7 @@
 <div class="viewcode-block" id="Rect.to_pixels">
 <a class="viewcode-back" href="../../module_docs/burns/rect.html#burns.Rect.to_pixels">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">to_pixels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img_w</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">img_h</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Map the (clamped) window to an integer pixel box ``(x0, y0, x1, y1)``.</span>
+<span class="w">        </span><span class="sd">"""Map the (clamped) window to an integer pixel box ``(x0, y0, x1, y1)``.</span>
 
 <span class="sd">        Clamps first so the box is always inside the raster, then rounds (not</span>
 <span class="sd">        truncates) for symmetric integer conversion. The returned box is a</span>
@@ -237,7 +238,7 @@
 <span class="sd">            (0, 0, 100, 80)</span>
 <span class="sd">            &gt;&gt;&gt; Rect.from_center_zoom(0.5, 0.5, 2.0).to_pixels(100, 80)</span>
 <span class="sd">            (25, 20, 75, 60)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="n">r</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">clamped</span><span class="p">()</span>
         <span class="n">x0</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">x</span> <span class="o">*</span> <span class="n">img_w</span><span class="p">))</span>
         <span class="n">y0</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">y</span> <span class="o">*</span> <span class="n">img_h</span><span class="p">))</span>
@@ -251,15 +252,15 @@
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">from_center_zoom</span><span class="p">(</span>
         <span class="bp">cls</span><span class="p">,</span> <span class="n">cx</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">cy</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">zoom</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">aspect</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span>
-    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Rect&quot;</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Build a rect from a pan center, a zoom, and a window aspect ratio.</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"Rect"</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">"""Build a rect from a pan center, a zoom, and a window aspect ratio.</span>
 
 <span class="sd">        This is the bridge from the older center+magnification mental model to</span>
 <span class="sd">        the ``(x, y, w, h)`` representation. ``zoom`` is window-fraction</span>
 <span class="sd">        magnification (``1.0`` = full image, ``&gt; 1.0`` = zoomed in). ``aspect``</span>
-<span class="sd">        is the window&#39;s normalized ``w / h``; the default ``1.0`` yields an</span>
+<span class="sd">        is the window's normalized ``w / h``; the default ``1.0`` yields an</span>
 <span class="sd">        isotropic window (``w == h``) whose rendered AR equals the source</span>
-<span class="sd">        image&#39;s — reproducing the legacy behavior exactly. The result is</span>
+<span class="sd">        image's — reproducing the legacy behavior exactly. The result is</span>
 <span class="sd">        clamped to stay inside the image.</span>
 
 <span class="sd">        Examples:</span>
@@ -267,9 +268,9 @@
 <span class="sd">            Rect(x=0.0, y=0.0, w=1.0, h=1.0)</span>
 <span class="sd">            &gt;&gt;&gt; Rect.from_center_zoom(0.75, 0.5, 2.0)  # off-center zoom-in</span>
 <span class="sd">            Rect(x=0.5, y=0.25, w=0.5, h=0.5)</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">        """</span>
         <span class="k">if</span> <span class="n">zoom</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Rect.from_center_zoom: zoom must be &gt; 0, got </span><span class="si">{</span><span class="n">zoom</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Rect.from_center_zoom: zoom must be &gt; 0, got </span><span class="si">{</span><span class="n">zoom</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="c1"># Largest window of the requested aspect that fits the unit square,</span>
         <span class="c1"># then scaled down by 1/zoom.</span>
         <span class="k">if</span> <span class="n">aspect</span> <span class="o">&gt;=</span> <span class="mf">1.0</span><span class="p">:</span>
@@ -284,11 +285,11 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_clamp_corner</span><span class="p">(</span><span class="n">origin</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">size</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Clamp a top-left coordinate so ``[origin, origin+size]`` fits ``[0, 1]``.</span>
+<span class="w">    </span><span class="sd">"""Clamp a top-left coordinate so ``[origin, origin+size]`` fits ``[0, 1]``.</span>
 
 <span class="sd">    When ``size &gt; 1`` (window larger than the image in this dimension) the valid</span>
 <span class="sd">    range is empty; we center the window instead (``(1 - size) / 2``).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">high</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">size</span>
     <span class="k">if</span> <span class="n">high</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">high</span> <span class="o">/</span> <span class="mf">2.0</span>

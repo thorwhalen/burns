@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>&lt;no title&gt; &mdash; burns 0.0.8 documentation</title>
+  <title>&lt;no title&gt; &mdash; burns 0.0.9 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
@@ -15,7 +15,7 @@
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=53b53b71"></script>
+      <script src="_static/documentation_options.js?v=f7cdbf68"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -48,6 +48,7 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="module_docs/burns.html">burns</a></li>
+<li class="toctree-l1"><a class="reference internal" href="module_docs/burns/_ffmpeg.html">burns._ffmpeg</a></li>
 <li class="toctree-l1"><a class="reference internal" href="module_docs/burns/_frame.html">burns._frame</a></li>
 <li class="toctree-l1"><a class="reference internal" href="module_docs/burns/_util.html">burns._util</a></li>
 <li class="toctree-l1"><a class="reference internal" href="module_docs/burns/backends.html">burns.backends</a></li>
@@ -101,6 +102,21 @@
 <li class="toctree-l2"><a class="reference internal" href="module_docs/burns.html#burns.salient_box"><code class="docutils literal notranslate"><span class="pre">salient_box()</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="module_docs/burns/_ffmpeg.html">burns._ffmpeg</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/burns/_ffmpeg.html#burns._ffmpeg.DEVIATION_PROBES"><code class="docutils literal notranslate"><span class="pre">DEVIATION_PROBES</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/burns/_ffmpeg.html#burns._ffmpeg.DFLT_PIX_FMT"><code class="docutils literal notranslate"><span class="pre">DFLT_PIX_FMT</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/burns/_ffmpeg.html#burns._ffmpeg.DFLT_TOLERANCE_PX"><code class="docutils literal notranslate"><span class="pre">DFLT_TOLERANCE_PX</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/burns/_ffmpeg.html#burns._ffmpeg.DFLT_WRITE_KWARGS"><code class="docutils literal notranslate"><span class="pre">DFLT_WRITE_KWARGS</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/burns/_ffmpeg.html#burns._ffmpeg.FfmpegBackendError"><code class="docutils literal notranslate"><span class="pre">FfmpegBackendError</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/burns/_ffmpeg.html#burns._ffmpeg.SAMPLE_LADDER"><code class="docutils literal notranslate"><span class="pre">SAMPLE_LADDER</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/burns/_ffmpeg.html#burns._ffmpeg.WRITE_KWARGS_IGNORED"><code class="docutils literal notranslate"><span class="pre">WRITE_KWARGS_IGNORED</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/burns/_ffmpeg.html#burns._ffmpeg.WRITE_KWARG_FLAGS"><code class="docutils literal notranslate"><span class="pre">WRITE_KWARG_FLAGS</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/burns/_ffmpeg.html#burns._ffmpeg.default_ffmpeg_exe"><code class="docutils literal notranslate"><span class="pre">default_ffmpeg_exe()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/burns/_ffmpeg.html#burns._ffmpeg.ffmpeg_backend"><code class="docutils literal notranslate"><span class="pre">ffmpeg_backend()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/burns/_ffmpeg.html#burns._ffmpeg.keyframes_for"><code class="docutils literal notranslate"><span class="pre">keyframes_for()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/burns/_ffmpeg.html#burns._ffmpeg.sample_count"><code class="docutils literal notranslate"><span class="pre">sample_count()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="module_docs/burns/_frame.html">burns._frame</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="module_docs/burns/_frame.html#burns._frame.even"><code class="docutils literal notranslate"><span class="pre">even()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="module_docs/burns/_frame.html#burns._frame.output_size_for"><code class="docutils literal notranslate"><span class="pre">output_size_for()</span></code></a></li>
@@ -110,6 +126,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="module_docs/burns/_util.html">burns._util</a></li>
 <li class="toctree-l1"><a class="reference internal" href="module_docs/burns/backends.html">burns.backends</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="module_docs/burns/backends.html#burns.backends.DFLT_BACKEND"><code class="docutils literal notranslate"><span class="pre">DFLT_BACKEND</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="module_docs/burns/backends.html#burns.backends.RenderBackend"><code class="docutils literal notranslate"><span class="pre">RenderBackend</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="module_docs/burns/backends.html#burns.backends.get_backend"><code class="docutils literal notranslate"><span class="pre">get_backend()</span></code></a></li>
 <li class="toctree-l2"><a class="reference internal" href="module_docs/burns/backends.html#burns.backends.pillow_backend"><code class="docutils literal notranslate"><span class="pre">pillow_backend()</span></code></a></li>

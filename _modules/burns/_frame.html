@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>burns._frame &mdash; burns 0.0.8 documentation</title>
+  <title>burns._frame &mdash; burns 0.0.9 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=53b53b71"></script>
+      <script src="../../_static/documentation_options.js?v=f7cdbf68"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -47,6 +47,7 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/burns.html">burns</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/burns/_ffmpeg.html">burns._ffmpeg</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/burns/_frame.html">burns._frame</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/burns/_util.html">burns._util</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/burns/backends.html">burns.backends</a></li>
@@ -82,7 +83,7 @@
            <div itemprop="articleBody">
              
   <h1>Source code for burns._frame</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;The single point where a :class:`~burns.path.BurnsPath` meets pixels.</span>
+<span></span><span class="sd">"""The single point where a :class:`~burns.path.BurnsPath` meets pixels.</span>
 
 <span class="sd">Every render backend — and the multi-panel film renderer — samples frames</span>
 <span class="sd">through :func:`sample_frame`, so the spec-to-pixel mapping is defined *once*.</span>
@@ -92,7 +93,7 @@
 <span class="sd">1. ``path.evaluate(t)`` -&gt; a normalized :class:`~burns.rect.Rect` window.</span>
 <span class="sd">2. The window maps to an integer pixel box via :meth:`Rect.to_pixels` (which</span>
 <span class="sd">   clamps it inside the image).</span>
-<span class="sd">3. If the requested output aspect ratio differs from the cropped window&#39;s pixel</span>
+<span class="sd">3. If the requested output aspect ratio differs from the cropped window's pixel</span>
 <span class="sd">   AR, **cover-crop** the window to the output AR (center-cropped — the FCP /</span>
 <span class="sd">   iMovie default), so frames fill the output without stretching.</span>
 <span class="sd">4. Resize the result to the (even-snapped) output size with a quality filter.</span>
@@ -102,7 +103,7 @@
 <span class="sd">only the slice + resize. That split is deliberate: ``sample_box`` *is* the</span>
 <span class="sd">cross-language crop contract a JS/TS port must reproduce, and the golden-vector</span>
 <span class="sd">fixtures pin it directly.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
@@ -116,13 +117,13 @@
 <div class="viewcode-block" id="even">
 <a class="viewcode-back" href="../../module_docs/burns/_frame.html#burns._frame.even">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">even</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Round ``n`` down to the nearest positive even integer (H.264 needs even</span>
+<span class="w">    </span><span class="sd">"""Round ``n`` down to the nearest positive even integer (H.264 needs even</span>
 <span class="sd">    width/height for yuv420p).</span>
 
 <span class="sd">    Examples:</span>
 <span class="sd">        &gt;&gt;&gt; even(101), even(100), even(1)</span>
 <span class="sd">        (100, 100, 2)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">n</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
     <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">n</span> <span class="o">-</span> <span class="p">(</span><span class="n">n</span> <span class="o">%</span> <span class="mi">2</span><span class="p">))</span></div>
 
@@ -133,10 +134,10 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">output_size_for</span><span class="p">(</span>
     <span class="n">img_w</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">img_h</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">output_aspect</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">output_size</span><span class="o">=</span><span class="kc">None</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Resolve the (even) output frame size.</span>
+<span class="w">    </span><span class="sd">"""Resolve the (even) output frame size.</span>
 
 <span class="sd">    Priority: an explicit ``output_size`` wins; else derive from</span>
-<span class="sd">    ``output_aspect`` keeping the image&#39;s height; else the image&#39;s own size.</span>
+<span class="sd">    ``output_aspect`` keeping the image's height; else the image's own size.</span>
 
 <span class="sd">    Examples:</span>
 <span class="sd">        &gt;&gt;&gt; output_size_for(800, 600, output_aspect=None)</span>
@@ -145,7 +146,7 @@
 <span class="sd">        (600, 600)</span>
 <span class="sd">        &gt;&gt;&gt; output_size_for(801, 599, output_aspect=None)</span>
 <span class="sd">        (800, 598)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">output_size</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">w</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="n">output_size</span>
         <span class="k">return</span> <span class="p">(</span><span class="n">even</span><span class="p">(</span><span class="n">w</span><span class="p">),</span> <span class="n">even</span><span class="p">(</span><span class="n">h</span><span class="p">))</span>
@@ -158,13 +159,13 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">_cover_crop_box</span><span class="p">(</span>
     <span class="n">x0</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">y0</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">x1</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">y1</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">target_aspect</span><span class="p">:</span> <span class="nb">float</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Center-crop the integer box ``(x0, y0, x1, y1)`` to ``target_aspect``.</span>
+<span class="w">    </span><span class="sd">"""Center-crop the integer box ``(x0, y0, x1, y1)`` to ``target_aspect``.</span>
 
-<span class="sd">    Trims the longer dimension symmetrically so the box&#39;s pixel AR becomes</span>
+<span class="sd">    Trims the longer dimension symmetrically so the box's pixel AR becomes</span>
 <span class="sd">    ``target_aspect`` (width / height), keeping it centered — the FCP / iMovie</span>
 <span class="sd">    default. A no-op when the box already matches within a 1px tolerance.</span>
 <span class="sd">    Returns the trimmed box in the same coordinate frame as the input.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">w</span> <span class="o">=</span> <span class="n">x1</span> <span class="o">-</span> <span class="n">x0</span>
     <span class="n">h</span> <span class="o">=</span> <span class="n">y1</span> <span class="o">-</span> <span class="n">y0</span>
     <span class="n">cur</span> <span class="o">=</span> <span class="n">w</span> <span class="o">/</span> <span class="n">h</span>
@@ -189,7 +190,7 @@
     <span class="n">out_w</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">out_h</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;The integer crop box ``(x0, y0, x1, y1)`` read from the source image.</span>
+<span class="w">    </span><span class="sd">"""The integer crop box ``(x0, y0, x1, y1)`` read from the source image.</span>
 
 <span class="sd">    Pure integer geometry — steps 1-3 of the module mapping: evaluate the path</span>
 <span class="sd">    to a :class:`~burns.rect.Rect`, map it to a clamped pixel box via</span>
@@ -205,7 +206,7 @@
 <span class="sd">        (0, 0, 64, 48)</span>
 <span class="sd">        &gt;&gt;&gt; sample_box(p, 0.0, 64, 48, 48, 48)  # square output cover-crops wide</span>
 <span class="sd">        (8, 0, 56, 48)</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">rect</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
     <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span> <span class="o">=</span> <span class="n">rect</span><span class="o">.</span><span class="n">to_pixels</span><span class="p">(</span><span class="n">img_w</span><span class="p">,</span> <span class="n">img_h</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">_cover_crop_box</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">out_w</span> <span class="o">/</span> <span class="n">out_h</span><span class="p">)</span></div>
@@ -225,12 +226,12 @@
     <span class="o">*</span><span class="p">,</span>
     <span class="n">resample</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">PIL_Image</span><span class="o">.</span><span class="n">BICUBIC</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Render the single frame at normalized time ``t in [0, 1]``.</span>
+<span class="w">    </span><span class="sd">"""Render the single frame at normalized time ``t in [0, 1]``.</span>
 
 <span class="sd">    See the module docstring for the four-step mapping: :func:`sample_box` does</span>
 <span class="sd">    the pure geometry (steps 1-3); this adds the slice + resize (step 4).</span>
 <span class="sd">    Returns an ``(out_h, out_w, C)`` uint8 array.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span> <span class="o">=</span> <span class="n">sample_box</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">img_w</span><span class="p">,</span> <span class="n">img_h</span><span class="p">,</span> <span class="n">out_w</span><span class="p">,</span> <span class="n">out_h</span><span class="p">)</span>
     <span class="n">crop</span> <span class="o">=</span> <span class="n">img_np</span><span class="p">[</span><span class="n">y0</span><span class="p">:</span><span class="n">y1</span><span class="p">,</span> <span class="n">x0</span><span class="p">:</span><span class="n">x1</span><span class="p">]</span>
     <span class="n">crop_img</span> <span class="o">=</span> <span class="n">PIL_Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="n">crop</span><span class="p">)</span><span class="o">.</span><span class="n">resize</span><span class="p">((</span><span class="n">out_w</span><span class="p">,</span> <span class="n">out_h</span><span class="p">),</span> <span class="n">resample</span><span class="o">=</span><span class="n">resample</span><span class="p">)</span>

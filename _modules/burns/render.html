@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>burns.render &mdash; burns 0.0.8 documentation</title>
+  <title>burns.render &mdash; burns 0.0.9 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=53b53b71"></script>
+      <script src="../../_static/documentation_options.js?v=f7cdbf68"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -47,6 +47,7 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/burns.html">burns</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/burns/_ffmpeg.html">burns._ffmpeg</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/burns/_frame.html">burns._frame</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/burns/_util.html">burns._util</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/burns/backends.html">burns.backends</a></li>
@@ -82,13 +83,13 @@
            <div itemprop="articleBody">
              
   <h1>Source code for burns.render</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Ken Burns **renderers** — turn still images into pan/zoom video.</span>
+<span></span><span class="sd">"""Ken Burns **renderers** — turn still images into pan/zoom video.</span>
 
 <span class="sd">Two entry points, both consuming a :class:`~burns.path.BurnsPath` (the</span>
 <span class="sd">render-agnostic motion spec) plus a render-time ``duration``:</span>
 
 <span class="sd">- :func:`ken_burns_video` — one image, one :class:`BurnsPath`, one mp4. Dispatches</span>
-<span class="sd">  to a pluggable backend (see :mod:`burns.backends`); the default ``&quot;pillow&quot;``</span>
+<span class="sd">  to a pluggable backend (see :mod:`burns.backends`); the default ``"pillow"``</span>
 <span class="sd">  backend is a lazy moviepy clip, so the whole video is never held in memory.</span>
 <span class="sd">- :func:`ken_burns_film` — a sequence of ``(image, path, duration)`` panels</span>
 <span class="sd">  rendered as a **single** continuous film (no per-panel intermediate files, no</span>
@@ -97,7 +98,7 @@
 
 <span class="sd">Use :func:`burns.ken_burns_path` (or :meth:`BurnsPath.push_in`) to build paths</span>
 <span class="sd">instead of hand-authoring keyframes.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
@@ -115,7 +116,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">burns.path</span><span class="w"> </span><span class="kn">import</span> <span class="n">BurnsPath</span><span class="p">,</span> <span class="n">PanelInput</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">burns.rect</span><span class="w"> </span><span class="kn">import</span> <span class="n">Rect</span>
 
-<span class="n">_VIDEO_EXTS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;.mp4&quot;</span><span class="p">,</span> <span class="s2">&quot;.mov&quot;</span><span class="p">,</span> <span class="s2">&quot;.avi&quot;</span><span class="p">,</span> <span class="s2">&quot;.mkv&quot;</span><span class="p">)</span>
+<span class="n">_VIDEO_EXTS</span> <span class="o">=</span> <span class="p">(</span><span class="s2">".mp4"</span><span class="p">,</span> <span class="s2">".mov"</span><span class="p">,</span> <span class="s2">".avi"</span><span class="p">,</span> <span class="s2">".mkv"</span><span class="p">)</span>
 
 <span class="c1"># The standard 2-second push-in: full image -&gt; 1.3x center zoom, ease-in-out.</span>
 <span class="n">DEFAULT_BURNS_PATH</span> <span class="o">=</span> <span class="n">BurnsPath</span><span class="o">.</span><span class="n">from_start_end</span><span class="p">(</span>
@@ -125,17 +126,17 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_load_image</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">where</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Decode ``image`` (path / PIL.Image / ndarray) to ``(np, w, h, src_path)``.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Decode ``image`` (path / PIL.Image / ndarray) to ``(np, w, h, src_path)``."""</span>
     <span class="n">src_path</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">)):</span>
         <span class="n">src_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
-        <span class="n">img</span> <span class="o">=</span> <span class="n">PIL_Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">image</span><span class="p">))</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;RGB&quot;</span><span class="p">)</span>
+        <span class="n">img</span> <span class="o">=</span> <span class="n">PIL_Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">image</span><span class="p">))</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s2">"RGB"</span><span class="p">)</span>
     <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
         <span class="n">img</span> <span class="o">=</span> <span class="n">PIL_Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
-    <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="s2">&quot;convert&quot;</span><span class="p">):</span>
-        <span class="n">img</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;RGB&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="s2">"convert"</span><span class="p">):</span>
+        <span class="n">img</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s2">"RGB"</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2">: unsupported image type: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">image</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2">: unsupported image type: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">image</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
     <span class="n">w</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">size</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">img</span><span class="p">),</span> <span class="n">w</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">src_path</span>
 
@@ -151,41 +152,41 @@
     <span class="n">saveas</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">output_size</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="n">backend</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DFLT_BACKEND</span><span class="p">,</span>
-    <span class="n">codec</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;libx264&quot;</span><span class="p">,</span>
-    <span class="n">audio_codec</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;aac&quot;</span><span class="p">,</span>
+    <span class="n">codec</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"libx264"</span><span class="p">,</span>
+    <span class="n">audio_codec</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"aac"</span><span class="p">,</span>
     <span class="o">**</span><span class="n">write_kwargs</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Render one image into a pan/zoom video from a :class:`BurnsPath`.</span>
+<span class="w">    </span><span class="sd">"""Render one image into a pan/zoom video from a :class:`BurnsPath`.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        image: path / ``PIL.Image`` / ``np.ndarray``.</span>
 <span class="sd">        path: the motion spec. Default is a 2-second standard push-in.</span>
-<span class="sd">        duration: clip length in seconds (the path&#39;s clock is normalized, so</span>
+<span class="sd">        duration: clip length in seconds (the path's clock is normalized, so</span>
 <span class="sd">            duration is supplied here, not baked into the path).</span>
 <span class="sd">        fps: frames per second.</span>
-<span class="sd">        saveas: output path. Default: the source image&#39;s name with</span>
+<span class="sd">        saveas: output path. Default: the source image's name with</span>
 <span class="sd">            ``_kenburns`` appended (auto-uniquified so an existing file is not</span>
 <span class="sd">            overwritten). Required-ish when ``image`` has no source path —</span>
 <span class="sd">            falls back to a temp file.</span>
 <span class="sd">        output_size: explicit ``(width, height)`` (even-snapped). If omitted and</span>
 <span class="sd">            ``path.output_aspect`` is set, the size is derived from it; otherwise</span>
-<span class="sd">            the source image&#39;s size is used.</span>
-<span class="sd">        backend: registered render backend name (default ``&quot;pillow&quot;``).</span>
+<span class="sd">            the source image's size is used.</span>
+<span class="sd">        backend: registered render backend name (default ``"pillow"``).</span>
 <span class="sd">        codec, audio_codec, **write_kwargs: forwarded to ``write_videofile``.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        The output :class:`~pathlib.Path`.</span>
 
 <span class="sd">    Examples:</span>
-<span class="sd">        &gt;&gt;&gt; ken_burns_video(&quot;photo.jpg&quot;)  # 2s push-in  # doctest: +SKIP</span>
+<span class="sd">        &gt;&gt;&gt; ken_burns_video("photo.jpg")  # 2s push-in  # doctest: +SKIP</span>
 <span class="sd">        &gt;&gt;&gt; from burns import ken_burns_path</span>
 <span class="sd">        &gt;&gt;&gt; ken_burns_video(  # doctest: +SKIP</span>
-<span class="sd">        ...     &quot;photo.jpg&quot;, ken_burns_path(1), duration=5.0, saveas=&quot;out.mp4&quot;</span>
+<span class="sd">        ...     "photo.jpg", ken_burns_path(1), duration=5.0, saveas="out.mp4"</span>
 <span class="sd">        ... )</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">if</span> <span class="n">duration</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ken_burns_video: duration must be &gt; 0, got </span><span class="si">{</span><span class="n">duration</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-    <span class="n">img_np</span><span class="p">,</span> <span class="n">img_w</span><span class="p">,</span> <span class="n">img_h</span><span class="p">,</span> <span class="n">src_path</span> <span class="o">=</span> <span class="n">_load_image</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">where</span><span class="o">=</span><span class="s2">&quot;ken_burns_video&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"ken_burns_video: duration must be &gt; 0, got </span><span class="si">{</span><span class="n">duration</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="n">img_np</span><span class="p">,</span> <span class="n">img_w</span><span class="p">,</span> <span class="n">img_h</span><span class="p">,</span> <span class="n">src_path</span> <span class="o">=</span> <span class="n">_load_image</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">where</span><span class="o">=</span><span class="s2">"ken_burns_video"</span><span class="p">)</span>
     <span class="n">out_w</span><span class="p">,</span> <span class="n">out_h</span> <span class="o">=</span> <span class="n">output_size_for</span><span class="p">(</span>
         <span class="n">img_w</span><span class="p">,</span> <span class="n">img_h</span><span class="p">,</span> <span class="n">output_aspect</span><span class="o">=</span><span class="n">path</span><span class="o">.</span><span class="n">output_aspect</span><span class="p">,</span> <span class="n">output_size</span><span class="o">=</span><span class="n">output_size</span>
     <span class="p">)</span>
@@ -208,18 +209,18 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_output</span><span class="p">(</span><span class="n">saveas</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">src_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Pick the output path: explicit ``saveas``, else auto-name from source.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Pick the output path: explicit ``saveas``, else auto-name from source."""</span>
     <span class="k">if</span> <span class="n">saveas</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">output_path</span> <span class="o">=</span> <span class="n">_ensure_output_path</span><span class="p">(</span><span class="n">saveas</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">output_path</span><span class="o">.</span><span class="n">suffix</span> <span class="ow">or</span> <span class="n">output_path</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_VIDEO_EXTS</span><span class="p">:</span>
-            <span class="n">output_path</span> <span class="o">=</span> <span class="n">output_path</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s2">&quot;.mp4&quot;</span><span class="p">)</span>
+            <span class="n">output_path</span> <span class="o">=</span> <span class="n">output_path</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s2">".mp4"</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">output_path</span>
     <span class="k">if</span> <span class="n">src_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">tempfile</span><span class="o">.</span><span class="n">gettempdir</span><span class="p">())</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;kenburns_</span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">()</span><span class="si">}</span><span class="s2">.mp4&quot;</span>
-    <span class="n">output_path</span> <span class="o">=</span> <span class="n">_auto_video_path</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">src_path</span><span class="p">),</span> <span class="s2">&quot;_kenburns&quot;</span><span class="p">,</span> <span class="n">ext</span><span class="o">=</span><span class="s2">&quot;.mp4&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">tempfile</span><span class="o">.</span><span class="n">gettempdir</span><span class="p">())</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">"kenburns_</span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">()</span><span class="si">}</span><span class="s2">.mp4"</span>
+    <span class="n">output_path</span> <span class="o">=</span> <span class="n">_auto_video_path</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">src_path</span><span class="p">),</span> <span class="s2">"_kenburns"</span><span class="p">,</span> <span class="n">ext</span><span class="o">=</span><span class="s2">".mp4"</span><span class="p">)</span>
     <span class="n">directory</span> <span class="o">=</span> <span class="n">output_path</span><span class="o">.</span><span class="n">parent</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">existing</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">directory</span><span class="p">))</span> <span class="k">if</span> <span class="n">directory</span> <span class="k">else</span> <span class="nb">set</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">))</span>
+        <span class="n">existing</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">directory</span><span class="p">))</span> <span class="k">if</span> <span class="n">directory</span> <span class="k">else</span> <span class="nb">set</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="s2">"."</span><span class="p">))</span>
     <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
         <span class="n">existing</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">output_path</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">existing</span><span class="p">:</span>
@@ -235,11 +236,11 @@
     <span class="n">saveas</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="n">fps</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">30</span><span class="p">,</span>
     <span class="n">audio_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">codec</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;libx264&quot;</span><span class="p">,</span>
-    <span class="n">audio_codec</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;aac&quot;</span><span class="p">,</span>
+    <span class="n">codec</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"libx264"</span><span class="p">,</span>
+    <span class="n">audio_codec</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"aac"</span><span class="p">,</span>
     <span class="o">**</span><span class="n">write_kwargs</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Render an N-panel Ken Burns film in a single pass.</span>
+<span class="w">    </span><span class="sd">"""Render an N-panel Ken Burns film in a single pass.</span>
 
 <span class="sd">    Each panel is an ``(image, path, duration_s)`` triple</span>
 <span class="sd">    (:data:`burns.PanelInput`): ``image`` is a path / ``PIL.Image`` /</span>
@@ -257,47 +258,47 @@
 <span class="sd">        fps: frame rate.</span>
 <span class="sd">        audio_path: optional pre-built track (already matching the film</span>
 <span class="sd">            duration); muxed in when supplied. Per-panel audio assembly is the</span>
-<span class="sd">            caller&#39;s job — the renderer stays pure visual.</span>
+<span class="sd">            caller's job — the renderer stays pure visual.</span>
 <span class="sd">        codec, audio_codec, **write_kwargs: forwarded to ``write_videofile``.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        The written mp4 :class:`~pathlib.Path`.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="n">panel_renders</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">film_duration</span> <span class="o">=</span> <span class="mf">0.0</span>
     <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">panel</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">panels</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">panel</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">panel</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;panel </span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">: expected (image, path, duration_s) triple, got </span><span class="si">{</span><span class="n">panel</span><span class="si">!r}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">"panel </span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">: expected (image, path, duration_s) triple, got </span><span class="si">{</span><span class="n">panel</span><span class="si">!r}</span><span class="s2">"</span>
             <span class="p">)</span>
         <span class="n">image</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">duration</span> <span class="o">=</span> <span class="n">panel</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">BurnsPath</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;panel </span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">: path must be a BurnsPath, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"panel </span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">: path must be a BurnsPath, got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="n">duration</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">duration</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">duration</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;panel </span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">: duration_s must be &gt; 0, got </span><span class="si">{</span><span class="n">duration</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-        <span class="n">img_np</span><span class="p">,</span> <span class="n">img_w</span><span class="p">,</span> <span class="n">img_h</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_load_image</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">where</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;panel </span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"panel </span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">: duration_s must be &gt; 0, got </span><span class="si">{</span><span class="n">duration</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="n">img_np</span><span class="p">,</span> <span class="n">img_w</span><span class="p">,</span> <span class="n">img_h</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_load_image</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">where</span><span class="o">=</span><span class="sa">f</span><span class="s2">"panel </span><span class="si">{</span><span class="n">idx</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="n">panel_renders</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
             <span class="p">{</span>
-                <span class="s2">&quot;img_np&quot;</span><span class="p">:</span> <span class="n">img_np</span><span class="p">,</span>
-                <span class="s2">&quot;img_w&quot;</span><span class="p">:</span> <span class="n">img_w</span><span class="p">,</span>
-                <span class="s2">&quot;img_h&quot;</span><span class="p">:</span> <span class="n">img_h</span><span class="p">,</span>
-                <span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="n">path</span><span class="p">,</span>
-                <span class="s2">&quot;duration&quot;</span><span class="p">:</span> <span class="n">duration</span><span class="p">,</span>
-                <span class="s2">&quot;film_offset&quot;</span><span class="p">:</span> <span class="n">film_duration</span><span class="p">,</span>
-                <span class="s2">&quot;output_aspect&quot;</span><span class="p">:</span> <span class="n">path</span><span class="o">.</span><span class="n">output_aspect</span><span class="p">,</span>
-                <span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">img_w</span><span class="p">,</span> <span class="n">img_h</span><span class="p">),</span>
+                <span class="s2">"img_np"</span><span class="p">:</span> <span class="n">img_np</span><span class="p">,</span>
+                <span class="s2">"img_w"</span><span class="p">:</span> <span class="n">img_w</span><span class="p">,</span>
+                <span class="s2">"img_h"</span><span class="p">:</span> <span class="n">img_h</span><span class="p">,</span>
+                <span class="s2">"path"</span><span class="p">:</span> <span class="n">path</span><span class="p">,</span>
+                <span class="s2">"duration"</span><span class="p">:</span> <span class="n">duration</span><span class="p">,</span>
+                <span class="s2">"film_offset"</span><span class="p">:</span> <span class="n">film_duration</span><span class="p">,</span>
+                <span class="s2">"output_aspect"</span><span class="p">:</span> <span class="n">path</span><span class="o">.</span><span class="n">output_aspect</span><span class="p">,</span>
+                <span class="s2">"size"</span><span class="p">:</span> <span class="p">(</span><span class="n">img_w</span><span class="p">,</span> <span class="n">img_h</span><span class="p">),</span>
             <span class="p">}</span>
         <span class="p">)</span>
         <span class="n">film_duration</span> <span class="o">+=</span> <span class="n">duration</span>
 
     <span class="k">if</span> <span class="n">film_duration</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;ken_burns_film: panels must be non-empty&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"ken_burns_film: panels must be non-empty"</span><span class="p">)</span>
 
-    <span class="c1"># Output frame size = first panel&#39;s resolved size (honoring its output_aspect).</span>
+    <span class="c1"># Output frame size = first panel's resolved size (honoring its output_aspect).</span>
     <span class="n">first</span> <span class="o">=</span> <span class="n">panel_renders</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">out_w</span><span class="p">,</span> <span class="n">out_h</span> <span class="o">=</span> <span class="n">output_size_for</span><span class="p">(</span>
-        <span class="n">first</span><span class="p">[</span><span class="s2">&quot;img_w&quot;</span><span class="p">],</span> <span class="n">first</span><span class="p">[</span><span class="s2">&quot;img_h&quot;</span><span class="p">],</span> <span class="n">output_aspect</span><span class="o">=</span><span class="n">first</span><span class="p">[</span><span class="s2">&quot;output_aspect&quot;</span><span class="p">]</span>
+        <span class="n">first</span><span class="p">[</span><span class="s2">"img_w"</span><span class="p">],</span> <span class="n">first</span><span class="p">[</span><span class="s2">"img_h"</span><span class="p">],</span> <span class="n">output_aspect</span><span class="o">=</span><span class="n">first</span><span class="p">[</span><span class="s2">"output_aspect"</span><span class="p">]</span>
     <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">make_frame</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
@@ -305,29 +306,29 @@
             <span class="n">pr</span> <span class="o">=</span> <span class="n">panel_renders</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
             <span class="n">local_norm</span> <span class="o">=</span> <span class="mf">1.0</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">pr</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">panel_renders</span> <span class="k">if</span> <span class="n">t</span> <span class="o">&lt;</span> <span class="n">p</span><span class="p">[</span><span class="s2">&quot;film_offset&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="n">p</span><span class="p">[</span><span class="s2">&quot;duration&quot;</span><span class="p">])</span>
-            <span class="n">local_norm</span> <span class="o">=</span> <span class="p">(</span><span class="n">t</span> <span class="o">-</span> <span class="n">pr</span><span class="p">[</span><span class="s2">&quot;film_offset&quot;</span><span class="p">])</span> <span class="o">/</span> <span class="n">pr</span><span class="p">[</span><span class="s2">&quot;duration&quot;</span><span class="p">]</span>
+            <span class="n">pr</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">panel_renders</span> <span class="k">if</span> <span class="n">t</span> <span class="o">&lt;</span> <span class="n">p</span><span class="p">[</span><span class="s2">"film_offset"</span><span class="p">]</span> <span class="o">+</span> <span class="n">p</span><span class="p">[</span><span class="s2">"duration"</span><span class="p">])</span>
+            <span class="n">local_norm</span> <span class="o">=</span> <span class="p">(</span><span class="n">t</span> <span class="o">-</span> <span class="n">pr</span><span class="p">[</span><span class="s2">"film_offset"</span><span class="p">])</span> <span class="o">/</span> <span class="n">pr</span><span class="p">[</span><span class="s2">"duration"</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">sample_frame</span><span class="p">(</span>
-            <span class="n">pr</span><span class="p">[</span><span class="s2">&quot;path&quot;</span><span class="p">],</span>
+            <span class="n">pr</span><span class="p">[</span><span class="s2">"path"</span><span class="p">],</span>
             <span class="n">local_norm</span><span class="p">,</span>
-            <span class="n">pr</span><span class="p">[</span><span class="s2">&quot;img_np&quot;</span><span class="p">],</span>
-            <span class="n">pr</span><span class="p">[</span><span class="s2">&quot;img_w&quot;</span><span class="p">],</span>
-            <span class="n">pr</span><span class="p">[</span><span class="s2">&quot;img_h&quot;</span><span class="p">],</span>
+            <span class="n">pr</span><span class="p">[</span><span class="s2">"img_np"</span><span class="p">],</span>
+            <span class="n">pr</span><span class="p">[</span><span class="s2">"img_w"</span><span class="p">],</span>
+            <span class="n">pr</span><span class="p">[</span><span class="s2">"img_h"</span><span class="p">],</span>
             <span class="n">out_w</span><span class="p">,</span>
             <span class="n">out_h</span><span class="p">,</span>
         <span class="p">)</span>
 
     <span class="n">output_path</span> <span class="o">=</span> <span class="n">_ensure_output_path</span><span class="p">(</span><span class="n">saveas</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">output_path</span><span class="o">.</span><span class="n">suffix</span> <span class="ow">or</span> <span class="n">output_path</span><span class="o">.</span><span class="n">suffix</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_VIDEO_EXTS</span><span class="p">:</span>
-        <span class="n">output_path</span> <span class="o">=</span> <span class="n">output_path</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s2">&quot;.mp4&quot;</span><span class="p">)</span>
+        <span class="n">output_path</span> <span class="o">=</span> <span class="n">output_path</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s2">".mp4"</span><span class="p">)</span>
 
     <span class="n">clip</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">VideoClip</span><span class="p">(</span><span class="n">make_frame</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="n">film_duration</span><span class="p">)</span><span class="o">.</span><span class="n">with_fps</span><span class="p">(</span><span class="n">fps</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">audio_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">clip</span> <span class="o">=</span> <span class="n">clip</span><span class="o">.</span><span class="n">with_audio</span><span class="p">(</span><span class="n">mp</span><span class="o">.</span><span class="n">AudioFileClip</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">audio_path</span><span class="p">)))</span>
 
-    <span class="n">write_kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;bitrate&quot;</span><span class="p">,</span> <span class="s2">&quot;5000k&quot;</span><span class="p">)</span>
-    <span class="n">write_kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;preset&quot;</span><span class="p">,</span> <span class="s2">&quot;medium&quot;</span><span class="p">)</span>
-    <span class="n">write_kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;logger&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">write_kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">"bitrate"</span><span class="p">,</span> <span class="s2">"5000k"</span><span class="p">)</span>
+    <span class="n">write_kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">"preset"</span><span class="p">,</span> <span class="s2">"medium"</span><span class="p">)</span>
+    <span class="n">write_kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">"logger"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="n">clip</span><span class="o">.</span><span class="n">write_videofile</span><span class="p">(</span>
         <span class="nb">str</span><span class="p">(</span><span class="n">output_path</span><span class="p">),</span> <span class="n">codec</span><span class="o">=</span><span class="n">codec</span><span class="p">,</span> <span class="n">audio_codec</span><span class="o">=</span><span class="n">audio_codec</span><span class="p">,</span> <span class="o">**</span><span class="n">write_kwargs</span>
     <span class="p">)</span>

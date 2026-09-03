@@ -1,0 +1,321 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>burns._ffmpeg &mdash; burns 0.0.9 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+      <link rel="stylesheet" type="text/css" href="../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=f7cdbf68"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="burns._frame" href="_frame.html" />
+    <link rel="prev" title="burns" href="../burns.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            burns
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../burns.html">burns</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">burns._ffmpeg</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#burns._ffmpeg.DEVIATION_PROBES"><code class="docutils literal notranslate"><span class="pre">DEVIATION_PROBES</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#burns._ffmpeg.DFLT_PIX_FMT"><code class="docutils literal notranslate"><span class="pre">DFLT_PIX_FMT</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#burns._ffmpeg.DFLT_TOLERANCE_PX"><code class="docutils literal notranslate"><span class="pre">DFLT_TOLERANCE_PX</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#burns._ffmpeg.DFLT_WRITE_KWARGS"><code class="docutils literal notranslate"><span class="pre">DFLT_WRITE_KWARGS</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#burns._ffmpeg.FfmpegBackendError"><code class="docutils literal notranslate"><span class="pre">FfmpegBackendError</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#burns._ffmpeg.SAMPLE_LADDER"><code class="docutils literal notranslate"><span class="pre">SAMPLE_LADDER</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#burns._ffmpeg.WRITE_KWARGS_IGNORED"><code class="docutils literal notranslate"><span class="pre">WRITE_KWARGS_IGNORED</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#burns._ffmpeg.WRITE_KWARG_FLAGS"><code class="docutils literal notranslate"><span class="pre">WRITE_KWARG_FLAGS</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#burns._ffmpeg.default_ffmpeg_exe"><code class="docutils literal notranslate"><span class="pre">default_ffmpeg_exe()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#burns._ffmpeg.ffmpeg_backend"><code class="docutils literal notranslate"><span class="pre">ffmpeg_backend()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#burns._ffmpeg.keyframes_for"><code class="docutils literal notranslate"><span class="pre">keyframes_for()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#burns._ffmpeg.sample_count"><code class="docutils literal notranslate"><span class="pre">sample_count()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="_frame.html">burns._frame</a></li>
+<li class="toctree-l1"><a class="reference internal" href="_util.html">burns._util</a></li>
+<li class="toctree-l1"><a class="reference internal" href="backends.html">burns.backends</a></li>
+<li class="toctree-l1"><a class="reference internal" href="content.html">burns.content</a></li>
+<li class="toctree-l1"><a class="reference internal" href="easing.html">burns.easing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="path.html">burns.path</a></li>
+<li class="toctree-l1"><a class="reference internal" href="rect.html">burns.rect</a></li>
+<li class="toctree-l1"><a class="reference internal" href="render.html">burns.render</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">burns</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">burns._ffmpeg</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/module_docs/burns/_ffmpeg.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-burns._ffmpeg">
+<span id="burns-ffmpeg"></span><h1>burns._ffmpeg<a class="headerlink" href="#module-burns._ffmpeg" title="Link to this heading"></a></h1>
+<p>The FFmpeg render backend: burns samples the path, <cite>looks</cite> compiles it.</p>
+<p>The second backend <cite>burns.backends</cite> has named as its intended extension since it
+was written. The split is the one RULE G draws across the two packages:</p>
+<ul class="simple">
+<li><p><strong>burns owns the authored geometry.</strong> The <cite>BurnsPath</cite>, its easing, the
+decision that this is the shot, and — crucially — the cover-crop to the output
+aspect that <a class="reference internal" href="_frame.html#burns._frame.sample_box" title="burns._frame.sample_box"><code class="xref py py-func docutils literal notranslate"><span class="pre">burns._frame.sample_box()</span></code></a> already performs.</p></li>
+<li><p><strong>`looks` owns the compilation.</strong> Normalised keyframes in, an ffmpeg filter
+fragment out. It never learns what <code class="docutils literal notranslate"><span class="pre">ease_in_out</span></code> means.</p></li>
+<li><p><strong>burns runs the argv.</strong> <cite>looks</cite> starts no process that produces media; that
+is its own invariant, and executing is this module’s job.</p></li>
+</ul>
+<p>The dependency points <code class="docutils literal notranslate"><span class="pre">burns</span> <span class="pre">-&gt;</span> <span class="pre">looks</span></code>, which is legal because <cite>looks</cite> declares
+no dependencies at all and is stdlib-only on import. The reverse stays
+forbidden: <cite>burns</cite> pulls <cite>moviepy</cite>, which pulls a GPL-configured ffmpeg binary.</p>
+<p>## Why the geometry comes from <cite>sample_box</cite> and not from <cite>path.evaluate</cite></p>
+<p>The obvious adapter samples <cite>path.evaluate(t)</cite> and hands those rects to <cite>looks</cite>.
+That would be <strong>wrong</strong>, and wrong in the invisible direction: the pillow backend
+does not show <cite>evaluate(t)</cite> either — it shows that rect <em>cover-cropped to the
+output aspect</em> (<a class="reference internal" href="_frame.html#burns._frame.sample_box" title="burns._frame.sample_box"><code class="xref py py-func docutils literal notranslate"><span class="pre">burns._frame.sample_box()</span></code></a>, steps 1-3). Sampling the raw
+path would frame every clip differently from the default backend whenever the
+output aspect differs from the image’s, which is the common case.</p>
+<p>Reading the window out of <cite>sample_box</cite> instead makes the two backends agree <strong>by
+construction</strong> rather than by coincidence, and it means this module contains no
+second copy of the crop contract that the golden vectors pin.</p>
+<p>It also lands the path in exactly the shape <cite>looks</cite> wants: every window carries
+the output’s aspect, so they are all the same shape, and
+<code class="xref py py-func docutils literal notranslate"><span class="pre">looks.reframe_motion()</span></code> can lift the whole path into a frame of that shape.</p>
+<p>## What the sampling costs, measured</p>
+<p><cite>looks</cite> interpolates <strong>linearly</strong> between the keyframes it is given — that is the
+seam, not a limitation. So an eased path has to be sampled densely enough that
+the linear rebuild is indistinguishable from the easing. Measured on the default
+ease-in-out push-in, max deviation from the true path:</p>
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>n</p></th>
+<th class="head"><p>normalised</p></th>
+<th class="head"><p>at 1920 px</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>2</p></td>
+<td><p>0.0280</p></td>
+<td><p>53.7 px</p></td>
+</tr>
+<tr class="row-odd"><td><p>5</p></td>
+<td><p>0.00773</p></td>
+<td><p>14.8 px</p></td>
+</tr>
+<tr class="row-even"><td><p>9</p></td>
+<td><p>0.00199</p></td>
+<td><p>3.8 px</p></td>
+</tr>
+<tr class="row-odd"><td><p>17</p></td>
+<td><p>0.000496</p></td>
+<td><p>0.95 px</p></td>
+</tr>
+<tr class="row-even"><td><p>33</p></td>
+<td><p>0.000125</p></td>
+<td><p>0.24 px</p></td>
+</tr>
+</tbody>
+</table>
+<p>so the default is adaptive: sample until the worst deviation is under half a
+source pixel, rather than pin a magic number that is wasteful at SD and
+insufficient at 4K.</p>
+<dl class="py data">
+<dt class="sig sig-object py" id="burns._ffmpeg.DEVIATION_PROBES">
+<span class="sig-prename descclassname"><span class="pre">burns._ffmpeg.</span></span><span class="sig-name descname"><span class="pre">DEVIATION_PROBES</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">401</span></span><a class="headerlink" href="#burns._ffmpeg.DEVIATION_PROBES" title="Link to this definition"></a></dt>
+<dd><p>How many points the deviation is measured at. Dense enough that the worst
+excursion of a smooth easing is not stepped over.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="burns._ffmpeg.DFLT_PIX_FMT">
+<span class="sig-prename descclassname"><span class="pre">burns._ffmpeg.</span></span><span class="sig-name descname"><span class="pre">DFLT_PIX_FMT</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'yuv420p'</span></span><a class="headerlink" href="#burns._ffmpeg.DFLT_PIX_FMT" title="Link to this definition"></a></dt>
+<dd><p>Encoder default matching the pillow backend’s, so the two produce comparable
+files rather than differing on a flag nobody chose.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="burns._ffmpeg.DFLT_TOLERANCE_PX">
+<span class="sig-prename descclassname"><span class="pre">burns._ffmpeg.</span></span><span class="sig-name descname"><span class="pre">DFLT_TOLERANCE_PX</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.5</span></span><a class="headerlink" href="#burns._ffmpeg.DFLT_TOLERANCE_PX" title="Link to this definition"></a></dt>
+<dd><p>How far the linear rebuild of an eased path may stray from the path itself,
+in source pixels, before another sample is added. Half a pixel is below what
+any resampler can express, so a tighter tolerance buys nothing visible.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="burns._ffmpeg.DFLT_WRITE_KWARGS">
+<span class="sig-prename descclassname"><span class="pre">burns._ffmpeg.</span></span><span class="sig-name descname"><span class="pre">DFLT_WRITE_KWARGS</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'bitrate':</span> <span class="pre">'5000k',</span> <span class="pre">'preset':</span> <span class="pre">'medium'}</span></span><a class="headerlink" href="#burns._ffmpeg.DFLT_WRITE_KWARGS" title="Link to this definition"></a></dt>
+<dd><p>Matched to <cite>pillow_backend</cite>’s own <cite>setdefault</cite> calls, so swapping backends
+does not silently change the encode.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="burns._ffmpeg.FfmpegBackendError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">burns._ffmpeg.</span></span><span class="sig-name descname"><span class="pre">FfmpegBackendError</span></span><a class="reference internal" href="../../_modules/burns/_ffmpeg.html#FfmpegBackendError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#burns._ffmpeg.FfmpegBackendError" title="Link to this definition"></a></dt>
+<dd><p>This path or these options cannot be rendered by the ffmpeg backend.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="burns._ffmpeg.SAMPLE_LADDER">
+<span class="sig-prename descclassname"><span class="pre">burns._ffmpeg.</span></span><span class="sig-name descname"><span class="pre">SAMPLE_LADDER</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">(3,</span> <span class="pre">5,</span> <span class="pre">9,</span> <span class="pre">17,</span> <span class="pre">33,</span> <span class="pre">65)</span></span><a class="headerlink" href="#burns._ffmpeg.SAMPLE_LADDER" title="Link to this definition"></a></dt>
+<dd><p>Sample counts tried, in order. Each reuses the previous set’s points, and the
+ceiling is where the measured deviation is already sub-pixel at 4K.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="burns._ffmpeg.WRITE_KWARGS_IGNORED">
+<span class="sig-prename descclassname"><span class="pre">burns._ffmpeg.</span></span><span class="sig-name descname"><span class="pre">WRITE_KWARGS_IGNORED</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('logger',)</span></span><a class="headerlink" href="#burns._ffmpeg.WRITE_KWARGS_IGNORED" title="Link to this definition"></a></dt>
+<dd><p>Accepted and ignored, with a reason. <cite>logger</cite> is moviepy’s progress bar and
+has no ffmpeg meaning; the pillow backend defaults it, so a caller forwarding
+its own defaults must not trip the unknown-kwarg refusal.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="burns._ffmpeg.WRITE_KWARG_FLAGS">
+<span class="sig-prename descclassname"><span class="pre">burns._ffmpeg.</span></span><span class="sig-name descname"><span class="pre">WRITE_KWARG_FLAGS</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'bitrate':</span> <span class="pre">'-b:v',</span> <span class="pre">'preset':</span> <span class="pre">'-preset'}</span></span><a class="headerlink" href="#burns._ffmpeg.WRITE_KWARG_FLAGS" title="Link to this definition"></a></dt>
+<dd><p><cite>write_videofile</cite> keywords this backend understands, mapped to ffmpeg flags.
+Anything else raises rather than being silently dropped — a caller who gets a
+kwarg ignored has no signal that the backends are not interchangeable.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="burns._ffmpeg.default_ffmpeg_exe">
+<span class="sig-prename descclassname"><span class="pre">burns._ffmpeg.</span></span><span class="sig-name descname"><span class="pre">default_ffmpeg_exe</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../../_modules/burns/_ffmpeg.html#default_ffmpeg_exe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#burns._ffmpeg.default_ffmpeg_exe" title="Link to this definition"></a></dt>
+<dd><p>The ffmpeg binary this backend runs.</p>
+<p>Defaults to the one <cite>imageio-ffmpeg</cite> bundles, which every burns install
+already has via moviepy — so the backend needs no new system requirement.
+Falls back to a system <cite>ffmpeg</cite> on PATH.</p>
+<p><strong>That bundled binary is a ``–enable-gpl`` build.</strong> For most callers that is
+irrelevant; for one shipping a commercial product it is exactly the question
+<cite>looks</cite> exists to answer, which is why <a class="reference internal" href="#burns._ffmpeg.ffmpeg_backend" title="burns._ffmpeg.ffmpeg_backend"><code class="xref py py-func docutils literal notranslate"><span class="pre">ffmpeg_backend()</span></code></a> takes an
+<code class="docutils literal notranslate"><span class="pre">ffmpeg_exe</span></code> argument rather than hard-coding this.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="burns._ffmpeg.ffmpeg_backend">
+<span class="sig-prename descclassname"><span class="pre">burns._ffmpeg.</span></span><span class="sig-name descname"><span class="pre">ffmpeg_backend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img_np</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_w</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_h</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="path.html#burns.path.BurnsPath" title="burns.path.BurnsPath"><span class="pre">BurnsPath</span></a></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_w</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_h</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">codec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">audio_codec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ffmpeg_exe</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">write_kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Path</span></span></span><a class="reference internal" href="../../_modules/burns/_ffmpeg.html#ffmpeg_backend"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#burns._ffmpeg.ffmpeg_backend" title="Link to this definition"></a></dt>
+<dd><p>Render one image + path with a single ffmpeg process.</p>
+<p>One decode, one filter graph, one encode — against the pillow backend’s
+per-frame Python resampling.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>samples</strong> – How many keyframes to sample the path into. <code class="docutils literal notranslate"><span class="pre">None</span></code> (default)
+measures it: enough that the linear rebuild stays within half a
+source pixel of the eased path.</p></li>
+<li><p><strong>ffmpeg_exe</strong> – Which binary. Defaults to <a class="reference internal" href="#burns._ffmpeg.default_ffmpeg_exe" title="burns._ffmpeg.default_ffmpeg_exe"><code class="xref py py-func docutils literal notranslate"><span class="pre">default_ffmpeg_exe()</span></code></a>, the one
+<cite>imageio-ffmpeg</cite> bundles — note that it is a GPL-configured build.</p></li>
+<li><p><strong>audio_codec</strong> – <strong>Accepted and ignored.</strong> A still image has no audio track,
+so nothing is ever encoded; the pillow backend is in the same
+position, where the argument reaches <cite>write_videofile</cite> with nothing
+to encode. Said out loud rather than left for a reader to assume
+audio works.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#burns._ffmpeg.FfmpegBackendError" title="burns._ffmpeg.FfmpegBackendError"><strong>FfmpegBackendError</strong></a> – If the path cannot be compiled to a filter fragment,
+    or an unrecognised <cite>write_videofile</cite> keyword is passed. Both name
+    <code class="docutils literal notranslate"><span class="pre">backend=&quot;pillow&quot;</span></code> as the way through, because it is.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="burns._ffmpeg.keyframes_for">
+<span class="sig-prename descclassname"><span class="pre">burns._ffmpeg.</span></span><span class="sig-name descname"><span class="pre">keyframes_for</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="path.html#burns.path.BurnsPath" title="burns.path.BurnsPath"><span class="pre">BurnsPath</span></a></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_w</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_h</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_w</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_h</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/burns/_ffmpeg.html#keyframes_for"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#burns._ffmpeg.keyframes_for" title="Link to this definition"></a></dt>
+<dd><p>Sample a <cite>BurnsPath</cite> into the keyframes <cite>looks</cite> compiles.</p>
+<p>Two clocks meet here and they are not the same one: burns’ path is
+parameterised on a <strong>normalised</strong> <code class="docutils literal notranslate"><span class="pre">t</span> <span class="pre">in</span> <span class="pre">[0,</span> <span class="pre">1]</span></code> and <cite>looks</cite> keyframes carry
+a time in <strong>seconds</strong>. Getting that wrong produces a path that runs in the
+first second of a ten-second clip and then holds, which renders fine.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="burns._ffmpeg.sample_count">
+<span class="sig-prename descclassname"><span class="pre">burns._ffmpeg.</span></span><span class="sig-name descname"><span class="pre">sample_count</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="path.html#burns.path.BurnsPath" title="burns.path.BurnsPath"><span class="pre">BurnsPath</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_w</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_h</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_w</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_h</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">tolerance_px</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="reference internal" href="../../_modules/burns/_ffmpeg.html#sample_count"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#burns._ffmpeg.sample_count" title="Link to this definition"></a></dt>
+<dd><p>How many keyframes this path needs to survive linear interpolation.</p>
+<p>Climbs <a class="reference internal" href="#burns._ffmpeg.SAMPLE_LADDER" title="burns._ffmpeg.SAMPLE_LADDER"><code class="xref py py-data docutils literal notranslate"><span class="pre">SAMPLE_LADDER</span></code></a> until the worst deviation is under
+<code class="docutils literal notranslate"><span class="pre">tolerance_px</span></code> source pixels, and returns the ladder’s top if none is.</p>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../burns.html" class="btn btn-neutral float-left" title="burns" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="_frame.html" class="btn btn-neutral float-right" title="burns._frame" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p></p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

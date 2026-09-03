@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Index &mdash; burns 0.0.8 documentation</title>
+  <title>Index &mdash; burns 0.0.9 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="_static/jquery.js?v=5d32c60e"></script>
       <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=53b53b71"></script>
+      <script src="_static/documentation_options.js?v=f7cdbf68"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -47,6 +47,7 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="module_docs/burns.html">burns</a></li>
+<li class="toctree-l1"><a class="reference internal" href="module_docs/burns/_ffmpeg.html">burns._ffmpeg</a></li>
 <li class="toctree-l1"><a class="reference internal" href="module_docs/burns/_frame.html">burns._frame</a></li>
 <li class="toctree-l1"><a class="reference internal" href="module_docs/burns/_util.html">burns._util</a></li>
 <li class="toctree-l1"><a class="reference internal" href="module_docs/burns/backends.html">burns.backends</a></li>
@@ -100,6 +101,7 @@
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
  | <a href="#T"><strong>T</strong></a>
+ | <a href="#W"><strong>W</strong></a>
  | <a href="#Z"><strong>Z</strong></a>
  
 </div>
@@ -123,6 +125,13 @@
 
       <ul>
         <li><a href="module_docs/burns.html#module-burns">module</a>
+</li>
+      </ul></li>
+      <li>
+    burns._ffmpeg
+
+      <ul>
+        <li><a href="module_docs/burns/_ffmpeg.html#module-burns._ffmpeg">module</a>
 </li>
       </ul></li>
       <li>
@@ -233,6 +242,20 @@
 <h2 id="D">D</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="module_docs/burns/_ffmpeg.html#burns._ffmpeg.default_ffmpeg_exe">default_ffmpeg_exe() (in module burns._ffmpeg)</a>
+</li>
+      <li><a href="module_docs/burns/_ffmpeg.html#burns._ffmpeg.DEVIATION_PROBES">DEVIATION_PROBES (in module burns._ffmpeg)</a>
+</li>
+      <li><a href="module_docs/burns/backends.html#burns.backends.DFLT_BACKEND">DFLT_BACKEND (in module burns.backends)</a>
+</li>
+      <li><a href="module_docs/burns/_ffmpeg.html#burns._ffmpeg.DFLT_PIX_FMT">DFLT_PIX_FMT (in module burns._ffmpeg)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="module_docs/burns/_ffmpeg.html#burns._ffmpeg.DFLT_TOLERANCE_PX">DFLT_TOLERANCE_PX (in module burns._ffmpeg)</a>
+</li>
+      <li><a href="module_docs/burns/_ffmpeg.html#burns._ffmpeg.DFLT_WRITE_KWARGS">DFLT_WRITE_KWARGS (in module burns._ffmpeg)</a>
+</li>
       <li><a href="module_docs/burns.html#burns.BurnsPath.duration_keyframes">duration_keyframes (burns.BurnsPath property)</a>
 
       <ul>
@@ -262,6 +285,10 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="module_docs/burns/content.html#burns.content.FacesDetector">FacesDetector (in module burns.content)</a>
+</li>
+      <li><a href="module_docs/burns/_ffmpeg.html#burns._ffmpeg.ffmpeg_backend">ffmpeg_backend() (in module burns._ffmpeg)</a>
+</li>
+      <li><a href="module_docs/burns/_ffmpeg.html#burns._ffmpeg.FfmpegBackendError">FfmpegBackendError</a>
 </li>
       <li><a href="module_docs/burns.html#burns.Rect.from_center_zoom">from_center_zoom() (burns.Rect class method)</a>
 
@@ -333,6 +360,8 @@
         <li><a href="module_docs/burns/render.html#burns.render.ken_burns_video">(in module burns.render)</a>
 </li>
       </ul></li>
+      <li><a href="module_docs/burns/_ffmpeg.html#burns._ffmpeg.keyframes_for">keyframes_for() (in module burns._ffmpeg)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -356,6 +385,8 @@
 
       <ul>
         <li><a href="module_docs/burns.html#module-burns">burns</a>
+</li>
+        <li><a href="module_docs/burns/_ffmpeg.html#module-burns._ffmpeg">burns._ffmpeg</a>
 </li>
         <li><a href="module_docs/burns/_frame.html#module-burns._frame">burns._frame</a>
 </li>
@@ -448,11 +479,15 @@
         <li><a href="module_docs/burns/content.html#burns.content.salient_box">(in module burns.content)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="module_docs/burns/_frame.html#burns._frame.sample_box">sample_box() (in module burns._frame)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="module_docs/burns/_ffmpeg.html#burns._ffmpeg.sample_count">sample_count() (in module burns._ffmpeg)</a>
+</li>
       <li><a href="module_docs/burns/_frame.html#burns._frame.sample_frame">sample_frame() (in module burns._frame)</a>
+</li>
+      <li><a href="module_docs/burns/_ffmpeg.html#burns._ffmpeg.SAMPLE_LADDER">SAMPLE_LADDER (in module burns._ffmpeg)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -474,6 +509,18 @@
         <li><a href="module_docs/burns/rect.html#burns.rect.Rect.to_pixels">(burns.rect.Rect method)</a>
 </li>
       </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="W">W</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="module_docs/burns/_ffmpeg.html#burns._ffmpeg.WRITE_KWARG_FLAGS">WRITE_KWARG_FLAGS (in module burns._ffmpeg)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="module_docs/burns/_ffmpeg.html#burns._ffmpeg.WRITE_KWARGS_IGNORED">WRITE_KWARGS_IGNORED (in module burns._ffmpeg)</a>
+</li>
   </ul></td>
 </tr></table>
 

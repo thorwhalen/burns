@@ -5,7 +5,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>burns.backends &mdash; burns 0.0.8 documentation</title>
+  <title>burns.backends &mdash; burns 0.0.9 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=9edc463e" />
       <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -14,7 +14,7 @@
   
       <script src="../../_static/jquery.js?v=5d32c60e"></script>
       <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../_static/documentation_options.js?v=53b53b71"></script>
+      <script src="../../_static/documentation_options.js?v=f7cdbf68"></script>
       <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../../_static/toggleprompt.js?v=d7ede5d2"></script>
@@ -47,6 +47,7 @@
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/burns.html">burns</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../module_docs/burns/_ffmpeg.html">burns._ffmpeg</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/burns/_frame.html">burns._frame</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/burns/_util.html">burns._util</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../module_docs/burns/backends.html">burns.backends</a></li>
@@ -82,21 +83,21 @@
            <div itemprop="articleBody">
              
   <h1>Source code for burns.backends</h1><div class="highlight"><pre>
-<span></span><span class="sd">&quot;&quot;&quot;Pluggable single-clip render backends — the open-closed seam.</span>
+<span></span><span class="sd">"""Pluggable single-clip render backends — the open-closed seam.</span>
 
 <span class="sd">A backend turns one ``(image, BurnsPath, duration)`` into one video file. They</span>
 <span class="sd">all share the :class:`RenderBackend` call signature and live in a name-keyed</span>
 <span class="sd">:data:`RENDER_BACKENDS` registry, so adding a backend (an FFmpeg ``zoompan``</span>
 <span class="sd">fast-path, a future GPU path) never edits the facade — you</span>
-<span class="sd">:func:`register_backend` it and select it with ``backend=&quot;…&quot;``.</span>
+<span class="sd">:func:`register_backend` it and select it with ``backend="…"``.</span>
 
-<span class="sd">The default backend, ``&quot;pillow&quot;``, drives a lazy ``moviepy.VideoClip`` whose</span>
+<span class="sd">The default backend, ``"pillow"``, drives a lazy ``moviepy.VideoClip`` whose</span>
 <span class="sd">per-frame closure calls :func:`burns._frame.sample_frame`, so the whole clip is</span>
 <span class="sd">never materialized in memory and the spec-to-pixel mapping stays in one place.</span>
 <span class="sd">The multi-panel film renderer in :mod:`burns.render` deliberately does *not* go</span>
 <span class="sd">through this registry — it is a single-pass encode across panels, which a</span>
 <span class="sd">per-clip backend cannot express.</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">"""</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
@@ -113,13 +114,13 @@
 <div class="viewcode-block" id="RenderBackend">
 <a class="viewcode-back" href="../../module_docs/burns/backends.html#burns.RenderBackend">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">RenderBackend</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Encode one image + :class:`BurnsPath` into a video file at ``output``.</span>
+<span class="w">    </span><span class="sd">"""Encode one image + :class:`BurnsPath` into a video file at ``output``.</span>
 
 <span class="sd">    Args mirror :func:`burns.ken_burns_video` after argument resolution: the</span>
 <span class="sd">    image is already a decoded ``(H, W, C)`` uint8 array with its pixel size,</span>
 <span class="sd">    and the output frame size ``(out_w, out_h)`` is already even-snapped.</span>
 <span class="sd">    Returns the written path.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -157,21 +158,21 @@
     <span class="n">audio_codec</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
     <span class="o">**</span><span class="n">write_kwargs</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Default backend: lazy moviepy ``VideoClip`` + per-frame Pillow resampling.</span>
+<span class="w">    </span><span class="sd">"""Default backend: lazy moviepy ``VideoClip`` + per-frame Pillow resampling.</span>
 
 <span class="sd">    Quality default; jitter-free (the window is computed in floating point and</span>
 <span class="sd">    rasterized once per frame, so there is no FFmpeg ``zoompan`` integer-rounding</span>
 <span class="sd">    stair-step).</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">make_frame</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
-        <span class="c1"># moviepy drives t in seconds; the path&#39;s clock is normalized.</span>
+        <span class="c1"># moviepy drives t in seconds; the path's clock is normalized.</span>
         <span class="k">return</span> <span class="n">sample_frame</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">t</span> <span class="o">/</span> <span class="n">duration</span><span class="p">,</span> <span class="n">img_np</span><span class="p">,</span> <span class="n">img_w</span><span class="p">,</span> <span class="n">img_h</span><span class="p">,</span> <span class="n">out_w</span><span class="p">,</span> <span class="n">out_h</span><span class="p">)</span>
 
     <span class="n">clip</span> <span class="o">=</span> <span class="n">mp</span><span class="o">.</span><span class="n">VideoClip</span><span class="p">(</span><span class="n">make_frame</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="n">duration</span><span class="p">)</span><span class="o">.</span><span class="n">with_fps</span><span class="p">(</span><span class="n">fps</span><span class="p">)</span>
-    <span class="n">write_kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;bitrate&quot;</span><span class="p">,</span> <span class="s2">&quot;5000k&quot;</span><span class="p">)</span>
-    <span class="n">write_kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;preset&quot;</span><span class="p">,</span> <span class="s2">&quot;medium&quot;</span><span class="p">)</span>
-    <span class="n">write_kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">&quot;logger&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">write_kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">"bitrate"</span><span class="p">,</span> <span class="s2">"5000k"</span><span class="p">)</span>
+    <span class="n">write_kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">"preset"</span><span class="p">,</span> <span class="s2">"medium"</span><span class="p">)</span>
+    <span class="n">write_kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s2">"logger"</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
     <span class="n">clip</span><span class="o">.</span><span class="n">write_videofile</span><span class="p">(</span>
         <span class="nb">str</span><span class="p">(</span><span class="n">output</span><span class="p">),</span> <span class="n">codec</span><span class="o">=</span><span class="n">codec</span><span class="p">,</span> <span class="n">audio_codec</span><span class="o">=</span><span class="n">audio_codec</span><span class="p">,</span> <span class="o">**</span><span class="n">write_kwargs</span>
     <span class="p">)</span>
@@ -180,16 +181,34 @@
 
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_ffmpeg_backend</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""The ffmpeg backend, imported on first use.</span>
+
+<span class="sd">    Deferred so that `import burns` does not pull `looks` in for callers who</span>
+<span class="sd">    never ask for this backend — the same courtesy `looks` extends its own CLI.</span>
+<span class="sd">    """</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">burns._ffmpeg</span><span class="w"> </span><span class="kn">import</span> <span class="n">ffmpeg_backend</span>
+
+    <span class="k">return</span> <span class="n">ffmpeg_backend</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+
 <span class="n">RENDER_BACKENDS</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Path</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">&quot;pillow&quot;</span><span class="p">:</span> <span class="n">pillow_backend</span><span class="p">,</span>
+    <span class="s2">"pillow"</span><span class="p">:</span> <span class="n">pillow_backend</span><span class="p">,</span>
+    <span class="s2">"ffmpeg"</span><span class="p">:</span> <span class="n">_ffmpeg_backend</span><span class="p">,</span>
 <span class="p">}</span>
-<span class="n">DFLT_BACKEND</span> <span class="o">=</span> <span class="s2">&quot;pillow&quot;</span>
+
+<span class="c1">#: Still `pillow`, deliberately. The two backends are NOT pixel-equivalent</span>
+<span class="c1">#: (measured ~47 dB, dominated by resampler choice rather than by anything</span>
+<span class="c1">#: either does wrong), so flipping the default would silently change the output</span>
+<span class="c1">#: of every existing caller. The speed advantage that motivates the ffmpeg path</span>
+<span class="c1">#: is also still unmeasured — see thorwhalen/burns#12.</span>
+<span class="n">DFLT_BACKEND</span> <span class="o">=</span> <span class="s2">"pillow"</span>
 
 
 <div class="viewcode-block" id="register_backend">
 <a class="viewcode-back" href="../../module_docs/burns/backends.html#burns.register_backend">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">register_backend</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">backend</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Path</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Register a render backend under ``name`` (open-closed extension point).&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Register a render backend under ``name`` (open-closed extension point)."""</span>
     <span class="n">RENDER_BACKENDS</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">backend</span></div>
 
 
@@ -197,18 +216,18 @@
 <div class="viewcode-block" id="get_backend">
 <a class="viewcode-back" href="../../module_docs/burns/backends.html#burns.get_backend">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_backend</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">DFLT_BACKEND</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Path</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Look up a registered backend by name.</span>
+<span class="w">    </span><span class="sd">"""Look up a registered backend by name.</span>
 
 <span class="sd">    Examples:</span>
-<span class="sd">        &gt;&gt;&gt; get_backend() is get_backend(&quot;pillow&quot;)</span>
+<span class="sd">        &gt;&gt;&gt; get_backend() is get_backend("pillow")</span>
 <span class="sd">        True</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+<span class="sd">    """</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">RENDER_BACKENDS</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
     <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-            <span class="sa">f</span><span class="s2">&quot;burns: unknown render backend </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">. &quot;</span>
-            <span class="sa">f</span><span class="s2">&quot;Available: </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">RENDER_BACKENDS</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">"burns: unknown render backend </span><span class="si">{</span><span class="n">name</span><span class="si">!r}</span><span class="s2">. "</span>
+            <span class="sa">f</span><span class="s2">"Available: </span><span class="si">{</span><span class="nb">sorted</span><span class="p">(</span><span class="n">RENDER_BACKENDS</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
         <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="kc">None</span></div>
 
 </pre></div>
