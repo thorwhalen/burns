@@ -23,6 +23,13 @@ plus `content_aware_path, content_aware_path_for, salient_box, FacesDetector`.
 
 Requires `ffmpeg` on PATH (moviepy encodes with it). Deps: numpy, moviepy, pillow.
 
+> **Need text on the film — captions, a source line, a title card, credits?
+> Use `tituli`.** It composites rendered text onto the *finished* Ken Burns
+> video (text burned into a still would pan and zoom with the picture), and
+> `salient_box` is its `avoid=` seam: `tituli.Frame.from_image(still,
+> avoid=burns.salient_box)` keeps the caption off the subject. Read its skill
+> before writing any `ImageDraw` overlay.
+
 ## The viewport: `Rect(x, y, w, h)`
 
 A *rect* is a normalized window over the image: `(x, y, w, h)` all in `[0, 1]`,
