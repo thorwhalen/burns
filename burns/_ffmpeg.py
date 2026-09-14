@@ -5,7 +5,7 @@ was written. The split is the one RULE G draws across the two packages:
 
 - **burns owns the authored geometry.** The `BurnsPath`, its easing, the
   decision that this is the shot, and — crucially — the cover-crop to the output
-  aspect that :func:`burns._frame.sample_box` already performs.
+  aspect that :func:`burns._frame.sample_box_exact` already performs.
 - **`looks` owns the compilation.** Normalised keyframes in, an ffmpeg filter
   fragment out. It never learns what ``ease_in_out`` means.
 - **burns runs the argv.** `looks` starts no process that produces media; that
@@ -15,16 +15,16 @@ The dependency points ``burns -> looks``, which is legal because `looks` declare
 no dependencies at all and is stdlib-only on import. The reverse stays
 forbidden: `burns` pulls `moviepy`, which pulls a GPL-configured ffmpeg binary.
 
-## Why the geometry comes from `sample_box` and not from `path.evaluate`
+## Why the geometry comes from `sample_box_exact` and not from `path.evaluate`
 
 The obvious adapter samples `path.evaluate(t)` and hands those rects to `looks`.
 That would be **wrong**, and wrong in the invisible direction: the pillow backend
 does not show `evaluate(t)` either — it shows that rect *cover-cropped to the
-output aspect* (:func:`burns._frame.sample_box`, steps 1-3). Sampling the raw
+output aspect* (:func:`burns._frame.sample_box_exact`, steps 1-3). Sampling the raw
 path would frame every clip differently from the default backend whenever the
 output aspect differs from the image's, which is the common case.
 
-Reading the window out of `sample_box` instead makes the two backends agree **by
+Reading the window out of `sample_box_exact` instead makes the two backends agree **by
 construction** rather than by coincidence, and it means this module contains no
 second copy of the crop contract that the golden vectors pin.
 
@@ -64,7 +64,7 @@ from typing import Optional
 import numpy as np
 from PIL import Image as PIL_Image
 
-from burns._frame import sample_box
+from burns._frame import sample_box_exact
 from burns.path import BurnsPath
 
 #: How far the linear rebuild of an eased path may stray from the path itself,
@@ -137,32 +137,21 @@ def _window_at(
 ):
     """The window burns actually shows at ``t``, normalised for `looks`.
 
-    Read out of :func:`sample_box`, so it includes the cover-crop to the output
-    aspect and agrees with the pillow backend by construction.
+    Read out of :func:`sample_box_exact`, so it includes the cover-crop to the
+    output aspect and agrees with the pillow backend by construction — both
+    backends now sample the same sub-pixel geometry.
+
+    This used to read the INTEGER :func:`sample_box` and then reconstruct a float
+    window from its centre and area, because the rounded box's aspect carried up
+    to a pixel of quantisation and `zoompan` can only show one shape. That
+    reconstruction was a local repair of the rounding that
+    :func:`sample_box_exact` now simply does not introduce; the exact box is
+    cover-cropped in floats, so it carries the output aspect exactly.
     """
     from looks.motion import Window
 
-    x0, y0, x1, y1 = sample_box(path, t, img_w, img_h, out_w, out_h)
-    box_w, box_h = x1 - x0, y1 - y0
-
-    # `sample_box` has already cover-cropped to the output aspect, but it
-    # returns an INTEGER box for array slicing — so the aspect it hands back
-    # carries up to a pixel of quantisation, and no two frames agree on it
-    # exactly. Measured on a 1.35x push-in over 640x480 into 16:9: ratios
-    # spread across 1.3310-1.3358 where every one of them means 1.3333.
-    #
-    # `zoompan` can only show ONE shape, so it needs the aspect that was meant,
-    # not the aspect that survived rounding. Restore it about the box's centre,
-    # holding the area, so the correction is split between the two axes and is
-    # sub-pixel on both. Doing this here rather than loosening looks' tolerance
-    # is deliberate: a loose tolerance there would silently accept a genuinely
-    # anisotropic path and render a shape nobody asked for.
-    target = out_w / out_h
-    exact_h = (box_w * box_h / target) ** 0.5
-    exact_w = target * exact_h
-    x = min(max((x0 + x1) / 2 - exact_w / 2, 0.0), max(img_w - exact_w, 0.0))
-    y = min(max((y0 + y1) / 2 - exact_h / 2, 0.0), max(img_h - exact_h, 0.0))
-    return Window(x / img_w, y / img_h, exact_w / img_w, exact_h / img_h)
+    x0, y0, x1, y1 = sample_box_exact(path, t, img_w, img_h, out_w, out_h)
+    return Window(x0 / img_w, y0 / img_h, (x1 - x0) / img_w, (y1 - y0) / img_h)
 
 
 def _max_deviation(
@@ -175,12 +164,11 @@ def _max_deviation(
     replaces the author's easing with a linear approximation, which still renders
     and is simply the wrong motion.
     """
-    # Measured on `path.evaluate` — the SMOOTH authored path — and deliberately
-    # not on `_window_at`. The latter goes through `sample_box`, whose integer
-    # quantisation is up to a pixel of noise that no amount of sampling can
-    # track: measuring there conflates "the easing needs more keyframes" with
-    # "the box rounded", and the adaptive search then never converges and
-    # always returns the ladder's top.
+    # Measured on `path.evaluate` — the SMOOTH authored path — which is the
+    # quantity the sampling density is actually about: how many knots the easing
+    # needs. `_window_at` additionally cover-crops to the output aspect, which is
+    # a fixed reshaping rather than a source of curvature, so measuring here
+    # keeps the adaptive search answering one question.
     knots = [i / (n - 1) for i in range(n)]
     samples = [path.evaluate(t) for t in knots]
     worst = 0.0
