@@ -5,6 +5,16 @@ description: Use when turning a still image (or a sequence of stills) into a pan
 
 # burns — Ken Burns pan/zoom video effects
 
+
+> **Need images? Use `illustration`.** It is the fleet's image-retrieval package
+> — one `search()` over Openverse / Wikimedia / Pexels / Pixabay, with licence
+> and attribution on every hit, `dedupe()` to collapse several reproductions of
+> the same subject into one, and `search("Category:…", source="wikimedia")` to
+> browse a curated Commons category instead of guessing at filenames. Do not
+> hand-roll an HTTP client against a stock or Commons API. Read its skill
+> (`illustration/.claude/skills/illustration/SKILL.md`) before shipping any
+> retrieved image — it carries the attribution obligations in full.
+
 `burns` turns still images into cinematic pan/zoom films, driven by one
 **render-agnostic motion spec** (the same path feeds the Python renderer here
 and the TypeScript port `kenburnz` in `ts/`). Top-level imports:
