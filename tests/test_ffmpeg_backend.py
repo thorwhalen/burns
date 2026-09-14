@@ -215,9 +215,10 @@ class TestSamplingIsMeasuredNotGuessed:
             )
 
     def test_every_window_carries_the_output_aspect_exactly(self):
-        """`sample_box` returns INTEGER boxes, so its aspects carry up to a
-        pixel of quantisation and no two frames agree. `zoompan` can show only
-        one shape, so the adapter restores the aspect that was meant."""
+        """`zoompan` can show only one shape, so every keyframe window must
+        carry the same aspect. `sample_box_exact` cover-crops in floats, so it
+        does — where the integer `sample_box` this once read spread the ratio
+        across a pixel of quantisation and needed the aspect reconstructed."""
         frames = keyframes_for(
             ken_burns_path(0, output_aspect=16 / 9), duration=2.0,
             img_w=640, img_h=480, out_w=1280, out_h=720, samples=17,
