@@ -199,6 +199,58 @@ def sample_box_exact(
     return _cover_crop_box_exact(x0, y0, x1, y1, out_w / out_h)
 
 
+def clamp_box_to_image(
+    x0: float, y0: float, x1: float, y1: float, img_w: int, img_h: int
+) -> tuple[float, float, float, float]:
+    """Confine a sub-pixel crop box to the image, in float space.
+
+    **This exists because of a specific, recurring, hard-to-see bug.** The box
+    that comes out of :func:`sample_box_exact` can sit a hair outside the image
+    — not by a pixel, by a rounding error. ``Rect.clamped()`` clamps the
+    *normalized* rect to ``[0, 1]``, but the cover-crop expansion that fits it
+    to the output aspect happens afterwards, in floats, so an edge that should
+    be exactly ``0.0`` comes back as ``-1.1e-14`` and one that should be exactly
+    ``img_h`` comes back a hair over.
+
+    Left unclamped, that tiny negative is destructive rather than harmless::
+
+        math.floor(-1.1e-14) == -1          # not 0
+        img_np[-1:1920]                      # numpy: "from the LAST row"
+                                             # -> a 1-row crop, not the top edge
+
+    The frame is then resampled from **a completely different region of the
+    picture**, and the two ways that surfaces are both bad:
+
+    * the relative box no longer fits the crop, and Pillow raises
+      ``ValueError: box can't exceed original image size`` — killing a render
+      that may be most of the way through; or, worse,
+    * it *does* fit, Pillow resamples happily, and the finished film contains a
+      frame that abruptly shows a different rectangle of the still. On screen
+      that reads as the motion "jumping". It is intermittent and
+      geometry-dependent — it turns on whether a float lands just below zero —
+      which is exactly what makes it keep coming back.
+
+    Clamping in float space, before anything is floored, removes both.
+
+    Examples:
+        >>> clamp_box_to_image(-1.1e-14, -1.1e-14, 1080.0, 1920.0000001, 1080, 1920)
+        (0.0, 0.0, 1080.0, 1920.0)
+        >>> clamp_box_to_image(10.5, 20.25, 100.5, 200.75, 1080, 1920)
+        (10.5, 20.25, 100.5, 200.75)
+
+    A degenerate box stays ordered rather than inverting:
+
+        >>> clamp_box_to_image(50.0, 10.0, 20.0, 5.0, 100, 100)
+        (50.0, 10.0, 50.0, 10.0)
+    """
+    fw, fh = float(img_w), float(img_h)
+    x0 = min(max(x0, 0.0), fw)
+    y0 = min(max(y0, 0.0), fh)
+    x1 = min(max(x1, x0), fw)
+    y1 = min(max(y1, y0), fh)
+    return x0, y0, x1, y1
+
+
 def sample_frame(
     path: BurnsPath,
     t: float,
@@ -225,14 +277,25 @@ def sample_frame(
     Returns an ``(out_h, out_w, C)`` uint8 array.
     """
     fx0, fy0, fx1, fy1 = sample_box_exact(path, t, img_w, img_h, out_w, out_h)
+    fx0, fy0, fx1, fy1 = clamp_box_to_image(fx0, fy0, fx1, fy1, img_w, img_h)
 
     # Slice the enclosing integer box, then let resize() do the sub-pixel part
-    # relative to that slice.
+    # relative to that slice. The clamp above is what makes ix0/iy0 safe to use
+    # as numpy indices — see clamp_box_to_image for why that matters.
     ix0, iy0 = int(math.floor(fx0)), int(math.floor(fy0))
     ix1, iy1 = min(img_w, int(math.ceil(fx1))), min(img_h, int(math.ceil(fy1)))
     crop = img_np[iy0:iy1, ix0:ix1]
 
-    relative_box = (fx0 - ix0, fy0 - iy0, fx1 - ix0, fy1 - iy0)
+    # And clamp the sub-pixel box to what was actually sliced. ceil() of the far
+    # edge can land one pixel short of the float edge after the min() above, and
+    # Pillow rejects a box wider than its source rather than clipping it.
+    crop_h, crop_w = crop.shape[0], crop.shape[1]
+    relative_box = (
+        max(0.0, fx0 - ix0),
+        max(0.0, fy0 - iy0),
+        min(float(crop_w), fx1 - ix0),
+        min(float(crop_h), fy1 - iy0),
+    )
     crop_img = PIL_Image.fromarray(crop).resize(
         (out_w, out_h), resample=resample, box=relative_box
     )
