@@ -1,4 +1,0 @@
-burns.backends
-==============
-.. automodule:: burns.backends
-   :members:

@@ -1,4 +1,0 @@
-burns.content
-=============
-.. automodule:: burns.content
-   :members:

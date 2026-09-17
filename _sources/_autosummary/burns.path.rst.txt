@@ -1,0 +1,18 @@
+burns.path
+==========
+
+.. automodule:: burns.path
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      ken_burns_path
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      BurnsPath
+   

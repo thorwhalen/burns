@@ -1,0 +1,26 @@
+# burns
+
+> Ken Burns pan/zoom video effects: turn a still image (or a sequence of stills) into a cinematic pan/zoom film.
+
+
+## Pages
+
+- [burns](index.html.md): Ken Burns pan/zoom video effects: turn a still image — or a sequence of stills —
+- [API reference](api.html.md): | [`burns`](_autosummary/burns.html.md#module-burns)   | burns — Ken Burns pan/zoom video effects.  ...
+- [burns](_autosummary/burns.html.md): burns — Ken Burns pan/zoom video effects.
+- [burns.backends](_autosummary/burns.backends.html.md): Pluggable single-clip render backends — the open-closed seam.
+- [burns.content](_autosummary/burns.content.html.md): Content-aware Ken Burns: choose crop windows that keep the subject (and any
+- [burns.easing](_autosummary/burns.easing.html.md): Timing functions (easing) for Ken Burns motion.
+- [burns.path](_autosummary/burns.path.html.md): The render-agnostic Ken Burns motion spec: [`BurnsPath`](#burns.path.BurnsPath).
+- [burns.rect](_autosummary/burns.rect.html.md): The Ken Burns viewport rectangle — the render-agnostic geometric atom.
+- [burns.render](_autosummary/burns.render.html.md): Ken Burns **renderers** — turn still images into pan/zoom video.
+- [For AI agents](ai-agents.html.md): `burns` ships artifacts for coding agents alongside its code. This page lists
+- [About this build](about-this-build.html.md): This documentation was built on **2026-09-17 08:08 UTC** from commit <a href="https://github.com/tho...
+
+---
+
+For more comprehensive documentation, see [burns.md](burns.md)
+
+## Build
+
+- [build_info.json](build_info.json): build provenance (commit, version, tool versions, whether the docs match the package)

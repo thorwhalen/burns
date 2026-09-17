@@ -1,4 +1,0 @@
-burns
-=====
-.. automodule:: burns
-   :members:

@@ -1,4 +1,0 @@
-burns.rect
-==========
-.. automodule:: burns.rect
-   :members:

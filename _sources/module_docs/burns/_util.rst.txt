@@ -1,4 +1,0 @@
-burns._util
-===========
-.. automodule:: burns._util
-   :members:

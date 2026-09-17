@@ -1,0 +1,12 @@
+burns.rect
+==========
+
+.. automodule:: burns.rect
+
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Rect
+   

@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "built_at": "2026-09-17T08:08:57Z",
+  "package": {
+    "name": "burns",
+    "version": "0.0.13",
+    "display_name": "burns",
+    "source": "pyproject.toml"
+  },
+  "git": {
+    "available": true,
+    "commit": "92eec83a477468980ef6a62bdf058693167d23ed",
+    "short_commit": "92eec83",
+    "branch": "main",
+    "tags": [],
+    "dirty": false,
+    "remote_url": "https://github.com/thorwhalen/burns",
+    "commit_url": "https://github.com/thorwhalen/burns/commit/92eec83a477468980ef6a62bdf058693167d23ed",
+    "error": null
+  },
+  "ci": {
+    "provider": "github",
+    "repository": "thorwhalen/burns",
+    "sha": "92eec83a477468980ef6a62bdf058693167d23ed",
+    "sha_in_history": true,
+    "ref": "refs/heads/main",
+    "ref_name": "main",
+    "run_id": "35197836367",
+    "run_url": "https://github.com/thorwhalen/burns/actions/runs/35197836367",
+    "server_url": "https://github.com"
+  },
+  "tools": {
+    "epythet": "0.2.12",
+    "sphinx": "9.1.0",
+    "docutils": "0.22.4",
+    "python": "3.12.14"
+  },
+  "config": {
+    "theme": "auto",
+    "html_theme": "shibuya",
+    "accent": "#006980",
+    "mode": "auto",
+    "api_generator": "autosummary",
+    "ignore": [
+      "tests/",
+      "scrap/",
+      "examples/"
+    ],
+    "agent_outputs": true,
+    "aggregates": [
+      "md"
+    ],
+    "ai_artifacts": true,
+    "provenance": true,
+    "docs_dir": "docsrc"
+  },
+  "site": {
+    "modules_documented": 7,
+    "objects_documented": 59
+  },
+  "pypi": {
+    "checked": true,
+    "latest": "0.0.14",
+    "relation": "behind",
+    "error": null
+  },
+  "reproduce": "git clone https://github.com/thorwhalen/burns && cd burns\ngit checkout 92eec83a477468980ef6a62bdf058693167d23ed\npip install \"epythet==0.2.12\"\nepythet quickstart . --ignore tests/ scrap/ examples/",
+  "warnings": [],
+  "alignment": {
+    "aligned": false,
+    "notes": [
+      "The documented version (0.0.13) is behind the latest release on PyPI (0.0.14): `pip install burns` gives newer code than these docs describe."
+    ]
+  }
+}

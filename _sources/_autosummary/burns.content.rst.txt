@@ -1,0 +1,20 @@
+burns.content
+=============
+
+.. automodule:: burns.content
+
+   
+   .. rubric:: Module Attributes
+
+   .. autosummary::
+   
+      FacesDetector
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      content_aware_path
+      content_aware_path_for
+      salient_box
+   

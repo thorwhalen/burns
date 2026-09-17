@@ -1,0 +1,41 @@
+﻿burns
+=====
+
+.. automodule:: burns
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      ken_burns_path
+      content_aware_path
+      content_aware_path_for
+      salient_box
+      ken_burns_video
+      ken_burns_film
+      parse_easing
+      cubic_bezier
+      register_backend
+      get_backend
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      Rect
+      BurnsPath
+      RenderBackend
+   
+.. rubric:: Modules
+
+.. autosummary::
+   :toctree:
+   :recursive:
+
+   backends
+   content
+   easing
+   path
+   rect
+   render

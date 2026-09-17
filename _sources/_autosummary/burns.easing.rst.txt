@@ -1,0 +1,13 @@
+burns.easing
+============
+
+.. automodule:: burns.easing
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      cubic_bezier
+      parse_easing
+   

@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="cyan" data-content_root="../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>burns.backends - burns</title><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="burns.content" href="burns.content.html" /><link rel="prev" title="burns" href="burns.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d88b86f9" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=2ceb65ce" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    
+  <meta property="og:type" content="website"/><meta property="og:title" content="burns.backends"/>
+    <meta name="twitter:card" content="summary"/>
+  
+<link rel="alternate" type="text/markdown" href="burns.backends.html.md">
+<link rel="describedby" href="../llms.txt" type="text/markdown">
+</head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../index.html">
+      
+      
+      <strong>burns</strong>
+    </a>
+    <div class="sy-head-nav" id="head-nav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials">
+  <a href="https://github.com/thorwhalen/burns" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="head-nav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2"></span>
+          <span class="hamburger_3"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="burns.html">burns</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">burns.backends</a></li>
+<li class="toctree-l3"><a class="reference internal" href="burns.content.html">burns.content</a></li>
+<li class="toctree-l3"><a class="reference internal" href="burns.easing.html">burns.easing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="burns.path.html">burns.path</a></li>
+<li class="toctree-l3"><a class="reference internal" href="burns.rect.html">burns.rect</a></li>
+<li class="toctree-l3"><a class="reference internal" href="burns.render.html">burns.render</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../ai-agents.html">For AI agents</a></li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#burns.backends.DFLT_BACKEND"><code class="docutils literal notranslate"><span class="pre">DFLT_BACKEND</span></code></a></li>
+<li><a class="reference internal" href="#burns.backends.RenderBackend"><code class="docutils literal notranslate"><span class="pre">RenderBackend</span></code></a></li>
+<li><a class="reference internal" href="#burns.backends.get_backend"><code class="docutils literal notranslate"><span class="pre">get_backend()</span></code></a></li>
+<li><a class="reference internal" href="#burns.backends.pillow_backend"><code class="docutils literal notranslate"><span class="pre">pillow_backend()</span></code></a></li>
+<li><a class="reference internal" href="#burns.backends.register_backend"><code class="docutils literal notranslate"><span class="pre">register_backend()</span></code></a></li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../index.html"><span itemprop="name">burns</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../api.html"><span itemprop="name">API reference</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="2" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="burns.html"><span itemprop="name">burns</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="3" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">burns.backends</strong>
+        <meta itemprop="position" content="4" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+  <article class="yue dark-code" role="main">
+          <section id="module-burns.backends">
+<span id="burns-backends"></span><h1>burns.backends<a class="headerlink" href="#module-burns.backends" title="Link to this heading">#</a></h1>
+<p>Pluggable single-clip render backends — the open-closed seam.</p>
+<p>A backend turns one <code class="docutils literal notranslate"><span class="pre">(image,</span> <span class="pre">BurnsPath,</span> <span class="pre">duration)</span></code> into one video file. They
+all share the <a class="reference internal" href="#burns.backends.RenderBackend" title="burns.backends.RenderBackend"><code class="xref py py-class docutils literal notranslate"><span class="pre">RenderBackend</span></code></a> call signature and live in a name-keyed
+<code class="xref py py-data docutils literal notranslate"><span class="pre">RENDER_BACKENDS</span></code> registry, so adding a backend (an FFmpeg <code class="docutils literal notranslate"><span class="pre">zoompan</span></code>
+fast-path, a future GPU path) never edits the facade — you
+<a class="reference internal" href="#burns.backends.register_backend" title="burns.backends.register_backend"><code class="xref py py-func docutils literal notranslate"><span class="pre">register_backend()</span></code></a> it and select it with <code class="docutils literal notranslate"><span class="pre">backend=&quot;…&quot;</span></code>.</p>
+<p>The default backend, <code class="docutils literal notranslate"><span class="pre">&quot;pillow&quot;</span></code>, drives a lazy <code class="docutils literal notranslate"><span class="pre">moviepy.VideoClip</span></code> whose
+per-frame closure calls <code class="xref py py-func docutils literal notranslate"><span class="pre">burns._frame.sample_frame()</span></code>, so the whole clip is
+never materialized in memory and the spec-to-pixel mapping stays in one place.
+The multi-panel film renderer in <a class="reference internal" href="burns.render.html#module-burns.render" title="burns.render"><code class="xref py py-mod docutils literal notranslate"><span class="pre">burns.render</span></code></a> deliberately does <em>not</em> go
+through this registry — it is a single-pass encode across panels, which a
+per-clip backend cannot express.</p>
+<p class="rubric">Module Attributes</p>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#burns.backends.DFLT_BACKEND" title="burns.backends.DFLT_BACKEND"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DFLT_BACKEND</span></code></a></p></td>
+<td><p>Still <code class="code docutils literal notranslate"><span class="pre">pillow</span></code>, deliberately.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="rubric">Functions</p>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#burns.backends.get_backend" title="burns.backends.get_backend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_backend</span></code></a>([name])</p></td>
+<td><p>Look up a registered backend by name.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#burns.backends.pillow_backend" title="burns.backends.pillow_backend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pillow_backend</span></code></a>(img_np, img_w, img_h, path, ...)</p></td>
+<td><p>Default backend: lazy moviepy <code class="docutils literal notranslate"><span class="pre">VideoClip</span></code> + per-frame Pillow resampling.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#burns.backends.register_backend" title="burns.backends.register_backend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_backend</span></code></a>(name, backend)</p></td>
+<td><p>Register a render backend under <code class="docutils literal notranslate"><span class="pre">name</span></code> (open-closed extension point).</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="rubric">Classes</p>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#burns.backends.RenderBackend" title="burns.backends.RenderBackend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RenderBackend</span></code></a>(*args, **kwargs)</p></td>
+<td><p>Encode one image + <code class="xref py py-class docutils literal notranslate"><span class="pre">BurnsPath</span></code> into a video file at <code class="docutils literal notranslate"><span class="pre">output</span></code>.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<dl class="py data">
+<dt class="sig sig-object py" id="burns.backends.DFLT_BACKEND">
+<span class="sig-prename descclassname"><span class="pre">burns.backends.</span></span><span class="sig-name descname"><span class="pre">DFLT_BACKEND</span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'pillow'</span></span><a class="headerlink" href="#burns.backends.DFLT_BACKEND" title="Link to this definition">#</a></dt>
+<dd><p>Still <code class="code docutils literal notranslate"><span class="pre">pillow</span></code>, deliberately. The two backends are NOT pixel-equivalent
+(measured ~47 dB, dominated by resampler choice rather than by anything
+either does wrong), so flipping the default would silently change the output
+of every existing caller. The speed advantage that motivates the ffmpeg path
+is also still unmeasured — see thorwhalen/burns#12.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="burns.backends.RenderBackend">
+<span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">burns.backends.</span></span><span class="sig-name descname"><span class="pre">RenderBackend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/burns/backends.html#RenderBackend"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#burns.backends.RenderBackend" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Protocol" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Protocol</span></code></a></p>
+<p>Encode one image + <code class="xref py py-class docutils literal notranslate"><span class="pre">BurnsPath</span></code> into a video file at <code class="docutils literal notranslate"><span class="pre">output</span></code>.</p>
+<p>Args mirror <a class="reference internal" href="burns.html#burns.ken_burns_video" title="burns.ken_burns_video"><code class="xref py py-func docutils literal notranslate"><span class="pre">burns.ken_burns_video()</span></code></a> after argument resolution: the
+image is already a decoded <code class="docutils literal notranslate"><span class="pre">(H,</span> <span class="pre">W,</span> <span class="pre">C)</span></code> uint8 array with its pixel size,
+and the output frame size <code class="docutils literal notranslate"><span class="pre">(out_w,</span> <span class="pre">out_h)</span></code> is already even-snapped.
+Returns the written path.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="burns.backends.get_backend">
+<span class="sig-prename descclassname"><span class="pre">burns.backends.</span></span><span class="sig-name descname"><span class="pre">get_backend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pillow'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/burns/backends.html#get_backend"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#burns.backends.get_backend" title="Link to this definition">#</a></dt>
+<dd><p>Look up a registered backend by name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/constants.html#Ellipsis" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">...</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code></a>]</span></p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">get_backend</span><span class="p">()</span> <span class="ow">is</span> <span class="n">get_backend</span><span class="p">(</span><span class="s2">"pillow"</span><span class="p">)</span>
+</span><span data-line="2"><span class="go">True</span>
+</span></pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="burns.backends.pillow_backend">
+<span class="sig-prename descclassname"><span class="pre">burns.backends.</span></span><span class="sig-name descname"><span class="pre">pillow_backend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img_np</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_w</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">duration</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_w</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">codec</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">audio_codec</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">write_kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/burns/backends.html#pillow_backend"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#burns.backends.pillow_backend" title="Link to this definition">#</a></dt>
+<dd><p>Default backend: lazy moviepy <code class="docutils literal notranslate"><span class="pre">VideoClip</span></code> + per-frame Pillow resampling.</p>
+<p>Quality default; jitter-free (the window is computed in floating point and
+rasterized once per frame, so there is no FFmpeg <code class="docutils literal notranslate"><span class="pre">zoompan</span></code> integer-rounding
+stair-step).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Path</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="burns.backends.register_backend">
+<span class="sig-prename descclassname"><span class="pre">burns.backends.</span></span><span class="sig-name descname"><span class="pre">register_backend</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/burns/backends.html#register_backend"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#burns.backends.register_backend" title="Link to this definition">#</a></dt>
+<dd><p>Register a render backend under <code class="docutils literal notranslate"><span class="pre">name</span></code> (open-closed extension point).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="burns.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">burns</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="burns.content.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">burns.content</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright">
+  <p>
+    Made with
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials">
+  <a href="https://github.com/thorwhalen/burns" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
+    </div>
+  </div>
+</footer>
+      <script src="../_static/documentation_options.js?v=9fc46840"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=fd10adb8"></script>
+      <script src="../_static/shibuya.js?v=50760d75"></script></body>
+</html>

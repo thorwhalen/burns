@@ -1,0 +1,26 @@
+burns.backends
+==============
+
+.. automodule:: burns.backends
+
+   
+   .. rubric:: Module Attributes
+
+   .. autosummary::
+   
+      DFLT_BACKEND
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      get_backend
+      pillow_backend
+      register_backend
+   
+   .. rubric:: Classes
+
+   .. autosummary::
+   
+      RenderBackend
+   

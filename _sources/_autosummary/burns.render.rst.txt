@@ -1,0 +1,13 @@
+burns.render
+============
+
+.. automodule:: burns.render
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      ken_burns_film
+      ken_burns_video
+   
