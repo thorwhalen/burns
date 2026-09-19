@@ -472,7 +472,15 @@ def resolve_move(
     if isinstance(move, BurnsPath):
         return _adopt(move, aspect)
     if isinstance(move, Mapping):
-        return _adopt(BurnsPath.from_dict(dict(move)), aspect)
+        try:
+            path = BurnsPath.from_dict(dict(move))
+        except (KeyError, TypeError) as e:
+            raise MoveError(
+                f"a mapping passed as `move` is read as a BurnsPath.to_dict() "
+                f"payload and this one is not well-formed ({e!r}). A move name "
+                f"goes in as a string, one of {list(MOVES)}."
+            ) from e
+        return _adopt(path, aspect)
     if not isinstance(move, str):
         raise MoveError(_unknown_move_message(move))
 
@@ -529,9 +537,18 @@ def _adopt(path: BurnsPath, aspect: Union[float, None]) -> BurnsPath:
 
 def _focus_box(focus: FocusLike) -> Box:
     """Normalize ``focus`` to a ``(x, y, w, h)`` box, or say why it is not one."""
-    if isinstance(focus, Rect):
-        box = (focus.x, focus.y, focus.w, focus.h)
+    if isinstance(focus, Mapping):
+        # What a stored focus looks like after a JSON round-trip, which is how
+        # it reaches a consumer that persists panels rather than holds models.
+        missing = [k for k in ("x", "y", "w", "h") if k not in focus]
+        if missing:
+            raise MoveError(
+                f"a focus mapping needs the keys x, y, w, h — missing {missing}"
+            )
+        box = tuple(focus[k] for k in ("x", "y", "w", "h"))
     elif all(hasattr(focus, a) for a in ("x", "y", "w", "h")):
+        # Covers Rect and every structural rectangle a consumer already has —
+        # burns does not make anyone import its type to say where to look.
         box = (focus.x, focus.y, focus.w, focus.h)
     else:
         try:

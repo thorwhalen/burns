@@ -253,6 +253,24 @@ class TestFocus:
             resolve_move("push_in", image=image(), aspect=A, focus=bad)
         assert hint in str(e.value)
 
+    def test_focus_accepts_a_mapping(self):
+        """What a stored focus looks like after a JSON round-trip."""
+        expected = resolve_move(
+            "push_in", image=image(), aspect=A, focus=(0.3, 0.3, 0.2, 0.2)
+        )
+        got = resolve_move(
+            "push_in",
+            image=image(),
+            aspect=A,
+            focus={"x": 0.3, "y": 0.3, "w": 0.2, "h": 0.2},
+        )
+        assert got == expected
+
+    def test_an_incomplete_focus_mapping_names_the_missing_keys(self):
+        with pytest.raises(MoveError) as e:
+            resolve_move("push_in", image=image(), aspect=A, focus={"x": 0.3, "y": 0.3})
+        assert "'w'" in str(e.value) and "'h'" in str(e.value)
+
     def test_focus_none_is_no_focus_not_a_malformed_one(self):
         """The default. It must fall through to saliency, never refuse."""
         assert resolve_move(
@@ -390,6 +408,13 @@ class TestExplicitPath:
         with pytest.raises(MoveError) as e:
             resolve_move(path, image=image(), aspect=9 / 16)
         assert "authored" in str(e.value) and "1.77" in str(e.value)
+
+    def test_a_mapping_that_is_not_a_path_payload_says_so(self):
+        """A mapping in `move` is read as a path; a malformed one must not
+        surface as a KeyError from three frames down."""
+        with pytest.raises(MoveError) as e:
+            resolve_move({"move": "push_in"}, image=image(), aspect=A)
+        assert "to_dict()" in str(e.value) and "push_in" in str(e.value)
 
     def test_an_override_survives_float_noise_in_the_aspect(self):
         path = self.hand_authored(aspect=1920 / 1080)
