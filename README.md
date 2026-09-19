@@ -229,8 +229,14 @@ exactly what it was. So store `(move, zoom, focus, seed)` and call
 override and a panel carrying a name make the same call:
 
 ```python
-resolve_move(panel.path or panel.move, image=still, aspect=16 / 9,
-             zoom=panel.zoom, focus=panel.focus, seed=panel.seed)
+resolve_move(
+    panel.path or panel.move,
+    image=still,
+    aspect=16 / 9,
+    zoom=panel.zoom,
+    focus=panel.focus,
+    seed=panel.seed,
+)
 ```
 
 An override is returned exactly as authored. If its `output_aspect` contradicts

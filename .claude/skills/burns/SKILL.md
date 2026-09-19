@@ -140,7 +140,7 @@ time; replacing the still must re-frame.
 ```python
 from burns import MOVES, resolve_move, choose_move, move_kind
 
-MOVES   # ('push_in','pull_out','drift_left','drift_right','drift_up','drift_down','hold','auto')
+MOVES  # ('push_in','pull_out','drift_left','drift_right','drift_up','drift_down','hold','auto')
 
 path = resolve_move("push_in", image=still, aspect=16 / 9, zoom=1.18, seed=4021)
 ```
