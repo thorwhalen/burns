@@ -145,7 +145,7 @@ MOVES   # ('push_in','pull_out','drift_left','drift_right','drift_up','drift_dow
 path = resolve_move("push_in", image=still, aspect=16 / 9, zoom=1.18, seed=4021)
 ```
 
-`resolve_move(move, *, image, aspect, zoom=1.18, focus=None, seed=0, easing="ease-in-out") -> BurnsPath`
+`resolve_move(move, *, image, aspect, zoom=1.18, focus=None, seed=0, easing="ease-in-out", on_aspect_mismatch="raise") -> BurnsPath`
 
 - **`move` is two front doors on one path**: a name from `MOVES`, *or* an
   explicit `BurnsPath` / its `to_dict()` payload. So a panel carrying an
@@ -160,8 +160,13 @@ path = resolve_move("push_in", image=still, aspect=16 / 9, zoom=1.18, seed=4021)
   image's aspect instead is a cover-crop nobody asked for. `None` explicitly
   means "match the image".
 - **`focus`** overrides the saliency box: a `Rect`, a normalized `(x,y,w,h)`
-  tuple, or any object with `.x/.y/.w/.h` (so a pydantic body is a focus box
-  without importing burns). When given, `salient_box` is **not called**.
+  tuple, a mapping with those keys, or any object with `.x/.y/.w/.h` (so a
+  pydantic body is a focus box without importing burns). When given,
+  `salient_box` is **not called**. **It is normalized against the `image`
+  argument, not against the original still** — if you pre-composite stills onto
+  a delivery-sized canvas (a blurred fill, a letterbox), a focus box a user drew
+  on the source still is in the wrong space and will frame the wrong thing.
+  Convert it, or pass the pre-composite image.
 - **`seed` is not a position, and does exactly one job**: which concrete move
   `"auto"` becomes. Mint it once per panel and store it. It deliberately does
   **not** perturb a named move — a decision a seed can nudge is not a decision.
@@ -186,8 +191,28 @@ Gotchas:
   picture. Pass `zoom=1.0` for the untouched frame.
 - An explicit path override is returned **as authored**. If its `output_aspect`
   contradicts `aspect`, `resolve_move` **raises** (`MoveError`) rather than
-  cover-cropping a hand-drawn framing without saying so. Render at the aspect it
-  was authored for, drop the override, or author a second path.
+  cover-cropping a hand-drawn framing without saying so. This is not academic:
+  a panel carries *one* path and a project can have several cuts at different
+  aspects, so a move hand-corrected on the 16:9 cut hits it in the vertical cut.
+  `on_aspect_mismatch="refit"` rebuilds each keyframe at the new aspect,
+  **keeping the author's centre and zoom at every instant** and changing only
+  the window shape — that is the option to reach for when rendering a second
+  delivery of the same project.
+- **Caching a render? Put `burns.RESOLVER_IMPL_VERSION` in the cache key.** The
+  pixels a stored intent becomes are decided by this module's constants
+  (`DFLT_ZOOM`, `DRIFT_TRAVEL`, `DRIFT_SPAN`, `DRIFT_MIN_ROOM`,
+  `AUTO_WEIGHTS`), so a key built from the panel alone serves stale frames
+  forever after a retune, or renders a cut that disagrees with its siblings.
+  It is `nw.Transform.impl_version`'s "a lock, not a receipt", and it is
+  deliberately **not** the package version — `burns.__version__` does not exist
+  and `importlib.metadata.version("burns")` is unreliable (plan §4).
+- **`aspect` and `zoom` are validated.** A non-positive, NaN or infinite value
+  raises rather than being passed through: `aspect=0.0` is falsy and would
+  quietly mean "match the image", and a negative aspect produces a
+  negative-width rect that still passes `Rect.is_contained()`.
+- **The move name is matched strictly** — no whitespace stripping, no case
+  folding — so a consumer mirroring `MOVES` to validate its own stored field
+  agrees with burns exactly.
 - `zoom` is honoured, never jittered — and still capped so the keep-region stays
   framed (a subject filling the frame yields an almost static move; the fix is a
   tighter `focus`, not a bigger `zoom`).
@@ -198,6 +223,17 @@ Gotchas:
 - `"hold"` and `"auto"` sit in `MOVES` beside the directional moves because it
   is **one field's value set**. They differ in *kind*, not in membership; read
   the difference with `move_kind`, not with a second constant.
+- **burns owns the vocabulary.** If you mirror `MOVES` to validate a stored
+  field before a render, pin the mirror equal to `burns.MOVES` with a test that
+  *fails* when burns is absent rather than skipping — a doubly-soft
+  `importorskip` + `hasattr` skip goes green in exactly the environment where
+  the two have drifted.
+- `"auto"` is i.i.d. per seed and knows nothing of its neighbours, so it gives
+  a good global distribution but **not** sequence-level variety: expect a few
+  adjacent repeats in any 24-panel track. If you need "never the same move
+  twice in a row", that is the caller's to enforce when it mints the seeds.
+  And note `seed=0` is the default on both sides — an import that forgets to
+  mint seeds renders every `auto` panel as the same move.
 
 ## `ken_burns_video(image, path=DEFAULT_BURNS_PATH, *, duration=2.0, fps=30, saveas=None, output_size=None, backend="pillow", ...)`
 

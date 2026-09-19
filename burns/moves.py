@@ -43,7 +43,9 @@ pictures themselves — the content-aware framing differs per image already.
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
+from types import MappingProxyType
 from typing import Any, Callable, Mapping, Union
 
 from burns.content import (
@@ -64,6 +66,7 @@ from burns.rect import Rect
 __all__ = [
     "MOVES",
     "AUTO_WEIGHTS",
+    "RESOLVER_IMPL_VERSION",
     "DFLT_ZOOM",
     "DRIFT_TRAVEL",
     "DRIFT_SPAN",
@@ -74,10 +77,33 @@ __all__ = [
     "resolve_move",
 ]
 
+#: The identity of the resolver's *geometry*, for a caller's cache key.
+#:
+#: A stored panel is an intent, so the pixels it becomes depend on constants
+#: that live here — :data:`DFLT_ZOOM`, :data:`DRIFT_TRAVEL`, :data:`DRIFT_SPAN`,
+#: :data:`DRIFT_MIN_ROOM`, :data:`AUTO_WEIGHTS` and the order
+#: :func:`choose_move` draws from. Retune any of them and an **unchanged** panel
+#: renders differently.
+#:
+#: A consumer that caches a render keyed on the panel alone would therefore
+#: serve the old frames forever, or silently produce a cut that disagrees with
+#: its siblings. Put this in the key. It is ``nw.Transform.impl_version``'s
+#: contract — *a lock, not a receipt*: bump it whenever the geometry changes for
+#: an unchanged input, and leave it alone for a docstring or a new move name.
+#:
+#: Deliberately **not** the package version: a burns release that touches only
+#: the renderer must not invalidate anybody's cut, and
+#: ``importlib.metadata.version("burns")`` is unreliable here besides.
+RESOLVER_IMPL_VERSION: int = 1
+
 #: Default end magnification. Enough that a slow push reads as movement on a
 #: 1080p frame, little enough that a found still is not visibly softened by the
-#: upscale. It is also above the zoom a drift needs to have room to travel, so
-#: the default never trips :data:`DRIFT_MIN_ROOM`'s floor.
+#: upscale.
+#:
+#: A **drift** may render slightly above it: reaching :data:`DRIFT_SPAN` needs
+#: :data:`DRIFT_MIN_ROOM` of travel room, which at this zoom is marginally more
+#: than the window leaves, so the floor raises it to ~1.2. That is the floor
+#: working, not a jitter — it is a pure function of the arguments.
 DFLT_ZOOM: float = 1.18
 
 #: How much of the available travel a drift uses, as a fraction of the room the
@@ -107,10 +133,28 @@ DRIFT_SPAN: float = 0.10
 #: way ``content_aware_path``'s ``min_zoom`` floor wins over its framing cap.
 #: A drift with no room is a hold, and silently returning one is the failure
 #: this floor exists to prevent.
-DRIFT_MIN_ROOM: float = 0.08
+#:
+#: **It is derived, not chosen**, and the derivation is the point. Travel is
+#: ``min(room * DRIFT_TRAVEL, size * DRIFT_SPAN)`` with ``size == 1 - room``, so
+#: the span can only ever bind when
+#: ``room >= DRIFT_SPAN / (DRIFT_TRAVEL + DRIFT_SPAN)`` — one sixth, at the
+#: values above. Set below that and the two constants can *never* both bind:
+#: the floor silently wins everywhere, every room-limited drift crosses
+#: ``DRIFT_TRAVEL * DRIFT_MIN_ROOM / (1 - DRIFT_MIN_ROOM)`` of its frame, and
+#: :data:`DRIFT_SPAN`'s promise that the two axes read at the same speed holds
+#: only on pictures with room to spare. At ``0.08`` it measured 2.3x apart on a
+#: portrait still delivered at 16:9 — the exact asymmetry DRIFT_SPAN exists to
+#: remove. ``tests/test_moves.py`` pins the relationship, so changing either
+#: constant without the other fails.
+DRIFT_MIN_ROOM: float = DRIFT_SPAN / (DRIFT_TRAVEL + DRIFT_SPAN)
 
 #: Slack when comparing a stored path's ``output_aspect`` against the render's.
-_ASPECT_EPS: float = 1e-3
+#: **Relative**, not absolute: an absolute tolerance on a ratio is four times
+#: stricter for 2.39:1 scope than for a 9:16 vertical, which is not a judgement
+#: anybody made. It exists only to absorb float noise between two spellings of
+#: the same shape (``1920 / 1080`` against ``16 / 9``), never to let a genuinely
+#: different delivery through.
+_ASPECT_REL_TOL: float = 1e-9
 
 
 class MoveError(ValueError):
@@ -286,23 +330,37 @@ _MOVES: dict[str, _MoveSpec] = {
 #: Every name a stored ``move`` field may hold — one vocabulary, because it is
 #: one field. ``"hold"`` and ``"auto"`` sit beside the directional moves for
 #: that reason: splitting them into separate constants would make a consumer
-#: union two tuples to validate one field, which is the two-tables arrangement
-#: this module exists to avoid. They differ in *kind*, not in membership, and
-#: :func:`move_kind` is where that difference is read.
+#: union two tuples to validate one field. They differ in *kind*, not in
+#: membership, and :func:`move_kind` is where that difference is read.
+#:
+#: **burns owns this vocabulary.** A consumer that needs to validate its own
+#: stored field before a render (rather than discovering a typo five minutes
+#: in) will mirror it; that mirror must be pinned equal to this tuple by a test
+#: that *fails* when burns is absent rather than skipping, or the two drift
+#: silently. burns is deliberately strict about the spelling — no case folding
+#: and no whitespace stripping — so a mirror written as a plain membership test
+#: agrees with it exactly.
 MOVES: tuple[str, ...] = tuple(_MOVES)
 
 #: How often ``"auto"`` picks each move, as integer weights. Pushes and pulls
 #: dominate because a commentary film is mostly faces and documents, where a
 #: drift wanders off the thing being talked about; the drifts are there so a
 #: long sequence does not read as one move repeated.
-AUTO_WEIGHTS: dict[str, int] = {
-    "push_in": 3,
-    "pull_out": 3,
-    "drift_left": 1,
-    "drift_right": 1,
-    "drift_up": 1,
-    "drift_down": 1,
-}
+#: Read-only on purpose. The pool :func:`choose_move` draws from is built once
+#: at import, so assigning into a plain dict here would change the documented
+#: weights and change nothing about the moves — a silent no-op in a name that
+#: is in ``__all__``. Retuning these is a burns change that bumps
+#: :data:`RESOLVER_IMPL_VERSION`, not something a consumer does at runtime.
+AUTO_WEIGHTS: Mapping[str, int] = MappingProxyType(
+    {
+        "push_in": 3,
+        "pull_out": 3,
+        "drift_left": 1,
+        "drift_right": 1,
+        "drift_up": 1,
+        "drift_down": 1,
+    }
+)
 
 _AUTO_POOL: tuple[str, ...] = tuple(
     name for name, weight in AUTO_WEIGHTS.items() for _ in range(weight)
@@ -398,6 +456,7 @@ def resolve_move(
     focus: FocusLike = None,
     seed: int = 0,
     easing: EasingLike = DFLT_EASING,
+    on_aspect_mismatch: str = "raise",
 ) -> BurnsPath:
     """Resolve an authored camera intent against ``image`` into a path.
 
@@ -415,11 +474,18 @@ def resolve_move(
             image". Required rather than defaulted, because a cut has a
             delivery size and quietly framing for the image's aspect instead is
             a cover-crop nobody asked for.
-        zoom: the end magnification, honoured — never jittered. It is capped so
-            the keep-region stays framed (a subject filling the frame yields an
-            almost static move; the fix is a tighter ``focus``, not a bigger
-            ``zoom``), and raised for a drift that would otherwise have no room
-            to travel.
+        zoom: the end magnification. A pure function of the arguments — never
+            jittered by ``seed`` or by a position — but **bounded at both
+            ends**, so the number you pass is a request:
+
+            * capped so the padded keep-region stays framed. A subject filling
+              the frame therefore yields a nearly static move; the fix is a
+              tighter ``focus``, not a bigger ``zoom``.
+            * floored. ``push_in`` / ``pull_out`` inherit
+              ``content_aware_path``'s ``min_zoom + 0.02`` (about 1.07), so a
+              barely-there 1.02 push renders as 1.07; ``hold`` has no such floor
+              and honours 1.02 exactly. A drift is floored to whatever leaves
+              :data:`DRIFT_MIN_ROOM` of travel.
         focus: an explicit keep-region overriding the saliency estimate. A
             :class:`~burns.rect.Rect`, a normalized ``(x, y, w, h)`` tuple, or
             any object with ``.x/.y/.w/.h``. When given,
@@ -428,15 +494,33 @@ def resolve_move(
             once per panel and store it; never derive it from a position, which
             is the defect this parameter exists to remove.
         easing: CSS timing function or callable. A callable is fine here but
-            cannot be serialized — see :meth:`BurnsPath.to_dict`.
+            cannot be serialized — see :meth:`BurnsPath.to_dict`. Applies to a
+            named move; an explicit path carries its own.
+        on_aspect_mismatch: what to do when an explicit path was authored for a
+            different ``output_aspect`` than the one being rendered.
+            ``"raise"`` (default) refuses, because honouring the stored
+            rectangles at another shape cover-crops a framing somebody chose by
+            hand. ``"refit"`` rebuilds each keyframe at the new aspect,
+            **keeping what the author actually chose** — where the camera looks
+            at each instant, and how far in it is — and changing only the window
+            shape. A cut in a second aspect is a real workflow (a vertical
+            edit of a landscape film), and a panel carries *one* path, not one
+            per delivery, so "author a second path" is not a remedy a caller
+            can take; ``"refit"`` is.
 
     Returns:
         A :class:`~burns.path.BurnsPath`. Duration is not part of it; pass that
         to the renderer.
 
     Raises:
-        MoveError: an unknown move name, a malformed ``focus``, or an explicit
-            path whose ``output_aspect`` contradicts ``aspect``.
+        MoveError: an unknown move name, a malformed ``focus``, a non-positive
+            ``zoom`` or ``aspect``, or — under the default
+            ``on_aspect_mismatch="raise"`` — an explicit path whose
+            ``output_aspect`` contradicts ``aspect``.
+
+    Note:
+        ``image`` is opened for every *named* move. For an explicit path it is
+        read only when refitting, since resolved geometry needs no picture.
 
     Examples:
         >>> import numpy as np
@@ -468,23 +552,49 @@ def resolve_move(
         ... )
         >>> resolve_move(hand.to_dict(), image=img, aspect=16 / 9) == hand
         True
+
+        Rendering it at another delivery refuses by default, and ``"refit"``
+        keeps the authored look while changing the window shape:
+
+        >>> resolve_move(hand, image=img, aspect=9 / 16)
+        Traceback (most recent call last):
+            ...
+        burns.moves.MoveError: ...
+        >>> v = resolve_move(hand, image=img, aspect=9 / 16,
+        ...                  on_aspect_mismatch="refit")
+        >>> v.output_aspect == 9 / 16
+        True
+        >>> before = [round(c, 4) for c in hand.evaluate(1.0).center]
+        >>> after = [round(c, 4) for c in v.evaluate(1.0).center]
+        >>> before == after          # the author's framing, at the new shape
+        True
     """
-    if isinstance(move, BurnsPath):
-        return _adopt(move, aspect)
+    aspect = _checked_aspect(aspect)
+    if on_aspect_mismatch not in _ASPECT_MISMATCH_ACTIONS:
+        raise MoveError(
+            f"on_aspect_mismatch must be one of "
+            f"{list(_ASPECT_MISMATCH_ACTIONS)}, got {on_aspect_mismatch!r}"
+        )
+
     if isinstance(move, Mapping):
         try:
-            path = BurnsPath.from_dict(dict(move))
+            move = BurnsPath.from_dict(dict(move))
         except (KeyError, TypeError) as e:
             raise MoveError(
                 f"a mapping passed as `move` is read as a BurnsPath.to_dict() "
                 f"payload and this one is not well-formed ({e!r}). A move name "
                 f"goes in as a string, one of {list(MOVES)}."
             ) from e
-        return _adopt(path, aspect)
+    if isinstance(move, BurnsPath):
+        return _adopt(move, aspect, image=image, on_mismatch=on_aspect_mismatch)
     if not isinstance(move, str):
         raise MoveError(_unknown_move_message(move))
 
-    name = move.strip()
+    # No `.strip()`: leniency here is invisible divergence. A consumer that
+    # mirrors MOVES to validate its own field (braidio's panel body does)
+    # rejects " push_in " while burns would accept it, so the same stored
+    # value is valid in one package and not the other.
+    name = move
     spec = _MOVES.get(name)
     if spec is None:
         raise MoveError(_unknown_move_message(move))
@@ -500,38 +610,132 @@ def resolve_move(
             img_w=img_w,
             img_h=img_h,
             keep=keep,
-            zoom=float(zoom),
+            zoom=_checked_zoom(zoom),
             aspect=aspect,
             easing=easing,
         )
     )
 
 
-def _adopt(path: BurnsPath, aspect: Union[float, None]) -> BurnsPath:
-    """An explicit path, checked against the delivery aspect and returned as-is.
+#: What ``on_aspect_mismatch`` accepts. A tuple rather than an enum because it
+#: crosses the wire as a plain string from whatever surface the caller exposes.
+_ASPECT_MISMATCH_ACTIONS: tuple[str, ...] = ("raise", "refit")
+
+
+def _checked_aspect(aspect: Union[float, None]) -> Union[float, None]:
+    """``aspect`` as a positive float, or ``None``, or a refusal.
+
+    ``0.0`` and a negative are refused rather than passed through. Zero is
+    falsy, so it would reach :func:`~burns.content.axis_maxima` and quietly mean
+    "match the image" — exactly the cover-crop-nobody-asked-for this argument is
+    required in order to prevent, arriving as a plausible ``width / height``
+    from a body whose width was never filled in. A negative produces a
+    negative-width window that still passes ``Rect.is_contained()`` and reaches
+    the renderer. :meth:`Rect.from_center_zoom` already refuses a non-positive
+    zoom; this is the same rule at the new front door.
+    """
+    if aspect is None:
+        return None
+    try:
+        value = float(aspect)
+    except (TypeError, ValueError) as e:
+        raise MoveError(f"aspect must be a number or None, got {aspect!r}") from e
+    if not value > 0 or value != value or value in (float("inf"), float("-inf")):
+        raise MoveError(
+            f"aspect must be a positive, finite width/height ratio, or None to "
+            f"match the image — got {aspect!r}. A 0 here would silently mean "
+            "'match the image', which is the cover-crop this argument exists to "
+            "make impossible."
+        )
+    return value
+
+
+def _checked_zoom(zoom: float) -> float:
+    """``zoom`` as a positive float, or a refusal (as ``Rect.from_center_zoom``)."""
+    try:
+        value = float(zoom)
+    except (TypeError, ValueError) as e:
+        raise MoveError(f"zoom must be a number, got {zoom!r}") from e
+    if not value > 0 or value != value or value == float("inf"):
+        raise MoveError(
+            f"zoom must be a positive, finite magnification (1.0 = the whole "
+            f"frame), got {zoom!r}"
+        )
+    return value
+
+
+def _aspects_agree(stored: float, aspect: Union[float, None]) -> bool:
+    """Whether two aspect ratios are the same shape up to float noise."""
+    if aspect is None:
+        return False
+    return math.isclose(float(stored), float(aspect), rel_tol=_ASPECT_REL_TOL)
+
+
+def _adopt(
+    path: BurnsPath,
+    aspect: Union[float, None],
+    *,
+    image: Any,
+    on_mismatch: str,
+) -> BurnsPath:
+    """An explicit path, reconciled with the delivery aspect.
 
     A hand-corrected path is *resolved geometry*: its rectangles were drawn for
-    one output shape, so re-stamping a different ``output_aspect`` onto them
-    would cover-crop somebody's authored framing without saying so. That is the
-    shape of defect this whole module exists to remove, so the mismatch raises
-    instead.
+    one output shape. Silently honouring them at another cover-crops somebody's
+    authored framing, which is the shape of defect this module exists to
+    remove — so that never happens. What happens instead is the caller's call.
 
     ``output_aspect=None`` is not a mismatch — it is a path that says "match the
-    image", which is a deliberate authoring choice and is preserved.
+    image", a deliberate authoring choice, and is preserved.
     """
     stored = path.output_aspect
-    if stored is None:
+    if stored is None or _aspects_agree(stored, aspect):
         return path
-    if aspect is not None and abs(float(stored) - float(aspect)) <= _ASPECT_EPS:
-        return path
+    if on_mismatch == "refit":
+        img_w, img_h = as_pil(image).size
+        return _refit(path, img_w, img_h, aspect)
     raise MoveError(
         f"this panel carries an explicit BurnsPath authored for "
         f"output_aspect={stored!r}, but the cut is being rendered at "
         f"aspect={aspect!r}. Its rectangles were drawn against the first shape, "
         "so honouring them at the second would silently crop the framing "
         "somebody chose by hand. Either render this cut at the aspect the path "
-        "was authored for, drop the override so the named move re-frames, or "
-        "author a second path for this delivery."
+        "was authored for, pass on_aspect_mismatch='refit' to keep the authored "
+        "look at the new shape, or drop the override so the named move re-frames."
+    )
+
+
+def _refit(
+    path: BurnsPath, img_w: int, img_h: int, aspect: Union[float, None]
+) -> BurnsPath:
+    """Rebuild every keyframe at ``aspect``, keeping what the author chose.
+
+    A keyframe says two things a person decided — *where the camera is looking*
+    and *how far in it is* — plus one thing the delivery decided, the window's
+    shape. Refitting keeps the first two and recomputes the third, so a
+    landscape film's hand-corrected move survives into a vertical cut as the
+    same move rather than as a refusal or a silent crop.
+
+    It is **not** lossless and does not pretend to be: a 16:9 window refitted to
+    9:16 shows less to the sides and more above and below, because that is what
+    the delivery is. What it guarantees is that the centre and the zoom are the
+    author's at every instant.
+    """
+    keyframes = tuple(
+        (
+            t,
+            keep_window(
+                img_w, img_h, center=rect.center, zoom=rect.zoom, output_aspect=aspect
+            ),
+        )
+        for t, rect in path.keyframes
+    )
+    return BurnsPath(
+        keyframes=keyframes,
+        easing=path.easing,
+        interp=path.interp,
+        output_aspect=aspect,
+        version=path.version,
     )
 
 

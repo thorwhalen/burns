@@ -3,11 +3,17 @@
 Two ways a package's own doctests stop running without anything going red, both
 of which had happened here:
 
-1. **CI passes no path.** ``wads``' ``run-tests-uv`` action builds
+1. **CI passes no path.** This repo's ``.github/workflows/ci.yml`` calls
+   ``i2mint/wads/.github/workflows/uv-ci.yml``, whose Linux **and** Windows test
+   jobs both use the ``run-tests-uv`` action. That action builds
    ``pytest --doctest-modules -o doctest_optionflags=...`` and never names a
    directory, so pytest falls back to ``testpaths``. With ``testpaths =
    ["tests"]`` the collector never descends into ``burns/`` and every ``>>>`` in
    the package is invisible — a green tick over zero module doctests.
+
+   (wads also ships a ``windows-tests`` action that *does* pass a path, which is
+   why a reader can conclude the Windows leg was already covered. ``uv-ci.yml``
+   does not use it — verified at its lines 385 and 451, both ``run-tests-uv``.)
 2. **CI overrides the flags.** ``-o`` replaces the whole ini key, so a doctest
    written against a flag the ini sets and CI does not (``NORMALIZE_WHITESPACE``
    was the one) passes on a laptop and fails on the runner.
@@ -18,7 +24,7 @@ either drifts again.
 
 import burns
 
-#: Exactly what wads' run-tests-uv / windows-tests actions pass with `-o`.
+#: Exactly what wads' run-tests-uv action passes with `-o`.
 CI_DOCTEST_OPTIONFLAGS = ("ELLIPSIS", "IGNORE_EXCEPTION_DETAIL")
 
 

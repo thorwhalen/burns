@@ -8,8 +8,12 @@ with the ordinal defect fully present would be worth nothing.
 """
 
 import json
+import math
 
 import numpy as np
+import burns
+import burns.moves
+from collections import Counter
 import pytest
 
 from burns import (
@@ -19,12 +23,22 @@ from burns import (
     MoveError,
     Rect,
     choose_move,
+    content_aware_path,
     content_aware_path_for,
     ken_burns_video,
     move_kind,
     resolve_move,
 )
-from burns.moves import _AUTO_POOL, _MOVES, DRIFT_SPAN
+from burns.content import DFLT_KEEP_PAD, fit_zoom, pad_box
+from burns.moves import (
+    _AUTO_POOL,
+    DFLT_ZOOM,
+    _MOVES,
+    DRIFT_MIN_ROOM,
+    DRIFT_SPAN,
+    DRIFT_TRAVEL,
+    RESOLVER_IMPL_VERSION,
+)
 
 A = 16 / 9
 
@@ -306,6 +320,49 @@ class TestDrift:
                 d = travel(resolve_move(move, image=image(), aspect=A, zoom=zoom), axis)
                 assert abs(d) > 1e-6, f"{move} at zoom={zoom} did not move"
 
+    def test_the_two_drift_constants_can_both_bind(self):
+        """`DRIFT_MIN_ROOM` is derived, and the derivation is load-bearing.
+
+        Travel is `min(room * DRIFT_TRAVEL, size * DRIFT_SPAN)` with
+        `size == 1 - room`, so the span can only ever bind when
+        `room >= DRIFT_SPAN / (DRIFT_TRAVEL + DRIFT_SPAN)`. Set the floor below
+        that and the span is unreachable: every room-limited drift crosses a
+        smaller fraction of its frame, and DRIFT_SPAN's promise holds only on
+        pictures with room to spare.
+        """
+        assert DRIFT_MIN_ROOM == pytest.approx(DRIFT_SPAN / (DRIFT_TRAVEL + DRIFT_SPAN))
+        # at exactly the floor, both terms are equal — neither silently wins
+        room, size = DRIFT_MIN_ROOM, 1 - DRIFT_MIN_ROOM
+        assert room * DRIFT_TRAVEL == pytest.approx(size * DRIFT_SPAN)
+
+    @pytest.mark.parametrize(
+        "iw, ih, aspect",
+        [
+            (1600, 1200, 16 / 9),  # landscape still, landscape delivery
+            (1080, 1920, 16 / 9),  # portrait still in a landscape cut
+            (1920, 1080, 9 / 16),  # landscape still in the vertical cut
+            (4032, 3024, 9 / 16),  # a phone photo in the vertical cut
+            (1000, 1000, None),  # square, aspect follows the image
+        ],
+    )
+    def test_both_axes_drift_at_the_same_speed_on_every_delivery(self, iw, ih, aspect):
+        """Regression, widened.
+
+        An earlier version measured only an 800x600 still at 16:9 — the one
+        pair that already passed (ratio 1.11) — while a portrait still in a
+        landscape cut measured **2.30x**, which is the exact asymmetry
+        DRIFT_SPAN exists to remove.
+        """
+        img = image(w=iw, h=ih)
+        fractions = {}
+        for move, axis in (("drift_right", "x"), ("drift_down", "y")):
+            path = resolve_move(move, image=img, aspect=aspect)
+            window = path.evaluate(0.0)
+            size = window.w if axis == "x" else window.h
+            fractions[move] = abs(travel(path, axis)) / size
+        assert all(f <= DRIFT_SPAN + 1e-9 for f in fractions.values()), fractions
+        assert max(fractions.values()) / min(fractions.values()) < 1.15, fractions
+
     def test_both_axes_drift_at_the_same_speed_on_screen(self):
         """Regression: the travel was whatever room the picture's aspect left.
 
@@ -351,6 +408,30 @@ class TestDrift:
             )
         )
         assert cornered == pytest.approx(centred, rel=1e-6)
+
+
+class TestEasing:
+    """`easing` is the only per-panel knob besides move/zoom/focus/seed, and
+    on a drift it is the difference between a camera that continues and one
+    that settles. An earlier suite exercised it on `push_in` only, so
+    dropping it in the drift and hold builders left everything green."""
+
+    @pytest.mark.parametrize("name", [m for m in MOVES if m != "auto"])
+    def test_easing_reaches_every_move(self, name):
+        img = image()
+        eased = resolve_move(name, image=img, aspect=A, easing="ease-in-out")
+        linear = resolve_move(name, image=img, aspect=A, easing="linear")
+        assert eased.easing == "ease-in-out"
+        assert linear.easing == "linear"
+
+    @pytest.mark.parametrize("name", ["push_in", "drift_right", "drift_up"])
+    def test_easing_changes_the_midpoint_of_a_moving_move(self, name):
+        """Not just carried on the dataclass — actually composed over the
+        geometry, which is what `evaluate` promises."""
+        img = image()
+        a = resolve_move(name, image=img, aspect=A, easing="linear").evaluate(0.25)
+        b = resolve_move(name, image=img, aspect=A, easing="ease-in-out").evaluate(0.25)
+        assert (a.x, a.y, a.w, a.h) != (b.x, b.y, b.w, b.h), name
 
 
 class TestHold:
@@ -417,8 +498,380 @@ class TestExplicitPath:
         assert "to_dict()" in str(e.value) and "push_in" in str(e.value)
 
     def test_an_override_survives_float_noise_in_the_aspect(self):
-        path = self.hand_authored(aspect=1920 / 1080)
+        """`1920/1080` and `16/9` are the SAME double, so that pair tests
+        nothing. Use a value that genuinely differs in the last bits."""
+        assert 1920 / 1080 == 16 / 9  # the pair an earlier version of this used
+        noisy = math.nextafter(math.nextafter(16 / 9, 2.0), 2.0)
+        assert noisy != 16 / 9
+        path = self.hand_authored(aspect=noisy)
         assert resolve_move(path, image=image(), aspect=16 / 9) == path
+
+    def test_the_tolerance_is_relative_not_absolute(self):
+        """An absolute epsilon on a ratio is four times stricter for scope
+        (2.39:1) than for a vertical (9:16) — a distinction nobody chose."""
+        for base in (9 / 16, 16 / 9, 2.39):
+            near = base * (1 + 1e-10)
+            assert resolve_move(
+                self.hand_authored(aspect=near), image=image(), aspect=base
+            ) == self.hand_authored(aspect=near)
+            far = base * 1.02  # 2% — a different delivery at any scale
+            with pytest.raises(MoveError):
+                resolve_move(self.hand_authored(aspect=far), image=image(), aspect=base)
+
+
+class TestAspectMismatch:
+    """The seam that keeps a second-aspect cut renderable.
+
+    A panel carries ONE path, not one per delivery, so a hand-corrected move on
+    the 16:9 cut used to make the vertical cut of the same project raise — and
+    the remedy the error named ("author a second path for this delivery") was
+    not expressible in any body schema.
+    """
+
+    def hand(self, aspect=16 / 9):
+        return BurnsPath.from_start_end(
+            Rect(0.0, 0.0, 1.0, 1.0),
+            Rect(0.15, 0.10, 0.55, 0.55),
+            output_aspect=aspect,
+        )
+
+    def test_the_default_still_refuses(self):
+        """Loud stays the default: nothing silently cover-crops a hand-drawn
+        framing, and no stored data violates the strict rule yet."""
+        with pytest.raises(MoveError) as e:
+            resolve_move(self.hand(), image=image(), aspect=9 / 16)
+        assert "refit" in str(e.value)
+
+    def test_the_error_names_only_remedies_a_caller_can_actually_take(self):
+        msg = str(
+            pytest.raises(
+                MoveError,
+                resolve_move,
+                self.hand(),
+                image=image(),
+                aspect=9 / 16,
+            ).value
+        )
+        assert "author a second path" not in msg  # not expressible: one path per panel
+        assert "on_aspect_mismatch='refit'" in msg
+        assert "drop the override" in msg
+
+    def test_refit_renders_the_vertical_cut(self):
+        v = resolve_move(
+            self.hand(), image=image(), aspect=9 / 16, on_aspect_mismatch="refit"
+        )
+        assert v.output_aspect == 9 / 16
+        for t in (0.0, 0.5, 1.0):
+            assert v.evaluate(t).is_contained()
+
+    def test_refit_keeps_what_the_author_chose(self):
+        """Where the camera looks, and how far in it is — at every instant."""
+        iw, ih = 1600, 1200
+        hand = self.hand()
+        v = resolve_move(
+            hand, image=image(w=iw, h=ih), aspect=9 / 16, on_aspect_mismatch="refit"
+        )
+        for t in (0.0, 0.25, 0.5, 0.75, 1.0):
+            before, after = hand.evaluate(t), v.evaluate(t)
+            assert after.center == pytest.approx(before.center, abs=1e-9)
+            assert after.zoom == pytest.approx(before.zoom, rel=1e-9)
+
+    def test_refit_changes_the_window_shape_to_the_delivery(self):
+        """It is not a no-op dressed as one: the point is the new shape."""
+        iw, ih = 1600, 1200
+        v = resolve_move(
+            self.hand(),
+            image=image(w=iw, h=ih),
+            aspect=9 / 16,
+            on_aspect_mismatch="refit",
+        )
+        r = v.evaluate(0.0)
+        assert (r.w * iw) / (r.h * ih) == pytest.approx(9 / 16, rel=0.02)
+
+    def test_a_stored_aspect_against_a_none_delivery_is_still_a_mismatch(self):
+        """The mirror of `test_an_aspect_agnostic_override_is_preserved`.
+
+        A path authored for 16:9 rendered at `aspect=None` (match the image)
+        is a real mismatch. Only the *stored* `None` means "aspect-agnostic";
+        relaxing the guard to `aspect is None or ...` silently honours a
+        16:9 framing on an image-shaped cut, and survived the suite.
+        """
+        with pytest.raises(MoveError):
+            resolve_move(self.hand(16 / 9), image=image(), aspect=None)
+        refitted = resolve_move(
+            self.hand(16 / 9), image=image(), aspect=None, on_aspect_mismatch="refit"
+        )
+        assert refitted.output_aspect is None
+
+    def test_refit_is_a_no_op_when_the_aspects_already_agree(self):
+        hand = self.hand()
+        assert (
+            resolve_move(hand, image=image(), aspect=16 / 9, on_aspect_mismatch="refit")
+            == hand
+        )
+
+    def test_an_unknown_action_is_refused_by_name(self):
+        with pytest.raises(MoveError) as e:
+            resolve_move("push_in", image=image(), aspect=A, on_aspect_mismatch="crop")
+        assert "refit" in str(e.value) and "crop" in str(e.value)
+
+    def test_a_named_move_never_reaches_the_mismatch_path(self):
+        """It is built at `aspect` by construction, so the seam cannot bite it."""
+        for action in ("raise", "refit"):
+            p = resolve_move(
+                "push_in", image=image(), aspect=9 / 16, on_aspect_mismatch=action
+            )
+            assert p.output_aspect == 9 / 16
+
+
+class TestResolverIdentity:
+    """A stored panel is an intent, so this module's constants decide its
+    pixels. A consumer caching a render keyed on the panel alone would serve
+    stale frames forever — nw's invariant 3, reelee's working rules 5-6."""
+
+    def test_the_resolver_publishes_an_identity_to_put_in_a_cache_key(self):
+        assert isinstance(RESOLVER_IMPL_VERSION, int)
+        assert RESOLVER_IMPL_VERSION >= 1
+        assert burns.RESOLVER_IMPL_VERSION is RESOLVER_IMPL_VERSION
+
+    def test_it_is_not_the_package_version(self):
+        """A burns release that touches only the renderer must not invalidate
+        anybody's cut — and importlib.metadata is unreliable here besides."""
+        assert not hasattr(burns, "__version__")
+
+    def test_every_constant_that_moves_the_pixels_is_covered_by_it(self):
+        """A reminder in executable form: this list IS what the lock locks."""
+        governed = {
+            "DFLT_ZOOM",
+            "DRIFT_TRAVEL",
+            "DRIFT_SPAN",
+            "DRIFT_MIN_ROOM",
+            "AUTO_WEIGHTS",
+        }
+        assert governed <= set(burns.moves.__all__)
+
+
+class TestArgumentValidation:
+    @pytest.mark.parametrize("bad", [0, 0.0, -1.78, float("nan"), float("inf"), "wide"])
+    def test_a_nonsense_aspect_is_refused(self, bad):
+        """`0.0` is falsy, so it would reach axis_maxima and quietly mean
+        'match the image' — the cover-crop `aspect` is required to prevent.
+        A negative produces a negative-width rect that passes is_contained()."""
+        with pytest.raises(MoveError):
+            resolve_move("push_in", image=image(), aspect=bad)
+
+    @pytest.mark.parametrize("bad", [0, 0.0, -1.0, float("nan"), float("inf"), "big"])
+    def test_a_nonsense_zoom_is_refused(self, bad):
+        """Rect.from_center_zoom already refuses these; the new front door
+        must not be more permissive than the type it builds."""
+        with pytest.raises(MoveError):
+            resolve_move("push_in", image=image(), aspect=A, zoom=bad)
+
+    def test_aspect_none_is_still_allowed(self):
+        assert resolve_move("hold", image=image(), aspect=None) is not None
+
+
+class TestVocabularyIsStrict:
+    """burns owns MOVES; a consumer mirroring it to validate its own stored
+    field must agree exactly. Leniency here is invisible divergence."""
+
+    @pytest.mark.parametrize(
+        "spelling", [" push_in", "push_in ", " push_in ", "PUSH_IN", "Push_In"]
+    )
+    def test_no_stripping_and_no_case_folding(self, spelling):
+        with pytest.raises(MoveError):
+            resolve_move(spelling, image=image(), aspect=A)
+
+    def test_auto_weights_cannot_be_mutated_into_a_silent_no_op(self):
+        """It is in __all__ and its docstring says it decides how often auto
+        picks each move — but the pool is built once at import, so a plain
+        dict would accept the assignment and change nothing."""
+        with pytest.raises(TypeError):
+            burns.AUTO_WEIGHTS["push_in"] = 99
+
+
+class TestGeometryIsPinned:
+    """Every constant and every docstring claim that decides a pixel.
+
+    An adversarial review mutated this module sixteen ways and **fourteen
+    survived** the suite as first written — the geometry was almost entirely
+    unpinned. Each test below kills one of those survivors, and the docstring
+    says which claim it is defending, because that is the thing that can rot.
+    """
+
+    def test_a_zoom_move_is_exactly_a_content_aware_path(self):
+        """`_zoom_move` is a pure delegation.
+
+        Includes a case where the framing cap BINDS, because with a slack cap
+        every plausible mutation of the zoom it forwards is a no-op and the
+        assertion proves nothing.
+        """
+        iw, ih = 800, 600
+        cases = [((0.3, 0.3, 0.2, 0.2), 1.4), ((0.25, 0.25, 0.5, 0.5), 2.5)]
+        assert any(
+            fit_zoom(iw, ih, keep=pad_box(f, DFLT_KEEP_PAD), output_aspect=A) * 0.98 < z
+            for f, z in cases
+        ), "at least one case must exercise a binding cap"
+        for focus, zoom in cases:
+            for name, mode in (("push_in", "in"), ("pull_out", "out")):
+                got = resolve_move(
+                    name, image=image(w=iw, h=ih), aspect=A, zoom=zoom, focus=focus
+                )
+                want = content_aware_path(
+                    iw,
+                    ih,
+                    subject=focus,
+                    output_aspect=A,
+                    zoom=zoom,
+                    keep_pad=DFLT_KEEP_PAD,
+                    mode=mode,
+                )
+                assert got == want, (name, focus, zoom)
+
+    def test_zoom_is_capped_so_the_subject_stays_framed(self):
+        """ "capped so the padded keep-region stays framed", margin included.
+
+        The focus must leave ``cap * 0.98`` ABOVE 1.0. An earlier version used
+        a near-full-frame focus, where the ``max(1.0, ...)`` floor swallows the
+        margin entirely — so dropping the 0.98 changed every render and the
+        assertion still passed.
+        """
+        iw, ih = 800, 600
+        focus = (0.35, 0.35, 0.3, 0.3)
+        cap = fit_zoom(iw, ih, keep=pad_box(focus, DFLT_KEEP_PAD), output_aspect=A)
+        assert cap * 0.98 > 1.0, "this case must exercise the margin, not the floor"
+        p = resolve_move(
+            "hold", image=image(w=iw, h=ih), aspect=A, zoom=50.0, focus=focus
+        )
+        assert p.evaluate(0.0).zoom == pytest.approx(cap * 0.98, rel=1e-9)
+        assert p.evaluate(0.0).zoom < 50.0
+
+    def test_the_keep_region_is_padded_before_it_is_framed(self):
+        """A subject framed by its own bounding box reads as a crop. Padding
+        moves the cap, so an unpadded keep frames tighter than intended."""
+        iw, ih = 800, 600
+        focus = (0.2, 0.2, 0.6, 0.6)
+        padded = fit_zoom(iw, ih, keep=pad_box(focus, DFLT_KEEP_PAD), output_aspect=A)
+        raw = fit_zoom(iw, ih, keep=focus, output_aspect=A)
+        assert padded < raw  # the padding really does bind here
+        p = resolve_move(
+            "hold", image=image(w=iw, h=ih), aspect=A, zoom=9.0, focus=focus
+        )
+        assert p.evaluate(0.0).zoom == pytest.approx(max(1.0, padded * 0.98), rel=1e-9)
+
+    def test_a_room_limited_drift_lands_exactly_on_the_floor(self):
+        """`DRIFT_TRAVEL` is live geometry: `DRIFT_MIN_ROOM` is derived from
+        it, so retuning it moves the zoom the floor chooses."""
+        p = resolve_move(
+            "drift_right", image=image(w=1600, h=900), aspect=16 / 9, zoom=1.0
+        )
+        r = p.evaluate(0.0)
+        assert 1 - r.w == pytest.approx(DRIFT_MIN_ROOM, rel=1e-9)
+        assert abs(travel(p, "x")) / r.w == pytest.approx(DRIFT_SPAN, rel=1e-9)
+
+    @pytest.mark.parametrize(
+        "move, axis, cross",
+        [
+            ("drift_right", "x", "y"),
+            ("drift_left", "x", "y"),
+            ("drift_up", "y", "x"),
+            ("drift_down", "y", "x"),
+        ],
+    )
+    def test_a_drift_locks_its_cross_axis_to_the_subject(self, move, axis, cross):
+        """ "the cross axis stays locked to the keep-region, so a horizontal
+        drift cannot slide off a face" — untested, and it survived a mutation
+        that locked it to the image centre instead."""
+        img = image()
+        near = (0.40, 0.02, 0.20, 0.20) if cross == "y" else (0.02, 0.40, 0.20, 0.20)
+        far = (0.40, 0.70, 0.20, 0.20) if cross == "y" else (0.70, 0.40, 0.20, 0.20)
+        a = getattr(
+            resolve_move(move, image=img, aspect=A, focus=near).evaluate(0.0), cross
+        )
+        b = getattr(
+            resolve_move(move, image=img, aspect=A, focus=far).evaluate(0.0), cross
+        )
+        assert a < b, (move, cross, a, b)
+
+    @pytest.mark.parametrize("move, axis", [("drift_right", "x"), ("drift_down", "y")])
+    def test_a_drift_centres_its_travel_on_the_subject(self, move, axis):
+        """ "The travel is centred on the keep-region, so the subject is
+        mid-frame at the midpoint of the move rather than arriving or
+        departing."
+
+        This is the ALONG-axis claim, and it is a different mutation from the
+        cross-axis one: centring the travel on the image instead survived a
+        test that only looked at the cross axis.
+        """
+        img = image()
+        near = (0.05, 0.40, 0.20, 0.20) if axis == "x" else (0.40, 0.05, 0.20, 0.20)
+        far = (0.75, 0.40, 0.20, 0.20) if axis == "x" else (0.40, 0.75, 0.20, 0.20)
+        a = getattr(
+            resolve_move(move, image=img, aspect=A, focus=near).evaluate(0.0), axis
+        )
+        b = getattr(
+            resolve_move(move, image=img, aspect=A, focus=far).evaluate(0.0), axis
+        )
+        assert a < b, (move, axis, a, b)
+
+    def test_auto_follows_the_declared_weights(self):
+        """AUTO_WEIGHTS is documented as how often auto picks each move.
+        Flattening it to all-ones survived the suite as first written."""
+        n = 20000
+        counts = Counter(choose_move(s) for s in range(n))
+        total = sum(AUTO_WEIGHTS.values())
+        for name, weight in AUTO_WEIGHTS.items():
+            assert counts[name] / n == pytest.approx(weight / total, abs=0.02), (
+                name,
+                dict(counts),
+            )
+        assert counts["push_in"] > 2 * counts["drift_left"]
+
+    def test_the_tuned_constants_are_pinned_to_the_resolver_version(self):
+        """The art-direction numbers, pinned by literal on purpose.
+
+        They are *choices*, not derivations — how far a drift crosses its
+        frame, and how much of the available room it uses. Nothing else can
+        pin them: `DRIFT_MIN_ROOM` is derived from both, so retuning
+        `DRIFT_TRAVEL` moves the derived constant with it and every
+        relationship test stays green while every rendered drift changes.
+
+        A literal pin makes a retune a deliberate two-line edit — the value
+        here, and `RESOLVER_IMPL_VERSION`, which is what stops a consumer's
+        cache serving frames from the old tuning forever.
+        """
+        assert (DRIFT_TRAVEL, DRIFT_SPAN, DFLT_ZOOM) == (0.5, 0.10, 1.18), (
+            "a tuned constant changed: bump RESOLVER_IMPL_VERSION in the same "
+            "commit, then update this pin"
+        )
+        assert RESOLVER_IMPL_VERSION == 1
+
+    def test_the_seed_is_mixed_not_taken_modulo(self):
+        """Cross-process stability alone does not prove the seed is scrambled
+        — `seed % len(pool)` has that too, and walks the pool in order, so a
+        consumer minting sequential seeds would get a visible cycle."""
+        raw_walk = [_AUTO_POOL[s % len(_AUTO_POOL)] for s in range(40)]
+        assert [choose_move(s) for s in range(40)] != raw_walk
+
+    @pytest.mark.parametrize(
+        "box, accepted",
+        [
+            ((0.90, 0.50, 0.10, 0.40), True),  # exactly flush with the edge
+            ((0.90, 0.50, 0.11, 0.40), False),  # 0.01 over — the real boundary
+            ((0.50, 0.90, 0.40, 0.11), False),
+            ((-0.01, 0.50, 0.20, 0.20), False),
+            ((0.00, 0.00, 1.00, 1.00), True),  # the whole image
+        ],
+    )
+    def test_the_focus_bound_is_tested_at_the_boundary(self, box, accepted):
+        """The only out-of-range case used to be a pixel box (120, 80, 400,
+        300) — so far out that loosening the bound to [0, 2] still refused it.
+        A guard tested at 400x its boundary is not tested."""
+        if accepted:
+            assert resolve_move("hold", image=image(), aspect=A, focus=box) is not None
+        else:
+            with pytest.raises(MoveError):
+                resolve_move("hold", image=image(), aspect=A, focus=box)
 
 
 class TestSerialization:

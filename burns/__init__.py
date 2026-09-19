@@ -16,7 +16,9 @@ The core abstraction is a pure, time-parameterized spec:
   subject (via :func:`salient_box`) and any injected face boxes framed.
 - :data:`MOVES` + :func:`resolve_move` — the named-move vocabulary, for callers
   that want to *store* a camera move as an authored intent and resolve it
-  against whatever still is in the slot at render time.
+  against whatever still is in the slot at render time. A caller that caches
+  the render puts :data:`RESOLVER_IMPL_VERSION` in its key, since the pixels an
+  unchanged intent becomes are decided here.
 
 Two renderers consume a path plus a render-time ``duration``:
 
@@ -51,6 +53,7 @@ from burns.render import (
 from burns.moves import (
     MOVES,
     AUTO_WEIGHTS,
+    RESOLVER_IMPL_VERSION,
     DFLT_ZOOM,
     MoveError,
     choose_move,
@@ -69,6 +72,7 @@ __all__ = [
     "FacesDetector",
     "MOVES",
     "AUTO_WEIGHTS",
+    "RESOLVER_IMPL_VERSION",
     "DFLT_ZOOM",
     "MoveError",
     "choose_move",

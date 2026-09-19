@@ -235,7 +235,26 @@ resolve_move(panel.path or panel.move, image=still, aspect=16 / 9,
 
 An override is returned exactly as authored. If its `output_aspect` contradicts
 the `aspect` being rendered, that **raises** rather than cover-cropping somebody's
-hand-drawn framing without saying so.
+hand-drawn framing without saying so — a panel carries *one* path, not one per
+delivery, so a hand-corrected move on the 16:9 cut would otherwise silently show
+the wrong framing in the vertical cut of the same project. Pass
+`on_aspect_mismatch="refit"` to render it anyway: each keyframe is rebuilt at
+the new aspect **keeping what the author chose** — where the camera looks at
+each instant and how far in it is — and changing only the window's shape.
+
+```python
+resolve_move(panel.path, image=still, aspect=9 / 16, on_aspect_mismatch="refit")
+```
+
+**Caching a render? Put `burns.RESOLVER_IMPL_VERSION` in the key.** A stored
+panel is an intent, so the pixels it becomes are decided by constants in this
+module (`DFLT_ZOOM`, `DRIFT_TRAVEL`, `DRIFT_SPAN`, `DRIFT_MIN_ROOM`,
+`AUTO_WEIGHTS`). Retune any of them and an unchanged panel renders differently —
+so a key built from the panel alone serves the old frames forever, or produces a
+cut that silently disagrees with its siblings. It is `nw.Transform.impl_version`'s
+contract, *a lock not a receipt*: bumped when the geometry changes, left alone
+for a docstring. Deliberately **not** the package version, so a burns release
+that touches only the renderer invalidates nobody's cut.
 
 **`seed` is not a position.** Deriving motion from a panel's ordinal (`i % 2` for
 the style, `i % 4` for the zoom) means reordering one panel changes the camera on
@@ -302,7 +321,8 @@ motion.
 | `content_aware_path(img_w, img_h, *, subject=None, faces=(), index=0, output_aspect=None, zoom=1.3, min_zoom=1.05, keep_pad=0.18, mode="auto", easing="ease-in-out")` | Pure geometry: a `BurnsPath` that keeps a keep-region framed. |
 | `content_aware_path_for(image, *, subject=None, faces=(), faces_detector=None, index=0, output_aspect=None, **kwargs)` | The same, deriving subject (`salient_box`) and faces from the image itself. An explicit `subject` replaces the saliency estimate, which is then not computed. |
 | `MOVES` | The named-move vocabulary — every value a stored `move` field may hold. |
-| `resolve_move(move, *, image, aspect, zoom=1.18, focus=None, seed=0, easing="ease-in-out")` | Resolve an authored move (a name, or an explicit `BurnsPath`) against an image into a path. |
+| `resolve_move(move, *, image, aspect, zoom=1.18, focus=None, seed=0, easing="ease-in-out", on_aspect_mismatch="raise")` | Resolve an authored move (a name, or an explicit `BurnsPath`) against an image into a path. |
+| `RESOLVER_IMPL_VERSION` | The identity of the resolver's geometry — put it in a render cache key. |
 | `choose_move(seed)` | Which concrete move `"auto"` resolves to for `seed`. |
 | `move_kind(move)` | How a move is grouped: `"zoom"`, `"drift"`, `"static"`, `"select"`. |
 | `ken_burns_video(image, path=DEFAULT_BURNS_PATH, *, duration=2.0, fps=30, saveas=None, output_size=None, backend="pillow", ...)` | Render one image into a pan/zoom mp4. |
