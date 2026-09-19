@@ -14,6 +14,11 @@ The core abstraction is a pure, time-parameterized spec:
   index from a little intent (style / zoom / pan / easing).
 - :func:`content_aware_path_for` — the content-aware counterpart: keep the
   subject (via :func:`salient_box`) and any injected face boxes framed.
+- :data:`MOVES` + :func:`resolve_move` — the named-move vocabulary, for callers
+  that want to *store* a camera move as an authored intent and resolve it
+  against whatever still is in the slot at render time. A caller that caches
+  the render puts :data:`RESOLVER_IMPL_VERSION` in its key, since the pixels an
+  unchanged intent becomes are decided here.
 
 Two renderers consume a path plus a render-time ``duration``:
 
@@ -45,6 +50,16 @@ from burns.render import (
     DEFAULT_BURNS_PATH,
     DEFAULT_DURATION_S,
 )
+from burns.moves import (
+    MOVES,
+    AUTO_WEIGHTS,
+    RESOLVER_IMPL_VERSION,
+    DFLT_ZOOM,
+    MoveError,
+    choose_move,
+    move_kind,
+    resolve_move,
+)
 from burns.backends import RenderBackend, register_backend, get_backend
 
 __all__ = [
@@ -55,6 +70,14 @@ __all__ = [
     "content_aware_path_for",
     "salient_box",
     "FacesDetector",
+    "MOVES",
+    "AUTO_WEIGHTS",
+    "RESOLVER_IMPL_VERSION",
+    "DFLT_ZOOM",
+    "MoveError",
+    "choose_move",
+    "move_kind",
+    "resolve_move",
     "ken_burns_video",
     "ken_burns_film",
     "PanelInput",

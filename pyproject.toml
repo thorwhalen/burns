@@ -87,12 +87,21 @@ convention = "google"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
+# CI runs `pytest --doctest-modules` with NO path argument, so pytest falls back
+# to `testpaths`. With "tests" alone, every `>>>` under burns/ was collected by
+# nothing and the green tick covered none of them. Listing the package here is
+# what makes the module doctests run — both locally and in CI.
 testpaths = [
     "tests",
+    "burns",
 ]
+# Must match exactly what CI passes with `-o`, or a doctest relying on a flag
+# CI does not set passes locally and fails there. CI passes:
+#   -o doctest_optionflags='ELLIPSIS IGNORE_EXCEPTION_DETAIL'
+# In particular: no NORMALIZE_WHITESPACE.
 doctest_optionflags = [
-    "NORMALIZE_WHITESPACE",
     "ELLIPSIS",
+    "IGNORE_EXCEPTION_DETAIL",
 ]
 
 [tool.wads.ci]

@@ -1,6 +1,6 @@
 ---
 name: burns
-description: Use when turning a still image (or a sequence of stills) into a pan/zoom video — the "Ken Burns effect" — OR when building a UI to author/select the motion path. Triggers on "ken burns", "pan and zoom a photo", "animate a still image", "make a slideshow with motion", "zoom into an image as video", "photo to video", any use of ken_burns_video / ken_burns_film / ken_burns_path / BurnsPath; on content-aware framing: "keep the subject/face in frame", "don't pan over the sky", content_aware_path / content_aware_path_for / salient_box; AND on the TypeScript side: "kenburnz", "ken burns path entry / selection / cropper UI", "author a BurnsPath", mountPathEntry, or work under ts/. Use BEFORE hand-rolling moviepy crop/resize-per-frame logic or a bespoke crop-rect UI.
+description: Use when turning a still image (or a sequence of stills) into a pan/zoom video — the "Ken Burns effect" — OR when building a UI to author/select the motion path. Triggers on "ken burns", "pan and zoom a photo", "animate a still image", "make a slideshow with motion", "zoom into an image as video", "photo to video", any use of ken_burns_video / ken_burns_film / ken_burns_path / BurnsPath; on content-aware framing: "keep the subject/face in frame", "don't pan over the sky", content_aware_path / content_aware_path_for / salient_box; on STORING a move as data rather than geometry: "save the camera move", "the same move on a different picture", "named camera moves", MOVES / resolve_move / choose_move / move_kind, push_in / pull_out / drift_left / hold / auto; AND on the TypeScript side: "kenburnz", "ken burns path entry / selection / cropper UI", "author a BurnsPath", mountPathEntry, or work under ts/. Use BEFORE hand-rolling moviepy crop/resize-per-frame logic or a bespoke crop-rect UI.
 ---
 
 # burns — Ken Burns pan/zoom video effects
@@ -87,11 +87,14 @@ the image: keep a subject or faces in frame, don't drift over empty sky. Same
 duration-free `BurnsPath` out, same render call. Boxes everywhere are normalized
 `(x, y, w, h)` in `[0, 1]`, top-left origin — the `Rect` convention.
 
-- `content_aware_path_for(image, *, faces=(), faces_detector=None, index=0, output_aspect=None, **kwargs)`
+- `content_aware_path_for(image, *, subject=None, faces=(), faces_detector=None, index=0, output_aspect=None, **kwargs)`
   — the one to reach for. Reads `image` (path / PIL / ndarray), derives the
   subject via `salient_box`, takes faces from `faces` or `faces_detector(img)`,
   delegates to `content_aware_path`. `**kwargs` forward (`zoom`, `min_zoom`,
-  `keep_pad`, `mode`, `easing`) — but **not** `subject`, which it computes.
+  `keep_pad`, `mode`, `easing`). `subject` is a **named** parameter, not one of
+  those: it replaces the saliency estimate (which is then not computed at all),
+  and passing it through `**kwargs` used to raise `TypeError: got multiple
+  values` from inside `content_aware_path`.
 - `content_aware_path(img_w, img_h, *, subject=None, faces=(), index=0, output_aspect=None, zoom=1.3, min_zoom=1.05, keep_pad=0.18, mode="auto", easing="ease-in-out")`
   — the pure-geometry core: touches no pixels, deterministic. Use it when the
   boxes come from elsewhere (a UI, a DB, an upstream vision pipeline).
@@ -126,6 +129,111 @@ Gotchas:
 - Explicit `faces=[...]` short-circuits `faces_detector` — the detector runs
   only when `faces` is empty. Faces beat `subject`; the keep-region is the
   **union** of all face boxes.
+
+## Storing a move — `MOVES` + `resolve_move` (reach for this before persisting a path)
+
+**Never persist a `BurnsPath` as a panel's camera setting.** It is *resolved
+geometry* — rectangles measured against one picture's pixels — so it pins the
+move to that picture. Store the **authored intent** and resolve it at render
+time; replacing the still must re-frame.
+
+```python
+from burns import MOVES, resolve_move, choose_move, move_kind
+
+MOVES   # ('push_in','pull_out','drift_left','drift_right','drift_up','drift_down','hold','auto')
+
+path = resolve_move("push_in", image=still, aspect=16 / 9, zoom=1.18, seed=4021)
+```
+
+`resolve_move(move, *, image, aspect, zoom=1.18, focus=None, seed=0, easing="ease-in-out", on_aspect_mismatch="raise") -> BurnsPath`
+
+- **`move` is two front doors on one path**: a name from `MOVES`, *or* an
+  explicit `BurnsPath` / its `to_dict()` payload. So a panel carrying an
+  optional hand-corrected override makes the same single call —
+  `resolve_move(panel.path or panel.move, ...)` — and the choice is made once,
+  here, not once per consumer.
+- **`image` is read every time.** Framing depends on what is in the picture.
+  Do **not** cache the returned path against the intent; that is the whole
+  point of the split.
+- **`aspect`** is the delivered `width / height` (`= output_aspect`). Required,
+  not defaulted — a cut has a delivery size, and quietly framing for the
+  image's aspect instead is a cover-crop nobody asked for. `None` explicitly
+  means "match the image".
+- **`focus`** overrides the saliency box: a `Rect`, a normalized `(x,y,w,h)`
+  tuple, a mapping with those keys, or any object with `.x/.y/.w/.h` (so a
+  pydantic body is a focus box without importing burns). When given,
+  `salient_box` is **not called**. **It is normalized against the `image`
+  argument, not against the original still** — if you pre-composite stills onto
+  a delivery-sized canvas (a blurred fill, a letterbox), a focus box a user drew
+  on the source still is in the wrong space and will frame the wrong thing.
+  Convert it, or pass the pre-composite image.
+- **`seed` is not a position, and does exactly one job**: which concrete move
+  `"auto"` becomes. Mint it once per panel and store it. It deliberately does
+  **not** perturb a named move — a decision a seed can nudge is not a decision.
+
+Why `seed` exists: deriving motion from a panel's ordinal (`style = STYLES[i%2]`,
+`zoom = 1.14 + 0.02*(i%4)`, `content_aware_path_for(index=i)`) means reordering
+one panel changes the camera on **every** panel after it, and "keep this move,
+change this picture" is unexpressible. `resolve_move` is a pure function of its
+arguments and never of a position.
+
+Gotchas:
+
+- **A drift's name is the direction the CAMERA travels** — `drift_right` ends
+  with the window further right, so the picture slides *left* across the frame.
+  The opposite reading is the one people reach for first.
+- A drift's travel is capped at `DRIFT_SPAN` (a tenth) of the frame, so a
+  vertical and a horizontal drift read at the same speed on a picture whose two
+  axes leave very different amounts of room. Its zoom is *raised* if the
+  requested one leaves no room to travel (`DRIFT_MIN_ROOM`) — a drift that
+  silently becomes a hold is the failure that floor prevents.
+- `hold` honours `zoom`: it is a *static framing*, not necessarily the whole
+  picture. Pass `zoom=1.0` for the untouched frame.
+- An explicit path override is returned **as authored**. If its `output_aspect`
+  contradicts `aspect`, `resolve_move` **raises** (`MoveError`) rather than
+  cover-cropping a hand-drawn framing without saying so. This is not academic:
+  a panel carries *one* path and a project can have several cuts at different
+  aspects, so a move hand-corrected on the 16:9 cut hits it in the vertical cut.
+  `on_aspect_mismatch="refit"` rebuilds each keyframe at the new aspect,
+  **keeping the author's centre and zoom at every instant** and changing only
+  the window shape — that is the option to reach for when rendering a second
+  delivery of the same project.
+- **Caching a render? Put `burns.RESOLVER_IMPL_VERSION` in the cache key.** The
+  pixels a stored intent becomes are decided by this module's constants
+  (`DFLT_ZOOM`, `DRIFT_TRAVEL`, `DRIFT_SPAN`, `DRIFT_MIN_ROOM`,
+  `AUTO_WEIGHTS`), so a key built from the panel alone serves stale frames
+  forever after a retune, or renders a cut that disagrees with its siblings.
+  It is `nw.Transform.impl_version`'s "a lock, not a receipt", and it is
+  deliberately **not** the package version — `burns.__version__` does not exist
+  and `importlib.metadata.version("burns")` is unreliable (plan §4).
+- **`aspect` and `zoom` are validated.** A non-positive, NaN or infinite value
+  raises rather than being passed through: `aspect=0.0` is falsy and would
+  quietly mean "match the image", and a negative aspect produces a
+  negative-width rect that still passes `Rect.is_contained()`.
+- **The move name is matched strictly** — no whitespace stripping, no case
+  folding — so a consumer mirroring `MOVES` to validate its own stored field
+  agrees with burns exactly.
+- `zoom` is honoured, never jittered — and still capped so the keep-region stays
+  framed (a subject filling the frame yields an almost static move; the fix is a
+  tighter `focus`, not a bigger `zoom`).
+- `choose_move(seed)` is public so a UI can show `auto → drift_left`, and so a
+  user can *pin* what auto chose by storing that name instead. `move_kind(name)`
+  groups the vocabulary (`"zoom"` / `"drift"` / `"static"` / `"select"`) off the
+  same table `resolve_move` dispatches on — do not keep a second list.
+- `"hold"` and `"auto"` sit in `MOVES` beside the directional moves because it
+  is **one field's value set**. They differ in *kind*, not in membership; read
+  the difference with `move_kind`, not with a second constant.
+- **burns owns the vocabulary.** If you mirror `MOVES` to validate a stored
+  field before a render, pin the mirror equal to `burns.MOVES` with a test that
+  *fails* when burns is absent rather than skipping — a doubly-soft
+  `importorskip` + `hasattr` skip goes green in exactly the environment where
+  the two have drifted.
+- `"auto"` is i.i.d. per seed and knows nothing of its neighbours, so it gives
+  a good global distribution but **not** sequence-level variety: expect a few
+  adjacent repeats in any 24-panel track. If you need "never the same move
+  twice in a row", that is the caller's to enforce when it mints the seeds.
+  And note `seed=0` is the default on both sides — an import that forgets to
+  mint seeds renders every `auto` panel as the same move.
 
 ## `ken_burns_video(image, path=DEFAULT_BURNS_PATH, *, duration=2.0, fps=30, saveas=None, output_size=None, backend="pillow", ...)`
 
