@@ -68,6 +68,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="burns.backends.html">burns.backends</a></li>
 <li class="toctree-l3"><a class="reference internal" href="burns.content.html">burns.content</a></li>
 <li class="toctree-l3"><a class="reference internal" href="burns.easing.html">burns.easing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="burns.moves.html">burns.moves</a></li>
 <li class="toctree-l3"><a class="reference internal" href="burns.path.html">burns.path</a></li>
 <li class="toctree-l3"><a class="reference internal" href="burns.rect.html">burns.rect</a></li>
 <li class="toctree-l3"><a class="reference internal" href="burns.render.html">burns.render</a></li>
@@ -98,6 +99,7 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#burns.BurnsPath.to_dict"><code class="docutils literal notranslate"><span class="pre">BurnsPath.to_dict()</span></code></a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#burns.MoveError"><code class="docutils literal notranslate"><span class="pre">MoveError</span></code></a></li>
 <li><a class="reference internal" href="#burns.Rect"><code class="docutils literal notranslate"><span class="pre">Rect</span></code></a><ul>
 <li><a class="reference internal" href="#burns.Rect.aspect"><code class="docutils literal notranslate"><span class="pre">Rect.aspect</span></code></a></li>
 <li><a class="reference internal" href="#burns.Rect.center"><code class="docutils literal notranslate"><span class="pre">Rect.center</span></code></a></li>
@@ -110,6 +112,7 @@ data-aria-dark="Switch to auto color mode">
 </ul>
 </li>
 <li><a class="reference internal" href="#burns.RenderBackend"><code class="docutils literal notranslate"><span class="pre">RenderBackend</span></code></a></li>
+<li><a class="reference internal" href="#burns.choose_move"><code class="docutils literal notranslate"><span class="pre">choose_move()</span></code></a></li>
 <li><a class="reference internal" href="#burns.content_aware_path"><code class="docutils literal notranslate"><span class="pre">content_aware_path()</span></code></a></li>
 <li><a class="reference internal" href="#burns.content_aware_path_for"><code class="docutils literal notranslate"><span class="pre">content_aware_path_for()</span></code></a></li>
 <li><a class="reference internal" href="#burns.cubic_bezier"><code class="docutils literal notranslate"><span class="pre">cubic_bezier()</span></code></a></li>
@@ -117,8 +120,10 @@ data-aria-dark="Switch to auto color mode">
 <li><a class="reference internal" href="#burns.ken_burns_film"><code class="docutils literal notranslate"><span class="pre">ken_burns_film()</span></code></a></li>
 <li><a class="reference internal" href="#burns.ken_burns_path"><code class="docutils literal notranslate"><span class="pre">ken_burns_path()</span></code></a></li>
 <li><a class="reference internal" href="#burns.ken_burns_video"><code class="docutils literal notranslate"><span class="pre">ken_burns_video()</span></code></a></li>
+<li><a class="reference internal" href="#burns.move_kind"><code class="docutils literal notranslate"><span class="pre">move_kind()</span></code></a></li>
 <li><a class="reference internal" href="#burns.parse_easing"><code class="docutils literal notranslate"><span class="pre">parse_easing()</span></code></a></li>
 <li><a class="reference internal" href="#burns.register_backend"><code class="docutils literal notranslate"><span class="pre">register_backend()</span></code></a></li>
+<li><a class="reference internal" href="#burns.resolve_move"><code class="docutils literal notranslate"><span class="pre">resolve_move()</span></code></a></li>
 <li><a class="reference internal" href="#burns.salient_box"><code class="docutils literal notranslate"><span class="pre">salient_box()</span></code></a></li>
 </ul>
 </div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
@@ -162,6 +167,11 @@ deterministic, frame-count-free) and JSON <code class="docutils literal notransl
 index from a little intent (style / zoom / pan / easing).</p></li>
 <li><p><a class="reference internal" href="#burns.content_aware_path_for" title="burns.content_aware_path_for"><code class="xref py py-func docutils literal notranslate"><span class="pre">content_aware_path_for()</span></code></a> — the content-aware counterpart: keep the
 subject (via <a class="reference internal" href="#burns.salient_box" title="burns.salient_box"><code class="xref py py-func docutils literal notranslate"><span class="pre">salient_box()</span></code></a>) and any injected face boxes framed.</p></li>
+<li><p><code class="xref py py-data docutils literal notranslate"><span class="pre">MOVES</span></code> + <a class="reference internal" href="#burns.resolve_move" title="burns.resolve_move"><code class="xref py py-func docutils literal notranslate"><span class="pre">resolve_move()</span></code></a> — the named-move vocabulary, for callers
+that want to <em>store</em> a camera move as an authored intent and resolve it
+against whatever still is in the slot at render time. A caller that caches
+the render puts <code class="xref py py-data docutils literal notranslate"><span class="pre">RESOLVER_IMPL_VERSION</span></code> in its key, since the pixels an
+unchanged intent becomes are decided here.</p></li>
 </ul>
 <p>Two renderers consume a path plus a render-time <code class="docutils literal notranslate"><span class="pre">duration</span></code>:</p>
 <ul class="simple">
@@ -187,28 +197,37 @@ one continuous mp4 (single encode pass, no seams), with optional audio.</p></li>
 <tr class="row-even"><td><p><a class="reference internal" href="#burns.content_aware_path" title="burns.content_aware_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">content_aware_path</span></code></a>(img_w, img_h, *[, ...])</p></td>
 <td><p>A <a class="reference internal" href="#burns.BurnsPath" title="burns.BurnsPath"><code class="xref py py-class docutils literal notranslate"><span class="pre">BurnsPath</span></code></a> that keeps the subject/faces framed while zooming toward or away from them — the content-aware counterpart of <a class="reference internal" href="burns.path.html#burns.path.ken_burns_path" title="burns.path.ken_burns_path"><code class="xref py py-func docutils literal notranslate"><span class="pre">ken_burns_path()</span></code></a>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#burns.content_aware_path_for" title="burns.content_aware_path_for"><code class="xref py py-obj docutils literal notranslate"><span class="pre">content_aware_path_for</span></code></a>(image, *[, faces, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#burns.content_aware_path_for" title="burns.content_aware_path_for"><code class="xref py py-obj docutils literal notranslate"><span class="pre">content_aware_path_for</span></code></a>(image, *[, subject, ...])</p></td>
 <td><p>Convenience: derive the subject (via <a class="reference internal" href="#burns.salient_box" title="burns.salient_box"><code class="xref py py-func docutils literal notranslate"><span class="pre">salient_box()</span></code></a>) and faces (from <code class="docutils literal notranslate"><span class="pre">faces</span></code> or <code class="docutils literal notranslate"><span class="pre">faces_detector(image)</span></code>) straight from <code class="docutils literal notranslate"><span class="pre">image</span></code>, then call <a class="reference internal" href="#burns.content_aware_path" title="burns.content_aware_path"><code class="xref py py-func docutils literal notranslate"><span class="pre">content_aware_path()</span></code></a>.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#burns.salient_box" title="burns.salient_box"><code class="xref py py-obj docutils literal notranslate"><span class="pre">salient_box</span></code></a>(image, *[, downscale, ...])</p></td>
 <td><p>Estimate the salient (high-detail) region of <code class="docutils literal notranslate"><span class="pre">image</span></code> as a normalized box.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#burns.ken_burns_video" title="burns.ken_burns_video"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ken_burns_video</span></code></a>(image[, path, duration, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#burns.choose_move" title="burns.choose_move"><code class="xref py py-obj docutils literal notranslate"><span class="pre">choose_move</span></code></a>(seed)</p></td>
+<td><p>Which concrete move <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> resolves to for <code class="docutils literal notranslate"><span class="pre">seed</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#burns.move_kind" title="burns.move_kind"><code class="xref py py-obj docutils literal notranslate"><span class="pre">move_kind</span></code></a>(move)</p></td>
+<td><p>How <code class="docutils literal notranslate"><span class="pre">move</span></code> is grouped: <code class="docutils literal notranslate"><span class="pre">&quot;zoom&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;drift&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;static&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;select&quot;</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#burns.resolve_move" title="burns.resolve_move"><code class="xref py py-obj docutils literal notranslate"><span class="pre">resolve_move</span></code></a>(move, *, image, aspect[, zoom, ...])</p></td>
+<td><p>Resolve an authored camera intent against <code class="docutils literal notranslate"><span class="pre">image</span></code> into a path.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#burns.ken_burns_video" title="burns.ken_burns_video"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ken_burns_video</span></code></a>(image[, path, duration, ...])</p></td>
 <td><p>Render one image into a pan/zoom video from a <a class="reference internal" href="#burns.BurnsPath" title="burns.BurnsPath"><code class="xref py py-class docutils literal notranslate"><span class="pre">BurnsPath</span></code></a>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#burns.ken_burns_film" title="burns.ken_burns_film"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ken_burns_film</span></code></a>(panels, *, saveas[, fps, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#burns.ken_burns_film" title="burns.ken_burns_film"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ken_burns_film</span></code></a>(panels, *, saveas[, fps, ...])</p></td>
 <td><p>Render an N-panel Ken Burns film in a single pass.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#burns.parse_easing" title="burns.parse_easing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parse_easing</span></code></a>([spec])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#burns.parse_easing" title="burns.parse_easing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">parse_easing</span></code></a>([spec])</p></td>
 <td><p>Resolve an easing spec to a callable <code class="docutils literal notranslate"><span class="pre">f:</span> <span class="pre">[0,</span> <span class="pre">1]</span> <span class="pre">-&gt;</span> <span class="pre">[0,</span> <span class="pre">1]</span></code>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#burns.cubic_bezier" title="burns.cubic_bezier"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cubic_bezier</span></code></a>(x1, y1, x2, y2)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#burns.cubic_bezier" title="burns.cubic_bezier"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cubic_bezier</span></code></a>(x1, y1, x2, y2)</p></td>
 <td><p>A CSS-style cubic-bezier easing <code class="docutils literal notranslate"><span class="pre">f:</span> <span class="pre">[0,</span> <span class="pre">1]</span> <span class="pre">-&gt;</span> <span class="pre">[0,</span> <span class="pre">1]</span></code>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#burns.register_backend" title="burns.register_backend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_backend</span></code></a>(name, backend)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#burns.register_backend" title="burns.register_backend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_backend</span></code></a>(name, backend)</p></td>
 <td><p>Register a render backend under <code class="docutils literal notranslate"><span class="pre">name</span></code> (open-closed extension point).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#burns.get_backend" title="burns.get_backend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_backend</span></code></a>([name])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#burns.get_backend" title="burns.get_backend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_backend</span></code></a>([name])</p></td>
 <td><p>Look up a registered backend by name.</p></td>
 </tr>
 </tbody>
@@ -226,6 +245,16 @@ one continuous mp4 (single encode pass, no seams), with optional audio.</p></li>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#burns.RenderBackend" title="burns.RenderBackend"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RenderBackend</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Encode one image + <a class="reference internal" href="#burns.BurnsPath" title="burns.BurnsPath"><code class="xref py py-class docutils literal notranslate"><span class="pre">BurnsPath</span></code></a> into a video file at <code class="docutils literal notranslate"><span class="pre">output</span></code>.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="rubric">Exceptions</p>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#burns.MoveError" title="burns.MoveError"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MoveError</span></code></a></p></td>
+<td><p>A move that cannot be resolved into a path.</p></td>
 </tr>
 </tbody>
 </table>
@@ -388,6 +417,16 @@ cannot be serialized and raises — use a CSS spec for paths that travel.</p>
 
 </dd></dl>
 
+<dl class="py exception">
+<dt class="sig sig-object py" id="burns.MoveError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">burns.</span></span><span class="sig-name descname"><span class="pre">MoveError</span></span><a class="reference internal" href="../_modules/burns/moves.html#MoveError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#burns.MoveError" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code></a></p>
+<p>A move that cannot be resolved into a path.</p>
+<p>A plain <a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code></a> subclass, so a consumer that already catches
+<code class="docutils literal notranslate"><span class="pre">ValueError</span></code> around its authoring layer keeps working, and so nothing
+downstream needs to import <a class="reference internal" href="burns.moves.html#module-burns.moves" title="burns.moves"><code class="xref py py-mod docutils literal notranslate"><span class="pre">burns.moves</span></code></a> to handle it.</p>
+</dd></dl>
+
 <dl class="py class">
 <dt class="sig sig-object py" id="burns.Rect">
 <span class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">burns.</span></span><span class="sig-name descname"><span class="pre">Rect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">w</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">h</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/burns/rect.html#Rect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#burns.Rect" title="Link to this definition">#</a></dt>
@@ -548,6 +587,32 @@ Returns the written path.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="burns.choose_move">
+<span class="sig-prename descclassname"><span class="pre">burns.</span></span><span class="sig-name descname"><span class="pre">choose_move</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/burns/moves.html#choose_move"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#burns.choose_move" title="Link to this definition">#</a></dt>
+<dd><p>Which concrete move <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> resolves to for <code class="docutils literal notranslate"><span class="pre">seed</span></code>.</p>
+<p>Public because “auto” is a decision a person may want to <em>see</em> (a UI
+showing <code class="docutils literal notranslate"><span class="pre">auto</span> <span class="pre">→</span> <span class="pre">drift_left</span></code>) and to <em>pin</em> (liking what auto chose and
+storing that name instead, so it survives a change to the weights).</p>
+<p>A pure function of <code class="docutils literal notranslate"><span class="pre">seed</span></code> alone — not of the image, and not of any
+position in a sequence. That is what makes a panel’s move survive both a
+reorder and a swapped still.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">choose_move</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span> <span class="o">==</span> <span class="n">choose_move</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span>
+</span><span data-line="2"><span class="go">True</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">choose_move</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span> <span class="ow">in</span> <span class="n">MOVES</span> <span class="ow">and</span> <span class="n">choose_move</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span> <span class="o">!=</span> <span class="s1">'auto'</span>
+</span><span data-line="4"><span class="go">True</span>
+</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">({</span><span class="n">choose_move</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">60</span><span class="p">)})</span> <span class="o">&gt;</span> <span class="mi">1</span>   <span class="c1"># not one move forever</span>
+</span><span data-line="6"><span class="go">True</span>
+</span></pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="burns.content_aware_path">
 <span class="sig-prename descclassname"><span class="pre">burns.</span></span><span class="sig-name descname"><span class="pre">content_aware_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img_w</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_h</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">subject</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">faces</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_aspect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zoom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_zoom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_pad</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.18</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">easing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ease-in-out'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/burns/content.html#content_aware_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#burns.content_aware_path" title="Link to this definition">#</a></dt>
 <dd><p>A <a class="reference internal" href="#burns.BurnsPath" title="burns.BurnsPath"><code class="xref py py-class docutils literal notranslate"><span class="pre">BurnsPath</span></code></a> that keeps the subject/faces framed while zooming
@@ -594,17 +659,35 @@ pull out, giving a sequence rhythm (mirrors <code class="docutils literal notran
 
 <dl class="py function">
 <dt class="sig sig-object py" id="burns.content_aware_path_for">
-<span class="sig-prename descclassname"><span class="pre">burns.</span></span><span class="sig-name descname"><span class="pre">content_aware_path_for</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">faces</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">faces_detector</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_aspect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/burns/content.html#content_aware_path_for"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#burns.content_aware_path_for" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">burns.</span></span><span class="sig-name descname"><span class="pre">content_aware_path_for</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">subject</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">faces</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">faces_detector</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_aspect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/burns/content.html#content_aware_path_for"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#burns.content_aware_path_for" title="Link to this definition">#</a></dt>
 <dd><p>Convenience: derive the subject (via <a class="reference internal" href="#burns.salient_box" title="burns.salient_box"><code class="xref py py-func docutils literal notranslate"><span class="pre">salient_box()</span></code></a>) and faces (from
 <code class="docutils literal notranslate"><span class="pre">faces</span></code> or <code class="docutils literal notranslate"><span class="pre">faces_detector(image)</span></code>) straight from <code class="docutils literal notranslate"><span class="pre">image</span></code>, then call
 <a class="reference internal" href="#burns.content_aware_path" title="burns.content_aware_path"><code class="xref py py-func docutils literal notranslate"><span class="pre">content_aware_path()</span></code></a>. <code class="docutils literal notranslate"><span class="pre">image</span></code> may be a path, PIL image, or ndarray.</p>
 <p>Keeps burns dependency-light: pass an LLM/cv2/manual <code class="docutils literal notranslate"><span class="pre">faces_detector</span></code> when
 you want face-aware framing; omit it for saliency-only (sky-avoiding) motion.</p>
+<p><code class="docutils literal notranslate"><span class="pre">subject</span></code> is an explicit keep-region that <strong>replaces</strong> the saliency
+estimate — for a caller who already knows what the picture is about (a
+hand-drawn crop, an upstream detector, a stored authoring decision). It is a
+named parameter rather than one more key in <code class="docutils literal notranslate"><span class="pre">**kwargs</span></code> because those are
+forwarded to <a class="reference internal" href="#burns.content_aware_path" title="burns.content_aware_path"><code class="xref py py-func docutils literal notranslate"><span class="pre">content_aware_path()</span></code></a>, which already takes <code class="docutils literal notranslate"><span class="pre">subject</span></code> —
+so passing it that way raised <code class="docutils literal notranslate"><span class="pre">TypeError:</span> <span class="pre">got</span> <span class="pre">multiple</span> <span class="pre">values</span></code> two frames
+down. When given, <a class="reference internal" href="#burns.salient_box" title="burns.salient_box"><code class="xref py py-func docutils literal notranslate"><span class="pre">salient_box()</span></code></a> is <strong>not called</strong>: the override is
+total, and computing an estimate only to discard it is how a partial
+override quietly lets saliency back in.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="burns.path.html#burns.path.BurnsPath" title="burns.path.BurnsPath"><code class="xref py py-class docutils literal notranslate"><span class="pre">BurnsPath</span></code></a></span></p>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">600</span><span class="p">,</span> <span class="mi">800</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">'uint8'</span><span class="p">);</span> <span class="n">a</span><span class="p">[</span><span class="mi">80</span><span class="p">:</span><span class="mi">200</span><span class="p">,</span> <span class="mi">60</span><span class="p">:</span><span class="mi">200</span><span class="p">]</span> <span class="o">=</span> <span class="mi">220</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">content_aware_path_for</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">subject</span><span class="o">=</span><span class="p">(</span><span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="n">r</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>                     <span class="c1"># framed on the override,</span>
+</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="n">r</span><span class="o">.</span><span class="n">x</span> <span class="o">+</span> <span class="n">r</span><span class="o">.</span><span class="n">w</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">&gt;</span> <span class="mf">0.5</span> <span class="ow">and</span> <span class="n">r</span><span class="o">.</span><span class="n">y</span> <span class="o">+</span> <span class="n">r</span><span class="o">.</span><span class="n">h</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">&gt;</span> <span class="mf">0.5</span>   <span class="c1"># not the bright corner</span>
+</span><span data-line="6"><span class="go">True</span>
+</span></pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -774,6 +857,26 @@ the source image’s size is used.</p></li>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="burns.move_kind">
+<span class="sig-prename descclassname"><span class="pre">burns.</span></span><span class="sig-name descname"><span class="pre">move_kind</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">move</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/burns/moves.html#move_kind"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#burns.move_kind" title="Link to this definition">#</a></dt>
+<dd><p>How <code class="docutils literal notranslate"><span class="pre">move</span></code> is grouped: <code class="docutils literal notranslate"><span class="pre">&quot;zoom&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;drift&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;static&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;select&quot;</span></code>.</p>
+<p>For a UI that wants a compass of directions separately from the rest, read
+off the same table <a class="reference internal" href="#burns.resolve_move" title="burns.resolve_move"><code class="xref py py-func docutils literal notranslate"><span class="pre">resolve_move()</span></code></a> dispatches on.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">move_kind</span><span class="p">(</span><span class="s2">"drift_left"</span><span class="p">),</span> <span class="n">move_kind</span><span class="p">(</span><span class="s2">"hold"</span><span class="p">),</span> <span class="n">move_kind</span><span class="p">(</span><span class="s2">"auto"</span><span class="p">)</span>
+</span><span data-line="2"><span class="go">('drift', 'static', 'select')</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="nb">sorted</span><span class="p">(</span><span class="n">m</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">MOVES</span> <span class="k">if</span> <span class="n">move_kind</span><span class="p">(</span><span class="n">m</span><span class="p">)</span> <span class="o">==</span> <span class="s1">'drift'</span><span class="p">)</span>
+</span><span data-line="4"><span class="go">['drift_down', 'drift_left', 'drift_right', 'drift_up']</span>
+</span></pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="burns.parse_easing">
 <span class="sig-prename descclassname"><span class="pre">burns.</span></span><span class="sig-name descname"><span class="pre">parse_easing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ease-in-out'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/burns/easing.html#parse_easing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#burns.parse_easing" title="Link to this definition">#</a></dt>
 <dd><p>Resolve an easing spec to a callable <code class="docutils literal notranslate"><span class="pre">f:</span> <span class="pre">[0,</span> <span class="pre">1]</span> <span class="pre">-&gt;</span> <span class="pre">[0,</span> <span class="pre">1]</span></code>.</p>
@@ -815,6 +918,132 @@ the source image’s size is used.</p></li>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="burns.resolve_move">
+<span class="sig-prename descclassname"><span class="pre">burns.</span></span><span class="sig-name descname"><span class="pre">resolve_move</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">move</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aspect</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zoom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.18</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">focus</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">easing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ease-in-out'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_aspect_mismatch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raise'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/burns/moves.html#resolve_move"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#burns.resolve_move" title="Link to this definition">#</a></dt>
+<dd><p>Resolve an authored camera intent against <code class="docutils literal notranslate"><span class="pre">image</span></code> into a path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>move</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference internal" href="burns.path.html#burns.path.BurnsPath" title="burns.path.BurnsPath"><code class="xref py py-class docutils literal notranslate"><span class="pre">BurnsPath</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Mapping" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mapping</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]]</span>) – a name from <code class="xref py py-data docutils literal notranslate"><span class="pre">MOVES</span></code>, or an explicit
+<a class="reference internal" href="burns.path.html#burns.path.BurnsPath" title="burns.path.BurnsPath"><code class="xref py py-class docutils literal notranslate"><span class="pre">BurnsPath</span></code></a> / its <code class="docutils literal notranslate"><span class="pre">to_dict()</span></code> payload. The two
+are the two front doors on this one path: a stored panel that
+carries both a named move and a hand-corrected override passes the
+override here and the choice is made in one place.</p></li>
+<li><p><strong>image</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a></span>) – the still the move is framed against — a path, <code class="docutils literal notranslate"><span class="pre">PIL.Image</span></code> or
+ndarray. <strong>Required, and read every time</strong>: the framing depends on
+what is in the picture, so swapping the still must re-frame. Do not
+cache the returned path against the intent.</p></li>
+<li><p><strong>aspect</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]</span>) – the delivered <code class="docutils literal notranslate"><span class="pre">width</span> <span class="pre">/</span> <span class="pre">height</span></code>. <code class="docutils literal notranslate"><span class="pre">None</span></code> means “match the
+image”. Required rather than defaulted, because a cut has a
+delivery size and quietly framing for the image’s aspect instead is
+a cover-crop nobody asked for.</p></li>
+<li><p><strong>zoom</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – <p>the end magnification. A pure function of the arguments — never
+jittered by <code class="docutils literal notranslate"><span class="pre">seed</span></code> or by a position — but **bounded at both
+ends**, so the number you pass is a request:</p>
+<ul>
+<li><p>capped so the padded keep-region stays framed. A subject filling
+the frame therefore yields a nearly static move; the fix is a
+tighter <code class="docutils literal notranslate"><span class="pre">focus</span></code>, not a bigger <code class="docutils literal notranslate"><span class="pre">zoom</span></code>.</p></li>
+<li><p>floored. <code class="docutils literal notranslate"><span class="pre">push_in</span></code> / <code class="docutils literal notranslate"><span class="pre">pull_out</span></code> inherit
+<code class="docutils literal notranslate"><span class="pre">content_aware_path</span></code>’s <code class="docutils literal notranslate"><span class="pre">min_zoom</span> <span class="pre">+</span> <span class="pre">0.02</span></code> (about 1.07), so a
+barely-there 1.02 push renders as 1.07; <code class="docutils literal notranslate"><span class="pre">hold</span></code> has no such floor
+and honours 1.02 exactly. A drift is floored to whatever leaves
+<code class="xref py py-data docutils literal notranslate"><span class="pre">DRIFT_MIN_ROOM</span></code> of travel.</p></li>
+</ul>
+</p></li>
+<li><p><strong>focus</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a></span>) – an explicit keep-region overriding the saliency estimate. A
+<a class="reference internal" href="burns.rect.html#burns.rect.Rect" title="burns.rect.Rect"><code class="xref py py-class docutils literal notranslate"><span class="pre">Rect</span></code></a>, a normalized <code class="docutils literal notranslate"><span class="pre">(x,</span> <span class="pre">y,</span> <span class="pre">w,</span> <span class="pre">h)</span></code> tuple, or
+any object with <code class="docutils literal notranslate"><span class="pre">.x/.y/.w/.h</span></code>. When given,
+<a class="reference internal" href="burns.content.html#burns.content.salient_box" title="burns.content.salient_box"><code class="xref py py-func docutils literal notranslate"><span class="pre">salient_box()</span></code></a> is not called at all.</p></li>
+<li><p><strong>seed</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – chooses which move <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> becomes, and nothing else. Mint it
+once per panel and store it; never derive it from a position, which
+is the defect this parameter exists to remove.</p></li>
+<li><p><strong>easing</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>], <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Sequence</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]]</span>) – CSS timing function or callable. A callable is fine here but
+cannot be serialized — see <a class="reference internal" href="#burns.BurnsPath.to_dict" title="burns.BurnsPath.to_dict"><code class="xref py py-meth docutils literal notranslate"><span class="pre">BurnsPath.to_dict()</span></code></a>. Applies to a
+named move; an explicit path carries its own.</p></li>
+<li><p><strong>on_aspect_mismatch</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – what to do when an explicit path was authored for a
+different <code class="docutils literal notranslate"><span class="pre">output_aspect</span></code> than the one being rendered.
+<code class="docutils literal notranslate"><span class="pre">&quot;raise&quot;</span></code> (default) refuses, because honouring the stored
+rectangles at another shape cover-crops a framing somebody chose by
+hand. <code class="docutils literal notranslate"><span class="pre">&quot;refit&quot;</span></code> rebuilds each keyframe at the new aspect,
+<strong>keeping what the author actually chose</strong> — where the camera looks
+at each instant, and how far in it is — and changing only the window
+shape. A cut in a second aspect is a real workflow (a vertical
+edit of a landscape film), and a panel carries <em>one</em> path, not one
+per delivery, so “author a second path” is not a remedy a caller
+can take; <code class="docutils literal notranslate"><span class="pre">&quot;refit&quot;</span></code> is.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="burns.path.html#burns.path.BurnsPath" title="burns.path.BurnsPath"><code class="xref py py-class docutils literal notranslate"><span class="pre">BurnsPath</span></code></a></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A <a class="reference internal" href="burns.path.html#burns.path.BurnsPath" title="burns.path.BurnsPath"><code class="xref py py-class docutils literal notranslate"><span class="pre">BurnsPath</span></code></a>. Duration is not part of it; pass that
+to the renderer.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#burns.MoveError" title="burns.MoveError"><strong>MoveError</strong></a> – an unknown move name, a malformed <code class="docutils literal notranslate"><span class="pre">focus</span></code>, a non-positive
+    <code class="docutils literal notranslate"><span class="pre">zoom</span></code> or <code class="docutils literal notranslate"><span class="pre">aspect</span></code>, or — under the default
+    <code class="docutils literal notranslate"><span class="pre">on_aspect_mismatch=&quot;raise&quot;</span></code> — an explicit path whose
+    <code class="docutils literal notranslate"><span class="pre">output_aspect</span></code> contradicts <code class="docutils literal notranslate"><span class="pre">aspect</span></code>.</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">image</span></code> is opened for every <em>named</em> move. For an explicit path it is
+read only when refitting, since resolved geometry needs no picture.</p>
+</div>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">img</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">600</span><span class="p">,</span> <span class="mi">800</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">'uint8'</span><span class="p">);</span> <span class="n">img</span><span class="p">[</span><span class="mi">300</span><span class="p">:</span><span class="mi">460</span><span class="p">,</span> <span class="mi">500</span><span class="p">:</span><span class="mi">700</span><span class="p">]</span> <span class="o">=</span> <span class="mi">230</span>
+</span></pre></div>
+</div>
+<p>A named move is a decision, so the seed does not touch it:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">resolve_move</span><span class="p">(</span><span class="s2">"push_in"</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="n">img</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="mi">16</span> <span class="o">/</span> <span class="mi">9</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> \
+</span><span data-line="2"><span class="gp">... </span>    <span class="n">resolve_move</span><span class="p">(</span><span class="s2">"push_in"</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="n">img</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="mi">16</span> <span class="o">/</span> <span class="mi">9</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">999</span><span class="p">)</span>
+</span><span data-line="3"><span class="go">True</span>
+</span></pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> is where the seed does its one job:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">resolve_move</span><span class="p">(</span><span class="s2">"auto"</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="n">img</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="mi">16</span> <span class="o">/</span> <span class="mi">9</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">==</span> <span class="n">resolve_move</span><span class="p">(</span><span class="s2">"auto"</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="n">img</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="mi">16</span> <span class="o">/</span> <span class="mi">9</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</span><span data-line="3"><span class="go">True</span>
+</span></pre></div>
+</div>
+<p>A drift travels — and <code class="docutils literal notranslate"><span class="pre">drift_right</span></code> ends further right:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">resolve_move</span><span class="p">(</span><span class="s2">"drift_right"</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="n">img</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="mi">16</span> <span class="o">/</span> <span class="mi">9</span><span class="p">)</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span><span class="o">.</span><span class="n">x</span> <span class="o">&gt;</span> <span class="n">d</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span><span class="o">.</span><span class="n">x</span>
+</span><span data-line="3"><span class="go">True</span>
+</span></pre></div>
+</div>
+<p>An explicit path is the other front door, returned as authored:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">burns</span><span class="w"> </span><span class="kn">import</span> <span class="n">BurnsPath</span><span class="p">,</span> <span class="n">Rect</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">hand</span> <span class="o">=</span> <span class="n">BurnsPath</span><span class="o">.</span><span class="n">from_start_end</span><span class="p">(</span>
+</span><span data-line="3"><span class="gp">... </span>    <span class="n">Rect</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">Rect</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">),</span> <span class="n">output_aspect</span><span class="o">=</span><span class="mi">16</span> <span class="o">/</span> <span class="mi">9</span>
+</span><span data-line="4"><span class="gp">... </span><span class="p">)</span>
+</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="n">resolve_move</span><span class="p">(</span><span class="n">hand</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(),</span> <span class="n">image</span><span class="o">=</span><span class="n">img</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="mi">16</span> <span class="o">/</span> <span class="mi">9</span><span class="p">)</span> <span class="o">==</span> <span class="n">hand</span>
+</span><span data-line="6"><span class="go">True</span>
+</span></pre></div>
+</div>
+<p>Rendering it at another delivery refuses by default, and <code class="docutils literal notranslate"><span class="pre">&quot;refit&quot;</span></code>
+keeps the authored look while changing the window shape:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">resolve_move</span><span class="p">(</span><span class="n">hand</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="n">img</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="mi">9</span> <span class="o">/</span> <span class="mi">16</span><span class="p">)</span>
+</span><span data-line="2"><span class="gt">Traceback (most recent call last):</span>
+</span><span data-line="3"><span class="w">    </span><span class="o">...</span>
+</span><span data-line="4"><span class="gr">burns.moves.MoveError</span>: <span class="n">...</span>
+</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="n">v</span> <span class="o">=</span> <span class="n">resolve_move</span><span class="p">(</span><span class="n">hand</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="n">img</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="mi">9</span> <span class="o">/</span> <span class="mi">16</span><span class="p">,</span>
+</span><span data-line="6"><span class="gp">... </span>                 <span class="n">on_aspect_mismatch</span><span class="o">=</span><span class="s2">"refit"</span><span class="p">)</span>
+</span><span data-line="7"><span class="gp">&gt;&gt;&gt; </span><span class="n">v</span><span class="o">.</span><span class="n">output_aspect</span> <span class="o">==</span> <span class="mi">9</span> <span class="o">/</span> <span class="mi">16</span>
+</span><span data-line="8"><span class="go">True</span>
+</span><span data-line="9"><span class="gp">&gt;&gt;&gt; </span><span class="n">before</span> <span class="o">=</span> <span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">hand</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span><span class="o">.</span><span class="n">center</span><span class="p">]</span>
+</span><span data-line="10"><span class="gp">&gt;&gt;&gt; </span><span class="n">after</span> <span class="o">=</span> <span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span><span class="o">.</span><span class="n">center</span><span class="p">]</span>
+</span><span data-line="11"><span class="gp">&gt;&gt;&gt; </span><span class="n">before</span> <span class="o">==</span> <span class="n">after</span>          <span class="c1"># the author's framing, at the new shape</span>
+</span><span data-line="12"><span class="go">True</span>
+</span></pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="burns.salient_box">
 <span class="sig-prename descclassname"><span class="pre">burns.</span></span><span class="sig-name descname"><span class="pre">salient_box</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">downscale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">320</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold_pct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">72.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trim_pct</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pad</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.35</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/burns/content.html#salient_box"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#burns.salient_box" title="Link to this definition">#</a></dt>
 <dd><p>Estimate the salient (high-detail) region of <code class="docutils literal notranslate"><span class="pre">image</span></code> as a normalized box.</p>
@@ -850,13 +1079,16 @@ centered box when the image is too uniform to decide.</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="burns.easing.html#module-burns.easing" title="burns.easing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">easing</span></code></a></p></td>
 <td><p>Timing functions (easing) for Ken Burns motion.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="burns.path.html#module-burns.path" title="burns.path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">path</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="burns.moves.html#module-burns.moves" title="burns.moves"><code class="xref py py-obj docutils literal notranslate"><span class="pre">moves</span></code></a></p></td>
+<td><p>The named camera moves, and the one resolver that expands one into a path.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="burns.path.html#module-burns.path" title="burns.path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">path</span></code></a></p></td>
 <td><p>The render-agnostic Ken Burns motion spec: <a class="reference internal" href="#burns.BurnsPath" title="burns.BurnsPath"><code class="xref py py-class docutils literal notranslate"><span class="pre">BurnsPath</span></code></a>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="burns.rect.html#module-burns.rect" title="burns.rect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rect</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="burns.rect.html#module-burns.rect" title="burns.rect"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rect</span></code></a></p></td>
 <td><p>The Ken Burns viewport rectangle — the render-agnostic geometric atom.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="burns.render.html#module-burns.render" title="burns.render"><code class="xref py py-obj docutils literal notranslate"><span class="pre">render</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="burns.render.html#module-burns.render" title="burns.render"><code class="xref py py-obj docutils literal notranslate"><span class="pre">render</span></code></a></p></td>
 <td><p>Ken Burns <strong>renderers</strong> — turn still images into pan/zoom video.</p></td>
 </tr>
 </tbody>
@@ -904,7 +1136,7 @@ centered box when the image is too uniform to decide.</p>
     </div>
   </div>
 </footer>
-      <script src="../_static/documentation_options.js?v=9fc46840"></script>
+      <script src="../_static/documentation_options.js?v=544df88d"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../_static/clipboard.min.js?v=a7894cd8"></script>

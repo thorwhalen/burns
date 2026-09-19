@@ -205,6 +205,82 @@ keep-region (a smaller `keep_pad`, or explicit boxes); raising `zoom` cannot do
 it. `index` keeps the same rhythm as `ken_burns_path` (odd pushes in, even pulls
 out); `mode="in"` / `mode="out"` overrides it.
 
+## Storing a move: the named vocabulary
+
+A `BurnsPath` is *resolved geometry* — rectangles measured against one picture’s
+pixels. That makes it the wrong thing to persist when the picture can change.
+What an editor wants to keep is the **authored intent**, resolved against
+whatever still is in the slot at render time:
+
+```python
+from burns import MOVES, resolve_move
+
+MOVES
+# ('push_in', 'pull_out', 'drift_left', 'drift_right',
+#  'drift_up', 'drift_down', 'hold', 'auto')
+
+path = resolve_move("push_in", image="photo.jpg", aspect=16 / 9, seed=4021)
+```
+
+Replace the still and the move re-frames itself; keep the still and the move is
+exactly what it was. So store `(move, zoom, focus, seed)` and call
+`resolve_move` at render time — never cache the path it returns.
+
+**One code path, two front doors.** `move` takes a name *or* an explicit
+`BurnsPath` (or its `to_dict()` payload), so a panel carrying a hand-corrected
+override and a panel carrying a name make the same call:
+
+```python
+resolve_move(panel.path or panel.move, image=still, aspect=16 / 9,
+             zoom=panel.zoom, focus=panel.focus, seed=panel.seed)
+```
+
+An override is returned exactly as authored. If its `output_aspect` contradicts
+the `aspect` being rendered, that **raises** rather than cover-cropping somebody’s
+hand-drawn framing without saying so — a panel carries *one* path, not one per
+delivery, so a hand-corrected move on the 16:9 cut would otherwise silently show
+the wrong framing in the vertical cut of the same project. Pass
+`on_aspect_mismatch="refit"` to render it anyway: each keyframe is rebuilt at
+the new aspect **keeping what the author chose** — where the camera looks at
+each instant and how far in it is — and changing only the window’s shape.
+
+```python
+resolve_move(panel.path, image=still, aspect=9 / 16, on_aspect_mismatch="refit")
+```
+
+**Caching a render? Put `burns.RESOLVER_IMPL_VERSION` in the key.** A stored
+panel is an intent, so the pixels it becomes are decided by constants in this
+module (`DFLT_ZOOM`, `DRIFT_TRAVEL`, `DRIFT_SPAN`, `DRIFT_MIN_ROOM`,
+`AUTO_WEIGHTS`). Retune any of them and an unchanged panel renders differently —
+so a key built from the panel alone serves the old frames forever, or produces a
+cut that silently disagrees with its siblings. It is `nw.Transform.impl_version`’s
+contract, *a lock not a receipt*: bumped when the geometry changes, left alone
+for a docstring. Deliberately **not** the package version, so a burns release
+that touches only the renderer invalidates nobody’s cut.
+
+**`seed` is not a position.** Deriving motion from a panel’s ordinal (`i % 2` for
+the style, `i % 4` for the zoom) means reordering one panel changes the camera on
+every panel after it, and “keep this move, change this picture” cannot be said at
+all. `resolve_move` is a pure function of its arguments and never of a position:
+mint a `seed` once, store it beside the move, and the move survives every
+reorder.
+
+The seed does exactly one job — choosing which concrete move `"auto"` becomes
+(`choose_move(seed)` says which, so a UI can show it and a user can pin it). It
+deliberately does not perturb a named move’s zoom or framing: a decision a seed
+can still nudge is not a decision.
+
+| Move                                                     | What it does                                                                                                                             |
+|----------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------|
+| `push_in` / `pull_out`                                   | Zoom-led, framed on the keep-region.                                                                                                     |
+| `drift_left` / `drift_right` / `drift_up` / `drift_down` | Pan-led at constant zoom. **The name is the direction the camera travels** — `drift_right` slides the picture leftward across the frame. |
+| `hold`                                                   | A static framing (two equal keyframes). Honours `zoom`; pass `zoom=1.0` for the untouched frame.                                         |
+| `auto`                                                   | A selector over the rest, resolved by `seed`.                                                                                            |
+
+`focus` is an explicit keep-region overriding the saliency estimate — a `Rect`, a
+normalized `(x, y, w, h)` tuple, or any object with `.x/.y/.w/.h`, so a consumer
+need not import burns’ rectangle type to say where to look.
+
 ## Multi-image films
 
 `ken_burns_film` renders a sequence of `(image, path, duration_s)` panels as **one
@@ -238,14 +314,19 @@ motion.
 
 ## API
 
-| Object                                                                                                                                                                | What it does                                                                                                    |
-|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------|
-| `Rect(x, y, w, h)`                                                                                                                                                    | A normalized viewport over the image. `.from_center_zoom`, `.clamped`, `.to_pixels`, `.zoom`, `.center`.        |
-| `BurnsPath`                                                                                                                                                           | The motion spec. `.evaluate(t) -> Rect`, `.from_start_end`, `.push_in`, `.reversed`, `.to_dict` / `.from_dict`. |
-| `ken_burns_path(index, *, style="push", zoom=1.10, pan=0.03, easing="ease-in-out", output_aspect=None)`                                                               | Deterministic per-index `BurnsPath` for a sequence.                                                             |
-| `salient_box(image, *, downscale=320, threshold_pct=72.0, trim_pct=4.0, pad=0.05, min_size=0.35)`                                                                     | Estimate the busy/detailed region of an image as a normalized `(x, y, w, h)` box.                               |
-| `content_aware_path(img_w, img_h, *, subject=None, faces=(), index=0, output_aspect=None, zoom=1.3, min_zoom=1.05, keep_pad=0.18, mode="auto", easing="ease-in-out")` | Pure geometry: a `BurnsPath` that keeps a keep-region framed.                                                   |
-| `content_aware_path_for(image, *, faces=(), faces_detector=None, index=0, output_aspect=None, **kwargs)`                                                              | The same, deriving subject (`salient_box`) and faces from the image itself.                                     |
-| `ken_burns_video(image, path=DEFAULT_BURNS_PATH, *, duration=2.0, fps=30, saveas=None, output_size=None, backend="pillow", ...)`                                      | Render one image into a pan/zoom mp4.                                                                           |
-| `ken_burns_film(panels, *, saveas, fps=30, audio_path=None, ...)`                                                                                                     | Render `(image, path, duration_s)` panels as one continuous film.                                               |
+| Object                                                                                                                                                                | What it does                                                                                                                                                  |
+|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `Rect(x, y, w, h)`                                                                                                                                                    | A normalized viewport over the image. `.from_center_zoom`, `.clamped`, `.to_pixels`, `.zoom`, `.center`.                                                      |
+| `BurnsPath`                                                                                                                                                           | The motion spec. `.evaluate(t) -> Rect`, `.from_start_end`, `.push_in`, `.reversed`, `.to_dict` / `.from_dict`.                                               |
+| `ken_burns_path(index, *, style="push", zoom=1.10, pan=0.03, easing="ease-in-out", output_aspect=None)`                                                               | Deterministic per-index `BurnsPath` for a sequence.                                                                                                           |
+| `salient_box(image, *, downscale=320, threshold_pct=72.0, trim_pct=4.0, pad=0.05, min_size=0.35)`                                                                     | Estimate the busy/detailed region of an image as a normalized `(x, y, w, h)` box.                                                                             |
+| `content_aware_path(img_w, img_h, *, subject=None, faces=(), index=0, output_aspect=None, zoom=1.3, min_zoom=1.05, keep_pad=0.18, mode="auto", easing="ease-in-out")` | Pure geometry: a `BurnsPath` that keeps a keep-region framed.                                                                                                 |
+| `content_aware_path_for(image, *, subject=None, faces=(), faces_detector=None, index=0, output_aspect=None, **kwargs)`                                                | The same, deriving subject (`salient_box`) and faces from the image itself. An explicit `subject` replaces the saliency estimate, which is then not computed. |
+| `MOVES`                                                                                                                                                               | The named-move vocabulary — every value a stored `move` field may hold.                                                                                       |
+| `resolve_move(move, *, image, aspect, zoom=1.18, focus=None, seed=0, easing="ease-in-out", on_aspect_mismatch="raise")`                                               | Resolve an authored move (a name, or an explicit `BurnsPath`) against an image into a path.                                                                   |
+| `RESOLVER_IMPL_VERSION`                                                                                                                                               | The identity of the resolver’s geometry — put it in a render cache key.                                                                                       |
+| `choose_move(seed)`                                                                                                                                                   | Which concrete move `"auto"` resolves to for `seed`.                                                                                                          |
+| `move_kind(move)`                                                                                                                                                     | How a move is grouped: `"zoom"`, `"drift"`, `"static"`, `"select"`.                                                                                           |
+| `ken_burns_video(image, path=DEFAULT_BURNS_PATH, *, duration=2.0, fps=30, saveas=None, output_size=None, backend="pillow", ...)`                                      | Render one image into a pan/zoom mp4.                                                                                                                         |
+| `ken_burns_film(panels, *, saveas, fps=30, audio_path=None, ...)`                                                                                                     | Render `(image, path, duration_s)` panels as one continuous film.                                                                                             |
 <p class="epythet-aggregates">This documentation as a single file: <a href="burns.md">burns.md</a> (Markdown, for agents).</p>

@@ -68,6 +68,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="burns.backends.html">burns.backends</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">burns.content</a></li>
 <li class="toctree-l3"><a class="reference internal" href="burns.easing.html">burns.easing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="burns.moves.html">burns.moves</a></li>
 <li class="toctree-l3"><a class="reference internal" href="burns.path.html">burns.path</a></li>
 <li class="toctree-l3"><a class="reference internal" href="burns.rect.html">burns.rect</a></li>
 <li class="toctree-l3"><a class="reference internal" href="burns.render.html">burns.render</a></li>
@@ -88,9 +89,16 @@ data-aria-dark="Switch to auto color mode">
       <i class="i-lucide close"></i>
     </button>
     <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#burns.content.DFLT_KEEP_BOX"><code class="docutils literal notranslate"><span class="pre">DFLT_KEEP_BOX</span></code></a></li>
+<li><a class="reference internal" href="#burns.content.DFLT_KEEP_PAD"><code class="docutils literal notranslate"><span class="pre">DFLT_KEEP_PAD</span></code></a></li>
 <li><a class="reference internal" href="#burns.content.FacesDetector"><code class="docutils literal notranslate"><span class="pre">FacesDetector</span></code></a></li>
+<li><a class="reference internal" href="#burns.content.as_pil"><code class="docutils literal notranslate"><span class="pre">as_pil()</span></code></a></li>
+<li><a class="reference internal" href="#burns.content.axis_maxima"><code class="docutils literal notranslate"><span class="pre">axis_maxima()</span></code></a></li>
 <li><a class="reference internal" href="#burns.content.content_aware_path"><code class="docutils literal notranslate"><span class="pre">content_aware_path()</span></code></a></li>
 <li><a class="reference internal" href="#burns.content.content_aware_path_for"><code class="docutils literal notranslate"><span class="pre">content_aware_path_for()</span></code></a></li>
+<li><a class="reference internal" href="#burns.content.fit_zoom"><code class="docutils literal notranslate"><span class="pre">fit_zoom()</span></code></a></li>
+<li><a class="reference internal" href="#burns.content.keep_window"><code class="docutils literal notranslate"><span class="pre">keep_window()</span></code></a></li>
+<li><a class="reference internal" href="#burns.content.pad_box"><code class="docutils literal notranslate"><span class="pre">pad_box()</span></code></a></li>
 <li><a class="reference internal" href="#burns.content.salient_box"><code class="docutils literal notranslate"><span class="pre">salient_box()</span></code></a></li>
 </ul>
 </div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
@@ -154,12 +162,23 @@ core; it touches no pixels.</p>
 stays dependency-light and deterministic. Boxes everywhere are normalized
 <code class="docutils literal notranslate"><span class="pre">(x,</span> <span class="pre">y,</span> <span class="pre">w,</span> <span class="pre">h)</span></code> in <code class="docutils literal notranslate"><span class="pre">[0,</span> <span class="pre">1]</span></code> with a top-left origin — the same convention as
 <a class="reference internal" href="burns.rect.html#burns.rect.Rect" title="burns.rect.Rect"><code class="xref py py-class docutils literal notranslate"><span class="pre">Rect</span></code></a>.</p>
+<p>The geometry <a class="reference internal" href="#burns.content.content_aware_path" title="burns.content.content_aware_path"><code class="xref py py-func docutils literal notranslate"><span class="pre">content_aware_path()</span></code></a> is built from is exported rather than
+inlined — <a class="reference internal" href="#burns.content.axis_maxima" title="burns.content.axis_maxima"><code class="xref py py-func docutils literal notranslate"><span class="pre">axis_maxima()</span></code></a>, <a class="reference internal" href="#burns.content.keep_window" title="burns.content.keep_window"><code class="xref py py-func docutils literal notranslate"><span class="pre">keep_window()</span></code></a>, <a class="reference internal" href="#burns.content.fit_zoom" title="burns.content.fit_zoom"><code class="xref py py-func docutils literal notranslate"><span class="pre">fit_zoom()</span></code></a> and
+<a class="reference internal" href="#burns.content.pad_box" title="burns.content.pad_box"><code class="xref py py-func docutils literal notranslate"><span class="pre">pad_box()</span></code></a>. <a class="reference internal" href="burns.moves.html#module-burns.moves" title="burns.moves"><code class="xref py py-mod docutils literal notranslate"><span class="pre">burns.moves</span></code></a> builds its static and drift moves out of the
+same four, so “a window of this zoom, at this output aspect, centred here” has
+one implementation rather than one per move.</p>
 <p class="rubric">Module Attributes</p>
 <div class="table-wrapper autosummary longtable docutils container">
 <table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#burns.content.FacesDetector" title="burns.content.FacesDetector"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FacesDetector</span></code></a></p></td>
 <td><p>given an image, return normalized face boxes (empty if none).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#burns.content.DFLT_KEEP_BOX" title="burns.content.DFLT_KEEP_BOX"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DFLT_KEEP_BOX</span></code></a></p></td>
+<td><p>Where the keep-region defaults to when nothing is known about the picture: a generous centered box.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#burns.content.DFLT_KEEP_PAD" title="burns.content.DFLT_KEEP_PAD"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DFLT_KEEP_PAD</span></code></a></p></td>
+<td><p>Fractional breathing room around the keep-region.</p></td>
 </tr>
 </tbody>
 </table>
@@ -168,18 +187,48 @@ stays dependency-light and deterministic. Boxes everywhere are normalized
 <div class="table-wrapper autosummary longtable docutils container">
 <table class="autosummary longtable docutils align-default">
 <tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#burns.content.as_pil" title="burns.content.as_pil"><code class="xref py py-obj docutils literal notranslate"><span class="pre">as_pil</span></code></a>(image)</p></td>
+<td><p>Open / convert <code class="docutils literal notranslate"><span class="pre">image</span></code> (path, <code class="docutils literal notranslate"><span class="pre">PIL.Image</span></code>, or ndarray) to a PIL image.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#burns.content.axis_maxima" title="burns.content.axis_maxima"><code class="xref py py-obj docutils literal notranslate"><span class="pre">axis_maxima</span></code></a>(img_w, img_h[, output_aspect])</p></td>
+<td><p>The largest <code class="docutils literal notranslate"><span class="pre">(w,</span> <span class="pre">h)</span></code> window, in image units, matching <code class="docutils literal notranslate"><span class="pre">output_aspect</span></code>.</p></td>
+</tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#burns.content.content_aware_path" title="burns.content.content_aware_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">content_aware_path</span></code></a>(img_w, img_h, *[, ...])</p></td>
 <td><p>A <code class="xref py py-class docutils literal notranslate"><span class="pre">BurnsPath</span></code> that keeps the subject/faces framed while zooming toward or away from them — the content-aware counterpart of <a class="reference internal" href="burns.path.html#burns.path.ken_burns_path" title="burns.path.ken_burns_path"><code class="xref py py-func docutils literal notranslate"><span class="pre">ken_burns_path()</span></code></a>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#burns.content.content_aware_path_for" title="burns.content.content_aware_path_for"><code class="xref py py-obj docutils literal notranslate"><span class="pre">content_aware_path_for</span></code></a>(image, *[, faces, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#burns.content.content_aware_path_for" title="burns.content.content_aware_path_for"><code class="xref py py-obj docutils literal notranslate"><span class="pre">content_aware_path_for</span></code></a>(image, *[, subject, ...])</p></td>
 <td><p>Convenience: derive the subject (via <a class="reference internal" href="#burns.content.salient_box" title="burns.content.salient_box"><code class="xref py py-func docutils literal notranslate"><span class="pre">salient_box()</span></code></a>) and faces (from <code class="docutils literal notranslate"><span class="pre">faces</span></code> or <code class="docutils literal notranslate"><span class="pre">faces_detector(image)</span></code>) straight from <code class="docutils literal notranslate"><span class="pre">image</span></code>, then call <a class="reference internal" href="#burns.content.content_aware_path" title="burns.content.content_aware_path"><code class="xref py py-func docutils literal notranslate"><span class="pre">content_aware_path()</span></code></a>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#burns.content.salient_box" title="burns.content.salient_box"><code class="xref py py-obj docutils literal notranslate"><span class="pre">salient_box</span></code></a>(image, *[, downscale, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#burns.content.fit_zoom" title="burns.content.fit_zoom"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fit_zoom</span></code></a>(img_w, img_h, *, keep[, output_aspect])</p></td>
+<td><p>The largest zoom at which <code class="docutils literal notranslate"><span class="pre">keep</span></code> still fits inside the window.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#burns.content.keep_window" title="burns.content.keep_window"><code class="xref py py-obj docutils literal notranslate"><span class="pre">keep_window</span></code></a>(img_w, img_h, *, center, zoom[, ...])</p></td>
+<td><p>The window of <code class="docutils literal notranslate"><span class="pre">zoom</span></code>, at <code class="docutils literal notranslate"><span class="pre">output_aspect</span></code>, centred on <code class="docutils literal notranslate"><span class="pre">center</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#burns.content.pad_box" title="burns.content.pad_box"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pad_box</span></code></a>(box[, pad])</p></td>
+<td><p>Grow <code class="docutils literal notranslate"><span class="pre">box</span></code> by <code class="docutils literal notranslate"><span class="pre">pad</span></code> of its own size on every side, clipped to the image.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#burns.content.salient_box" title="burns.content.salient_box"><code class="xref py py-obj docutils literal notranslate"><span class="pre">salient_box</span></code></a>(image, *[, downscale, ...])</p></td>
 <td><p>Estimate the salient (high-detail) region of <code class="docutils literal notranslate"><span class="pre">image</span></code> as a normalized box.</p></td>
 </tr>
 </tbody>
 </table>
 </div>
+<dl class="py data">
+<dt class="sig sig-object py" id="burns.content.DFLT_KEEP_BOX">
+<span class="sig-prename descclassname"><span class="pre">burns.content.</span></span><span class="sig-name descname"><span class="pre">DFLT_KEEP_BOX</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">(0.15,</span> <span class="pre">0.15,</span> <span class="pre">0.7,</span> <span class="pre">0.7)</span></span><a class="headerlink" href="#burns.content.DFLT_KEEP_BOX" title="Link to this definition">#</a></dt>
+<dd><p>Where the keep-region defaults to when nothing is known about the picture:
+a generous centered box. Not the full frame — that would give the framing
+nothing to hold on to and every zoom would be capped to a standstill.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="burns.content.DFLT_KEEP_PAD">
+<span class="sig-prename descclassname"><span class="pre">burns.content.</span></span><span class="sig-name descname"><span class="pre">DFLT_KEEP_PAD</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.18</span></span><a class="headerlink" href="#burns.content.DFLT_KEEP_PAD" title="Link to this definition">#</a></dt>
+<dd><p>Fractional breathing room around the keep-region. Framing a subject with its
+own bounding box hard against the window edge reads as a crop, not a frame.</p>
+</dd></dl>
+
 <dl class="py data">
 <dt class="sig sig-object py" id="burns.content.FacesDetector">
 <span class="sig-prename descclassname"><span class="pre">burns.content.</span></span><span class="sig-name descname"><span class="pre">FacesDetector</span></span><a class="headerlink" href="#burns.content.FacesDetector" title="Link to this definition">#</a></dt>
@@ -190,6 +239,42 @@ stays dependency-light and deterministic. Boxes everywhere are normalized
 </dd>
 </dl>
 <p>alias of <code class="xref py py-class docutils literal notranslate"><span class="pre">Callable</span></code>[[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Any</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Sequence</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]]]</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="burns.content.as_pil">
+<span class="sig-prename descclassname"><span class="pre">burns.content.</span></span><span class="sig-name descname"><span class="pre">as_pil</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/burns/content.html#as_pil"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#burns.content.as_pil" title="Link to this definition">#</a></dt>
+<dd><p>Open / convert <code class="docutils literal notranslate"><span class="pre">image</span></code> (path, <code class="docutils literal notranslate"><span class="pre">PIL.Image</span></code>, or ndarray) to a PIL image.</p>
+<p>The single entry point for “the caller gave me <em>some</em> kind of image”. Used
+by every function here that needs pixels or a size, so a new accepted input
+type is added in one place — and so a path is opened once per call rather
+than once per function that wants it.</p>
+<dl class="field-list simple">
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="burns.content.axis_maxima">
+<span class="sig-prename descclassname"><span class="pre">burns.content.</span></span><span class="sig-name descname"><span class="pre">axis_maxima</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img_w</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_aspect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/burns/content.html#axis_maxima"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#burns.content.axis_maxima" title="Link to this definition">#</a></dt>
+<dd><p>The largest <code class="docutils literal notranslate"><span class="pre">(w,</span> <span class="pre">h)</span></code> window, in image units, matching <code class="docutils literal notranslate"><span class="pre">output_aspect</span></code>.</p>
+<p>At zoom <code class="docutils literal notranslate"><span class="pre">1.0</span></code> this is the window the render fills; one of the two is
+always <code class="docutils literal notranslate"><span class="pre">1.0</span></code> (the axis that limits) and the other is what the output
+aspect leaves of the opposite one. <code class="docutils literal notranslate"><span class="pre">output_aspect=None</span></code> means “match the
+image”, so both are <code class="docutils literal notranslate"><span class="pre">1.0</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]</span></p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">axis_maxima</span><span class="p">(</span><span class="mi">1600</span><span class="p">,</span> <span class="mi">900</span><span class="p">)</span>                    <span class="c1"># aspect follows the image</span>
+</span><span data-line="2"><span class="go">(1.0, 1.0)</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">axis_maxima</span><span class="p">(</span><span class="mi">1600</span><span class="p">,</span> <span class="mi">1200</span><span class="p">,</span> <span class="mi">16</span> <span class="o">/</span> <span class="mi">9</span><span class="p">)]</span>  <span class="c1"># 4:3 -&gt; 16:9</span>
+</span><span data-line="4"><span class="go">[1.0, 0.75]</span>
+</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">axis_maxima</span><span class="p">(</span><span class="mi">1080</span><span class="p">,</span> <span class="mi">1920</span><span class="p">,</span> <span class="mi">16</span> <span class="o">/</span> <span class="mi">9</span><span class="p">)]</span>  <span class="c1"># portrait</span>
+</span><span data-line="6"><span class="go">[1.0, 0.3164]</span>
+</span></pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -239,17 +324,94 @@ pull out, giving a sequence rhythm (mirrors <code class="docutils literal notran
 
 <dl class="py function">
 <dt class="sig sig-object py" id="burns.content.content_aware_path_for">
-<span class="sig-prename descclassname"><span class="pre">burns.content.</span></span><span class="sig-name descname"><span class="pre">content_aware_path_for</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">faces</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">faces_detector</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_aspect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/burns/content.html#content_aware_path_for"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#burns.content.content_aware_path_for" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">burns.content.</span></span><span class="sig-name descname"><span class="pre">content_aware_path_for</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">subject</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">faces</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">()</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">faces_detector</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_aspect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/burns/content.html#content_aware_path_for"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#burns.content.content_aware_path_for" title="Link to this definition">#</a></dt>
 <dd><p>Convenience: derive the subject (via <a class="reference internal" href="#burns.content.salient_box" title="burns.content.salient_box"><code class="xref py py-func docutils literal notranslate"><span class="pre">salient_box()</span></code></a>) and faces (from
 <code class="docutils literal notranslate"><span class="pre">faces</span></code> or <code class="docutils literal notranslate"><span class="pre">faces_detector(image)</span></code>) straight from <code class="docutils literal notranslate"><span class="pre">image</span></code>, then call
 <a class="reference internal" href="#burns.content.content_aware_path" title="burns.content.content_aware_path"><code class="xref py py-func docutils literal notranslate"><span class="pre">content_aware_path()</span></code></a>. <code class="docutils literal notranslate"><span class="pre">image</span></code> may be a path, PIL image, or ndarray.</p>
 <p>Keeps burns dependency-light: pass an LLM/cv2/manual <code class="docutils literal notranslate"><span class="pre">faces_detector</span></code> when
 you want face-aware framing; omit it for saliency-only (sky-avoiding) motion.</p>
+<p><code class="docutils literal notranslate"><span class="pre">subject</span></code> is an explicit keep-region that <strong>replaces</strong> the saliency
+estimate — for a caller who already knows what the picture is about (a
+hand-drawn crop, an upstream detector, a stored authoring decision). It is a
+named parameter rather than one more key in <code class="docutils literal notranslate"><span class="pre">**kwargs</span></code> because those are
+forwarded to <a class="reference internal" href="#burns.content.content_aware_path" title="burns.content.content_aware_path"><code class="xref py py-func docutils literal notranslate"><span class="pre">content_aware_path()</span></code></a>, which already takes <code class="docutils literal notranslate"><span class="pre">subject</span></code> —
+so passing it that way raised <code class="docutils literal notranslate"><span class="pre">TypeError:</span> <span class="pre">got</span> <span class="pre">multiple</span> <span class="pre">values</span></code> two frames
+down. When given, <a class="reference internal" href="#burns.content.salient_box" title="burns.content.salient_box"><code class="xref py py-func docutils literal notranslate"><span class="pre">salient_box()</span></code></a> is <strong>not called</strong>: the override is
+total, and computing an estimate only to discard it is how a partial
+override quietly lets saliency back in.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="burns.path.html#burns.path.BurnsPath" title="burns.path.BurnsPath"><code class="xref py py-class docutils literal notranslate"><span class="pre">BurnsPath</span></code></a></span></p>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">600</span><span class="p">,</span> <span class="mi">800</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">'uint8'</span><span class="p">);</span> <span class="n">a</span><span class="p">[</span><span class="mi">80</span><span class="p">:</span><span class="mi">200</span><span class="p">,</span> <span class="mi">60</span><span class="p">:</span><span class="mi">200</span><span class="p">]</span> <span class="o">=</span> <span class="mi">220</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">p</span> <span class="o">=</span> <span class="n">content_aware_path_for</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">subject</span><span class="o">=</span><span class="p">(</span><span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.7</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="n">r</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>                     <span class="c1"># framed on the override,</span>
+</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="n">r</span><span class="o">.</span><span class="n">x</span> <span class="o">+</span> <span class="n">r</span><span class="o">.</span><span class="n">w</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">&gt;</span> <span class="mf">0.5</span> <span class="ow">and</span> <span class="n">r</span><span class="o">.</span><span class="n">y</span> <span class="o">+</span> <span class="n">r</span><span class="o">.</span><span class="n">h</span> <span class="o">/</span> <span class="mi">2</span> <span class="o">&gt;</span> <span class="mf">0.5</span>   <span class="c1"># not the bright corner</span>
+</span><span data-line="6"><span class="go">True</span>
+</span></pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="burns.content.fit_zoom">
+<span class="sig-prename descclassname"><span class="pre">burns.content.</span></span><span class="sig-name descname"><span class="pre">fit_zoom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img_w</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_h</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_aspect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/burns/content.html#fit_zoom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#burns.content.fit_zoom" title="Link to this definition">#</a></dt>
+<dd><p>The largest zoom at which <code class="docutils literal notranslate"><span class="pre">keep</span></code> still fits inside the window.</p>
+<p><code class="docutils literal notranslate"><span class="pre">keep</span></code> is taken as given — pad it with <a class="reference internal" href="#burns.content.pad_box" title="burns.content.pad_box"><code class="xref py py-func docutils literal notranslate"><span class="pre">pad_box()</span></code></a> first if you want
+the subject framed rather than touching the edges.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span></p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="nb">round</span><span class="p">(</span><span class="n">fit_zoom</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="p">(</span><span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)),</span> <span class="mi">4</span><span class="p">)</span>
+</span><span data-line="2"><span class="go">2.0</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="nb">round</span><span class="p">(</span><span class="n">fit_zoom</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)),</span> <span class="mi">4</span><span class="p">)</span>  <span class="c1"># fills it</span>
+</span><span data-line="4"><span class="go">1.0</span>
+</span></pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="burns.content.keep_window">
+<span class="sig-prename descclassname"><span class="pre">burns.content.</span></span><span class="sig-name descname"><span class="pre">keep_window</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img_w</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">img_h</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">center</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zoom</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_aspect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/burns/content.html#keep_window"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#burns.content.keep_window" title="Link to this definition">#</a></dt>
+<dd><p>The window of <code class="docutils literal notranslate"><span class="pre">zoom</span></code>, at <code class="docutils literal notranslate"><span class="pre">output_aspect</span></code>, centred on <code class="docutils literal notranslate"><span class="pre">center</span></code>.</p>
+<p>Clamped inside the image by sliding, never by resizing (see
+<a class="reference internal" href="burns.rect.html#burns.rect.Rect.clamped" title="burns.rect.Rect.clamped"><code class="xref py py-meth docutils literal notranslate"><span class="pre">clamped()</span></code></a>) — shrinking would change the window’s
+aspect and make the rendered frame breathe.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="burns.rect.html#burns.rect.Rect" title="burns.rect.Rect"><code class="xref py py-class docutils literal notranslate"><span class="pre">Rect</span></code></a></span></p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">keep_window</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span> <span class="n">zoom</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span>
+</span><span data-line="2"><span class="go">Rect(x=0.25, y=0.25, w=0.5, h=0.5)</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">keep_window</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="p">(</span><span class="mf">0.95</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span> <span class="n">zoom</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span>  <span class="c1"># rides the wall</span>
+</span><span data-line="4"><span class="go">Rect(x=0.5, y=0.25, w=0.5, h=0.5)</span>
+</span></pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="burns.content.pad_box">
+<span class="sig-prename descclassname"><span class="pre">burns.content.</span></span><span class="sig-name descname"><span class="pre">pad_box</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">box</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pad</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.18</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/burns/content.html#pad_box"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#burns.content.pad_box" title="Link to this definition">#</a></dt>
+<dd><p>Grow <code class="docutils literal notranslate"><span class="pre">box</span></code> by <code class="docutils literal notranslate"><span class="pre">pad</span></code> of its own size on every side, clipped to the image.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>, <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]</span></p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">pad_box</span><span class="p">((</span><span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.4</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">),</span> <span class="mf">0.25</span><span class="p">)]</span>
+</span><span data-line="2"><span class="go">[0.35, 0.35, 0.3, 0.3]</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">pad_box</span><span class="p">((</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">),</span> <span class="mf">0.5</span><span class="p">)</span>  <span class="c1"># already the whole image</span>
+</span><span data-line="4"><span class="go">(0.0, 0.0, 1.0, 1.0)</span>
+</span></pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
@@ -317,7 +479,7 @@ centered box when the image is too uniform to decide.</p>
     </div>
   </div>
 </footer>
-      <script src="../_static/documentation_options.js?v=9fc46840"></script>
+      <script src="../_static/documentation_options.js?v=544df88d"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../_static/clipboard.min.js?v=a7894cd8"></script>

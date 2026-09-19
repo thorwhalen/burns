@@ -9,12 +9,19 @@ burns.content
    .. autosummary::
    
       FacesDetector
+      DFLT_KEEP_BOX
+      DFLT_KEEP_PAD
    
    .. rubric:: Functions
 
    .. autosummary::
    
+      as_pil
+      axis_maxima
       content_aware_path
       content_aware_path_for
+      fit_zoom
+      keep_window
+      pad_box
       salient_box
    

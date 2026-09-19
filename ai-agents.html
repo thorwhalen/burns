@@ -68,6 +68,7 @@ data-aria-dark="Switch to auto color mode">
 <li class="toctree-l3"><a class="reference internal" href="_autosummary/burns.backends.html">burns.backends</a></li>
 <li class="toctree-l3"><a class="reference internal" href="_autosummary/burns.content.html">burns.content</a></li>
 <li class="toctree-l3"><a class="reference internal" href="_autosummary/burns.easing.html">burns.easing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/burns.moves.html">burns.moves</a></li>
 <li class="toctree-l3"><a class="reference internal" href="_autosummary/burns.path.html">burns.path</a></li>
 <li class="toctree-l3"><a class="reference internal" href="_autosummary/burns.rect.html">burns.rect</a></li>
 <li class="toctree-l3"><a class="reference internal" href="_autosummary/burns.render.html">burns.render</a></li>
@@ -134,7 +135,7 @@ machine-readable copies of this documentation.</p>
 <p>Skills are folders holding a <code class="docutils literal notranslate"><span class="pre">SKILL.md</span></code> (the <a class="reference external" href="https://agentskills.io">Agent Skills</a> format): a description that tells an agent when to use it and a body with the procedure. Install one into your agent with <code class="docutils literal notranslate"><span class="pre">gh</span> <span class="pre">skill</span></code> (any host: <code class="docutils literal notranslate"><span class="pre">--agent</span> <span class="pre">claude-code</span></code>, <code class="docutils literal notranslate"><span class="pre">copilot</span></code>, <code class="docutils literal notranslate"><span class="pre">cursor</span></code>, <code class="docutils literal notranslate"><span class="pre">codex</span></code>, <code class="docutils literal notranslate"><span class="pre">gemini</span></code>), or use the copy bundled in the wheel.</p>
 <section id="burns">
 <h3><code class="docutils literal notranslate"><span class="pre">burns</span></code><a class="headerlink" href="#burns" title="Link to this heading">#</a></h3>
-<p>Use when turning a still image (or a sequence of stills) into a pan/zoom video — the “Ken Burns effect” — OR when building a UI to author/select the motion path. Triggers on “ken burns”, “pan and zoom a photo”, “animate a still image”, “make a slideshow with motion”, “zoom into an image as video”, “photo to video”, any use of ken_burns_video / ken_burns_film / ken_burns_path / BurnsPath; on content-aware framing: “keep the subject/face in frame”, “don’t pan over the sky”, content_aware_path / content_aware_path_for / salient_box; AND on the TypeScript side: “kenburnz”, “ken burns path entry / selection / cropper UI”, “author a BurnsPath”, mountPathEntry, or work under ts/. Use BEFORE hand-rolling moviepy crop/resize-per-frame logic or a bespoke crop-rect UI.</p>
+<p>Use when turning a still image (or a sequence of stills) into a pan/zoom video — the “Ken Burns effect” — OR when building a UI to author/select the motion path. Triggers on “ken burns”, “pan and zoom a photo”, “animate a still image”, “make a slideshow with motion”, “zoom into an image as video”, “photo to video”, any use of ken_burns_video / ken_burns_film / ken_burns_path / BurnsPath; on content-aware framing: “keep the subject/face in frame”, “don’t pan over the sky”, content_aware_path / content_aware_path_for / salient_box; on STORING a move as data rather than geometry: “save the camera move”, “the same move on a different picture”, “named camera moves”, MOVES / resolve_move / choose_move / move_kind, push_in / pull_out / drift_left / hold / auto; AND on the TypeScript side: “kenburnz”, “ken burns path entry / selection / cropper UI”, “author a BurnsPath”, mountPathEntry, or work under ts/. Use BEFORE hand-rolling moviepy crop/resize-per-frame logic or a bespoke crop-rect UI.</p>
 <p>Source: <a class="reference external" href="https://github.com/thorwhalen/burns/tree/HEAD/.claude/skills/burns"><code class="docutils literal notranslate"><span class="pre">.claude/skills/burns</span></code></a>.</p>
 </section>
 </section>
@@ -182,7 +183,7 @@ machine-readable copies of this documentation.</p>
     </div>
   </div>
 </footer>
-      <script src="_static/documentation_options.js?v=9fc46840"></script>
+      <script src="_static/documentation_options.js?v=544df88d"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="_static/clipboard.min.js?v=a7894cd8"></script>

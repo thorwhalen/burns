@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="cyan" data-content_root="../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>burns.moves - burns</title><link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="burns.path" href="burns.path.html" /><link rel="prev" title="burns.easing" href="burns.easing.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d88b86f9" />
+    <link rel="stylesheet" type="text/css" href="../_static/shibuya.css?v=2ceb65ce" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link media="print" rel="stylesheet" type="text/css" href="../_static/print.css?v=20ff2c19" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    
+  <meta property="og:type" content="website"/><meta property="og:title" content="burns.moves"/>
+    <meta name="twitter:card" content="summary"/>
+  
+<link rel="alternate" type="text/markdown" href="burns.moves.html.md">
+<link rel="describedby" href="../llms.txt" type="text/markdown">
+</head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../index.html">
+      
+      
+      <strong>burns</strong>
+    </a>
+    <div class="sy-head-nav" id="head-nav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials">
+  <a href="https://github.com/thorwhalen/burns" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="head-nav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2"></span>
+          <span class="hamburger_3"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">API reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="burns.html">burns</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="burns.backends.html">burns.backends</a></li>
+<li class="toctree-l3"><a class="reference internal" href="burns.content.html">burns.content</a></li>
+<li class="toctree-l3"><a class="reference internal" href="burns.easing.html">burns.easing</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">burns.moves</a></li>
+<li class="toctree-l3"><a class="reference internal" href="burns.path.html">burns.path</a></li>
+<li class="toctree-l3"><a class="reference internal" href="burns.rect.html">burns.rect</a></li>
+<li class="toctree-l3"><a class="reference internal" href="burns.render.html">burns.render</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../ai-agents.html">For AI agents</a></li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
+<li><a class="reference internal" href="#burns.moves.AUTO_WEIGHTS"><code class="docutils literal notranslate"><span class="pre">AUTO_WEIGHTS</span></code></a></li>
+<li><a class="reference internal" href="#burns.moves.DFLT_ZOOM"><code class="docutils literal notranslate"><span class="pre">DFLT_ZOOM</span></code></a></li>
+<li><a class="reference internal" href="#burns.moves.DRIFT_MIN_ROOM"><code class="docutils literal notranslate"><span class="pre">DRIFT_MIN_ROOM</span></code></a></li>
+<li><a class="reference internal" href="#burns.moves.DRIFT_SPAN"><code class="docutils literal notranslate"><span class="pre">DRIFT_SPAN</span></code></a></li>
+<li><a class="reference internal" href="#burns.moves.DRIFT_TRAVEL"><code class="docutils literal notranslate"><span class="pre">DRIFT_TRAVEL</span></code></a></li>
+<li><a class="reference internal" href="#burns.moves.MOVES"><code class="docutils literal notranslate"><span class="pre">MOVES</span></code></a></li>
+<li><a class="reference internal" href="#burns.moves.MoveError"><code class="docutils literal notranslate"><span class="pre">MoveError</span></code></a></li>
+<li><a class="reference internal" href="#burns.moves.RESOLVER_IMPL_VERSION"><code class="docutils literal notranslate"><span class="pre">RESOLVER_IMPL_VERSION</span></code></a></li>
+<li><a class="reference internal" href="#burns.moves.choose_move"><code class="docutils literal notranslate"><span class="pre">choose_move()</span></code></a></li>
+<li><a class="reference internal" href="#burns.moves.move_kind"><code class="docutils literal notranslate"><span class="pre">move_kind()</span></code></a></li>
+<li><a class="reference internal" href="#burns.moves.resolve_move"><code class="docutils literal notranslate"><span class="pre">resolve_move()</span></code></a></li>
+</ul>
+</div><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../index.html"><span itemprop="name">burns</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../api.html"><span itemprop="name">API reference</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="2" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="burns.html"><span itemprop="name">burns</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="3" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">burns.moves</strong>
+        <meta itemprop="position" content="4" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+  <article class="yue dark-code" role="main">
+          <section id="module-burns.moves">
+<span id="burns-moves"></span><h1>burns.moves<a class="headerlink" href="#module-burns.moves" title="Link to this heading">#</a></h1>
+<p>The named camera moves, and the one resolver that expands one into a path.</p>
+<p>A <a class="reference internal" href="burns.path.html#burns.path.BurnsPath" title="burns.path.BurnsPath"><code class="xref py py-class docutils literal notranslate"><span class="pre">BurnsPath</span></code></a> is <em>resolved geometry</em>: rectangles measured
+against one picture’s pixels. That makes it the wrong thing to store when the
+picture can change. What an editor wants to keep is the <strong>authored intent</strong> —
+“push in on this, gently” — and have the rectangles computed against whatever
+image is in the slot at render time. Replace the still and the move re-frames;
+keep the still and the move is exactly what it was.</p>
+<p>So this module is the vocabulary (<a class="reference internal" href="#burns.moves.MOVES" title="burns.moves.MOVES"><code class="xref py py-data docutils literal notranslate"><span class="pre">MOVES</span></code></a>) plus the one function that
+turns an intent into geometry (<a class="reference internal" href="#burns.moves.resolve_move" title="burns.moves.resolve_move"><code class="xref py py-func docutils literal notranslate"><span class="pre">resolve_move()</span></code></a>).</p>
+<p><strong>One code path, two front doors.</strong> <code class="docutils literal notranslate"><span class="pre">resolve_move</span></code> takes a <em>name</em> or an
+explicit <code class="docutils literal notranslate"><span class="pre">BurnsPath</span></code> (or its <code class="docutils literal notranslate"><span class="pre">to_dict()</span></code> payload), so a caller that stores
+both a named move and an optional hand-corrected path override makes one call
+and the choice between them is made here — once — rather than once per consumer.
+This is <code class="docutils literal notranslate"><span class="pre">an.ir.camera.camera_keys</span></code>’ arrangement: one table, not two tables
+reconciled by a test.</p>
+<p><strong>``seed`` replaces the ordinal, and does one job.</strong> The motion in a sequence
+used to be derived from each panel’s <em>position</em> — style by <code class="docutils literal notranslate"><span class="pre">i</span> <span class="pre">%</span> <span class="pre">2</span></code>, zoom by
+<code class="docutils literal notranslate"><span class="pre">i</span> <span class="pre">%</span> <span class="pre">4</span></code>, push-or-pull by the parity of <code class="docutils literal notranslate"><span class="pre">i</span></code>. Reordering one panel therefore
+changed the camera on every panel after it, and “keep this move, change this
+picture” was unexpressible. <code class="docutils literal notranslate"><span class="pre">resolve_move</span></code> is a pure function of its
+arguments and never of a position; a caller mints a <code class="docutils literal notranslate"><span class="pre">seed</span></code> once, stores it
+beside the move, and the move survives every reorder.</p>
+<p>The seed’s <em>only</em> job is choosing which concrete move <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> becomes
+(<a class="reference internal" href="#burns.moves.choose_move" title="burns.moves.choose_move"><code class="xref py py-func docutils literal notranslate"><span class="pre">choose_move()</span></code></a>). It deliberately does <strong>not</strong> perturb a named move’s zoom
+or framing: a named move is a decision, and a decision a seed can still nudge
+is not one. Variety across a sequence comes from <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> and from the
+pictures themselves — the content-aware framing differs per image already.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">img</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">600</span><span class="p">,</span> <span class="mi">800</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">'uint8'</span><span class="p">);</span> <span class="n">img</span><span class="p">[</span><span class="mi">380</span><span class="p">:</span><span class="mi">520</span><span class="p">,</span> <span class="mi">120</span><span class="p">:</span><span class="mi">300</span><span class="p">]</span> <span class="o">=</span> <span class="mi">210</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">path</span> <span class="o">=</span> <span class="n">resolve_move</span><span class="p">(</span><span class="s2">"push_in"</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="n">img</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="mi">16</span> <span class="o">/</span> <span class="mi">9</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">41</span><span class="p">)</span>
+</span><span data-line="4"><span class="gp">&gt;&gt;&gt; </span><span class="n">path</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span><span class="o">.</span><span class="n">zoom</span> <span class="o">&gt;=</span> <span class="n">path</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span><span class="o">.</span><span class="n">zoom</span>
+</span><span data-line="5"><span class="go">True</span>
+</span><span data-line="6"><span class="gp">&gt;&gt;&gt; </span><span class="n">resolve_move</span><span class="p">(</span><span class="s2">"hold"</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="n">img</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="mi">16</span> <span class="o">/</span> <span class="mi">9</span><span class="p">)</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span> <span class="o">==</span> \
+</span><span data-line="7"><span class="gp">... </span>    <span class="n">resolve_move</span><span class="p">(</span><span class="s2">"hold"</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="n">img</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="mi">16</span> <span class="o">/</span> <span class="mi">9</span><span class="p">)</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
+</span><span data-line="8"><span class="go">True</span>
+</span></pre></div>
+</div>
+<p class="rubric">Module Attributes</p>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#burns.moves.RESOLVER_IMPL_VERSION" title="burns.moves.RESOLVER_IMPL_VERSION"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RESOLVER_IMPL_VERSION</span></code></a></p></td>
+<td><p>The identity of the resolver's <em>geometry</em>, for a caller's cache key.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#burns.moves.DFLT_ZOOM" title="burns.moves.DFLT_ZOOM"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DFLT_ZOOM</span></code></a></p></td>
+<td><p>Default end magnification.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#burns.moves.DRIFT_TRAVEL" title="burns.moves.DRIFT_TRAVEL"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DRIFT_TRAVEL</span></code></a></p></td>
+<td><p>How much of the available travel a drift uses, as a fraction of the room the window leaves inside the image.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#burns.moves.DRIFT_SPAN" title="burns.moves.DRIFT_SPAN"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DRIFT_SPAN</span></code></a></p></td>
+<td><p>A ceiling on that travel, as a fraction of the <strong>window</strong> rather than of the image — how far the camera crosses its own frame.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#burns.moves.DRIFT_MIN_ROOM" title="burns.moves.DRIFT_MIN_ROOM"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DRIFT_MIN_ROOM</span></code></a></p></td>
+<td><p>The least travel room a drift will accept, in image units.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#burns.moves.MOVES" title="burns.moves.MOVES"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MOVES</span></code></a></p></td>
+<td><p>Every name a stored <code class="docutils literal notranslate"><span class="pre">move</span></code> field may hold — one vocabulary, because it is one field.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#burns.moves.AUTO_WEIGHTS" title="burns.moves.AUTO_WEIGHTS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AUTO_WEIGHTS</span></code></a></p></td>
+<td><p>How often <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> picks each move, as integer weights.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="rubric">Functions</p>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#burns.moves.choose_move" title="burns.moves.choose_move"><code class="xref py py-obj docutils literal notranslate"><span class="pre">choose_move</span></code></a>(seed)</p></td>
+<td><p>Which concrete move <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> resolves to for <code class="docutils literal notranslate"><span class="pre">seed</span></code>.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#burns.moves.move_kind" title="burns.moves.move_kind"><code class="xref py py-obj docutils literal notranslate"><span class="pre">move_kind</span></code></a>(move)</p></td>
+<td><p>How <code class="docutils literal notranslate"><span class="pre">move</span></code> is grouped: <code class="docutils literal notranslate"><span class="pre">&quot;zoom&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;drift&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;static&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;select&quot;</span></code>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#burns.moves.resolve_move" title="burns.moves.resolve_move"><code class="xref py py-obj docutils literal notranslate"><span class="pre">resolve_move</span></code></a>(move, *, image, aspect[, zoom, ...])</p></td>
+<td><p>Resolve an authored camera intent against <code class="docutils literal notranslate"><span class="pre">image</span></code> into a path.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="rubric">Exceptions</p>
+<div class="table-wrapper autosummary longtable docutils container">
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#burns.moves.MoveError" title="burns.moves.MoveError"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MoveError</span></code></a></p></td>
+<td><p>A move that cannot be resolved into a path.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<dl class="py data">
+<dt class="sig sig-object py" id="burns.moves.AUTO_WEIGHTS">
+<span class="sig-prename descclassname"><span class="pre">burns.moves.</span></span><span class="sig-name descname"><span class="pre">AUTO_WEIGHTS</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Mapping" title="(in Python v3.14)"><span class="pre">Mapping</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">mappingproxy({'push_in':</span> <span class="pre">3,</span> <span class="pre">'pull_out':</span> <span class="pre">3,</span> <span class="pre">'drift_left':</span> <span class="pre">1,</span> <span class="pre">'drift_right':</span> <span class="pre">1,</span> <span class="pre">'drift_up':</span> <span class="pre">1,</span> <span class="pre">'drift_down':</span> <span class="pre">1})</span></span><a class="headerlink" href="#burns.moves.AUTO_WEIGHTS" title="Link to this definition">#</a></dt>
+<dd><p>How often <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> picks each move, as integer weights. Pushes and pulls
+dominate because a commentary film is mostly faces and documents, where a
+drift wanders off the thing being talked about; the drifts are there so a
+long sequence does not read as one move repeated.
+Read-only on purpose. The pool <a class="reference internal" href="#burns.moves.choose_move" title="burns.moves.choose_move"><code class="xref py py-func docutils literal notranslate"><span class="pre">choose_move()</span></code></a> draws from is built once
+at import, so assigning into a plain dict here would change the documented
+weights and change nothing about the moves — a silent no-op in a name that
+is in <code class="docutils literal notranslate"><span class="pre">__all__</span></code>. Retuning these is a burns change that bumps
+<a class="reference internal" href="#burns.moves.RESOLVER_IMPL_VERSION" title="burns.moves.RESOLVER_IMPL_VERSION"><code class="xref py py-data docutils literal notranslate"><span class="pre">RESOLVER_IMPL_VERSION</span></code></a>, not something a consumer does at runtime.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="burns.moves.DFLT_ZOOM">
+<span class="sig-prename descclassname"><span class="pre">burns.moves.</span></span><span class="sig-name descname"><span class="pre">DFLT_ZOOM</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1.18</span></span><a class="headerlink" href="#burns.moves.DFLT_ZOOM" title="Link to this definition">#</a></dt>
+<dd><p>Default end magnification. Enough that a slow push reads as movement on a
+1080p frame, little enough that a found still is not visibly softened by the
+upscale.</p>
+<p>A <strong>drift</strong> may render slightly above it: reaching <a class="reference internal" href="#burns.moves.DRIFT_SPAN" title="burns.moves.DRIFT_SPAN"><code class="xref py py-data docutils literal notranslate"><span class="pre">DRIFT_SPAN</span></code></a> needs
+<a class="reference internal" href="#burns.moves.DRIFT_MIN_ROOM" title="burns.moves.DRIFT_MIN_ROOM"><code class="xref py py-data docutils literal notranslate"><span class="pre">DRIFT_MIN_ROOM</span></code></a> of travel room, which at this zoom is marginally more
+than the window leaves, so the floor raises it to ~1.2. That is the floor
+working, not a jitter — it is a pure function of the arguments.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="burns.moves.DRIFT_MIN_ROOM">
+<span class="sig-prename descclassname"><span class="pre">burns.moves.</span></span><span class="sig-name descname"><span class="pre">DRIFT_MIN_ROOM</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.16666666666666669</span></span><a class="headerlink" href="#burns.moves.DRIFT_MIN_ROOM" title="Link to this definition">#</a></dt>
+<dd><p>The least travel room a drift will accept, in image units. When the
+requested <code class="docutils literal notranslate"><span class="pre">zoom</span></code> leaves less, the zoom is <em>raised</em> until it does — the same
+way <code class="docutils literal notranslate"><span class="pre">content_aware_path</span></code>’s <code class="docutils literal notranslate"><span class="pre">min_zoom</span></code> floor wins over its framing cap.
+A drift with no room is a hold, and silently returning one is the failure
+this floor exists to prevent.</p>
+<p><strong>It is derived, not chosen</strong>, and the derivation is the point. Travel is
+<code class="docutils literal notranslate"><span class="pre">min(room</span> <span class="pre">*</span> <span class="pre">DRIFT_TRAVEL,</span> <span class="pre">size</span> <span class="pre">*</span> <span class="pre">DRIFT_SPAN)</span></code> with <code class="docutils literal notranslate"><span class="pre">size</span> <span class="pre">==</span> <span class="pre">1</span> <span class="pre">-</span> <span class="pre">room</span></code>, so
+the span can only ever bind when
+<code class="docutils literal notranslate"><span class="pre">room</span> <span class="pre">&gt;=</span> <span class="pre">DRIFT_SPAN</span> <span class="pre">/</span> <span class="pre">(DRIFT_TRAVEL</span> <span class="pre">+</span> <span class="pre">DRIFT_SPAN)</span></code> — one sixth, at the
+values above. Set below that and the two constants can <em>never</em> both bind:
+the floor silently wins everywhere, every room-limited drift crosses
+<code class="docutils literal notranslate"><span class="pre">DRIFT_TRAVEL</span> <span class="pre">*</span> <span class="pre">DRIFT_MIN_ROOM</span> <span class="pre">/</span> <span class="pre">(1</span> <span class="pre">-</span> <span class="pre">DRIFT_MIN_ROOM)</span></code> of its frame, and
+<a class="reference internal" href="#burns.moves.DRIFT_SPAN" title="burns.moves.DRIFT_SPAN"><code class="xref py py-data docutils literal notranslate"><span class="pre">DRIFT_SPAN</span></code></a>’s promise that the two axes read at the same speed holds
+only on pictures with room to spare. At <code class="docutils literal notranslate"><span class="pre">0.08</span></code> it measured 2.3x apart on a
+portrait still delivered at 16:9 — the exact asymmetry DRIFT_SPAN exists to
+remove. <code class="docutils literal notranslate"><span class="pre">tests/test_moves.py</span></code> pins the relationship, so changing either
+constant without the other fails.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="burns.moves.DRIFT_SPAN">
+<span class="sig-prename descclassname"><span class="pre">burns.moves.</span></span><span class="sig-name descname"><span class="pre">DRIFT_SPAN</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.1</span></span><a class="headerlink" href="#burns.moves.DRIFT_SPAN" title="Link to this definition">#</a></dt>
+<dd><p>A ceiling on that travel, as a fraction of the <strong>window</strong> rather than of the
+image — how far the camera crosses its own frame.</p>
+<p>Without it a drift’s speed is whatever room the picture happened to leave,
+which is not the same on both axes: on a 4:3 still delivered at 16:9 there is
+twice as much vertical room as horizontal, so <code class="docutils literal notranslate"><span class="pre">drift_up</span></code> travelled ~29 % of
+the frame where <code class="docutils literal notranslate"><span class="pre">drift_left</span></code> travelled ~9 % — the same named gesture at
+three times the speed, decided by the aspect of the picture. <code class="docutils literal notranslate"><span class="pre">an</span></code>’s camera
+hit the same asymmetry from the other direction and answered it the same way,
+with one fraction of the frame per axis (<code class="docutils literal notranslate"><span class="pre">an.ir.camera.PAN_FRACTION</span></code>).</p>
+<p>A tenth is calibrated against what the room-limited horizontal case already
+produces at <a class="reference internal" href="#burns.moves.DFLT_ZOOM" title="burns.moves.DFLT_ZOOM"><code class="xref py py-data docutils literal notranslate"><span class="pre">DFLT_ZOOM</span></code></a>, and against <code class="docutils literal notranslate"><span class="pre">ken_burns_path(style=&quot;drift&quot;)</span></code>’s
+~7 %: legible at 1080p over a normal panel, and not a whip.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="burns.moves.DRIFT_TRAVEL">
+<span class="sig-prename descclassname"><span class="pre">burns.moves.</span></span><span class="sig-name descname"><span class="pre">DRIFT_TRAVEL</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.5</span></span><a class="headerlink" href="#burns.moves.DRIFT_TRAVEL" title="Link to this definition">#</a></dt>
+<dd><p>How much of the available travel a drift uses, as a fraction of the room the
+window leaves inside the image. Less than <code class="docutils literal notranslate"><span class="pre">1.0</span></code> on purpose: a drift that
+runs wall to wall starts and ends against an edge, which reads as the frame
+hitting a stop rather than as a camera continuing past the cut.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="burns.moves.MOVES">
+<span class="sig-prename descclassname"><span class="pre">burns.moves.</span></span><span class="sig-name descname"><span class="pre">MOVES</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">('push_in',</span> <span class="pre">'pull_out',</span> <span class="pre">'drift_left',</span> <span class="pre">'drift_right',</span> <span class="pre">'drift_up',</span> <span class="pre">'drift_down',</span> <span class="pre">'hold',</span> <span class="pre">'auto')</span></span><a class="headerlink" href="#burns.moves.MOVES" title="Link to this definition">#</a></dt>
+<dd><p>Every name a stored <code class="docutils literal notranslate"><span class="pre">move</span></code> field may hold — one vocabulary, because it is
+one field. <code class="docutils literal notranslate"><span class="pre">&quot;hold&quot;</span></code> and <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> sit beside the directional moves for
+that reason: splitting them into separate constants would make a consumer
+union two tuples to validate one field. They differ in <em>kind</em>, not in
+membership, and <a class="reference internal" href="#burns.moves.move_kind" title="burns.moves.move_kind"><code class="xref py py-func docutils literal notranslate"><span class="pre">move_kind()</span></code></a> is where that difference is read.</p>
+<p><strong>burns owns this vocabulary.</strong> A consumer that needs to validate its own
+stored field before a render (rather than discovering a typo five minutes
+in) will mirror it; that mirror must be pinned equal to this tuple by a test
+that <em>fails</em> when burns is absent rather than skipping, or the two drift
+silently. burns is deliberately strict about the spelling — no case folding
+and no whitespace stripping — so a mirror written as a plain membership test
+agrees with it exactly.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="burns.moves.MoveError">
+<span class="property"><span class="k"><span class="pre">exception</span></span><span class="w"> </span></span><span class="sig-prename descclassname"><span class="pre">burns.moves.</span></span><span class="sig-name descname"><span class="pre">MoveError</span></span><a class="reference internal" href="../_modules/burns/moves.html#MoveError"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#burns.moves.MoveError" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code></a></p>
+<p>A move that cannot be resolved into a path.</p>
+<p>A plain <a class="reference external" href="https://docs.python.org/3/builtins/exceptions.html#ValueError" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ValueError</span></code></a> subclass, so a consumer that already catches
+<code class="docutils literal notranslate"><span class="pre">ValueError</span></code> around its authoring layer keeps working, and so nothing
+downstream needs to import <a class="reference internal" href="#module-burns.moves" title="burns.moves"><code class="xref py py-mod docutils literal notranslate"><span class="pre">burns.moves</span></code></a> to handle it.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="burns.moves.RESOLVER_IMPL_VERSION">
+<span class="sig-prename descclassname"><span class="pre">burns.moves.</span></span><span class="sig-name descname"><span class="pre">RESOLVER_IMPL_VERSION</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></span><a class="headerlink" href="#burns.moves.RESOLVER_IMPL_VERSION" title="Link to this definition">#</a></dt>
+<dd><p>The identity of the resolver’s <em>geometry</em>, for a caller’s cache key.</p>
+<p>A stored panel is an intent, so the pixels it becomes depend on constants
+that live here — <a class="reference internal" href="#burns.moves.DFLT_ZOOM" title="burns.moves.DFLT_ZOOM"><code class="xref py py-data docutils literal notranslate"><span class="pre">DFLT_ZOOM</span></code></a>, <a class="reference internal" href="#burns.moves.DRIFT_TRAVEL" title="burns.moves.DRIFT_TRAVEL"><code class="xref py py-data docutils literal notranslate"><span class="pre">DRIFT_TRAVEL</span></code></a>, <a class="reference internal" href="#burns.moves.DRIFT_SPAN" title="burns.moves.DRIFT_SPAN"><code class="xref py py-data docutils literal notranslate"><span class="pre">DRIFT_SPAN</span></code></a>,
+<a class="reference internal" href="#burns.moves.DRIFT_MIN_ROOM" title="burns.moves.DRIFT_MIN_ROOM"><code class="xref py py-data docutils literal notranslate"><span class="pre">DRIFT_MIN_ROOM</span></code></a>, <a class="reference internal" href="#burns.moves.AUTO_WEIGHTS" title="burns.moves.AUTO_WEIGHTS"><code class="xref py py-data docutils literal notranslate"><span class="pre">AUTO_WEIGHTS</span></code></a> and the order
+<a class="reference internal" href="#burns.moves.choose_move" title="burns.moves.choose_move"><code class="xref py py-func docutils literal notranslate"><span class="pre">choose_move()</span></code></a> draws from. Retune any of them and an <strong>unchanged</strong> panel
+renders differently.</p>
+<p>A consumer that caches a render keyed on the panel alone would therefore
+serve the old frames forever, or silently produce a cut that disagrees with
+its siblings. Put this in the key. It is <code class="docutils literal notranslate"><span class="pre">nw.Transform.impl_version</span></code>’s
+contract — <em>a lock, not a receipt</em>: bump it whenever the geometry changes for
+an unchanged input, and leave it alone for a docstring or a new move name.</p>
+<p>Deliberately <strong>not</strong> the package version: a burns release that touches only
+the renderer must not invalidate anybody’s cut, and
+<code class="docutils literal notranslate"><span class="pre">importlib.metadata.version(&quot;burns&quot;)</span></code> is unreliable here besides.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="burns.moves.choose_move">
+<span class="sig-prename descclassname"><span class="pre">burns.moves.</span></span><span class="sig-name descname"><span class="pre">choose_move</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/burns/moves.html#choose_move"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#burns.moves.choose_move" title="Link to this definition">#</a></dt>
+<dd><p>Which concrete move <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> resolves to for <code class="docutils literal notranslate"><span class="pre">seed</span></code>.</p>
+<p>Public because “auto” is a decision a person may want to <em>see</em> (a UI
+showing <code class="docutils literal notranslate"><span class="pre">auto</span> <span class="pre">→</span> <span class="pre">drift_left</span></code>) and to <em>pin</em> (liking what auto chose and
+storing that name instead, so it survives a change to the weights).</p>
+<p>A pure function of <code class="docutils literal notranslate"><span class="pre">seed</span></code> alone — not of the image, and not of any
+position in a sequence. That is what makes a panel’s move survive both a
+reorder and a swapped still.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">choose_move</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span> <span class="o">==</span> <span class="n">choose_move</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span>
+</span><span data-line="2"><span class="go">True</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="n">choose_move</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span> <span class="ow">in</span> <span class="n">MOVES</span> <span class="ow">and</span> <span class="n">choose_move</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span> <span class="o">!=</span> <span class="s1">'auto'</span>
+</span><span data-line="4"><span class="go">True</span>
+</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">({</span><span class="n">choose_move</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">60</span><span class="p">)})</span> <span class="o">&gt;</span> <span class="mi">1</span>   <span class="c1"># not one move forever</span>
+</span><span data-line="6"><span class="go">True</span>
+</span></pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="burns.moves.move_kind">
+<span class="sig-prename descclassname"><span class="pre">burns.moves.</span></span><span class="sig-name descname"><span class="pre">move_kind</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">move</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/burns/moves.html#move_kind"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#burns.moves.move_kind" title="Link to this definition">#</a></dt>
+<dd><p>How <code class="docutils literal notranslate"><span class="pre">move</span></code> is grouped: <code class="docutils literal notranslate"><span class="pre">&quot;zoom&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;drift&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;static&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;select&quot;</span></code>.</p>
+<p>For a UI that wants a compass of directions separately from the rest, read
+off the same table <a class="reference internal" href="#burns.moves.resolve_move" title="burns.moves.resolve_move"><code class="xref py py-func docutils literal notranslate"><span class="pre">resolve_move()</span></code></a> dispatches on.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span></p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">move_kind</span><span class="p">(</span><span class="s2">"drift_left"</span><span class="p">),</span> <span class="n">move_kind</span><span class="p">(</span><span class="s2">"hold"</span><span class="p">),</span> <span class="n">move_kind</span><span class="p">(</span><span class="s2">"auto"</span><span class="p">)</span>
+</span><span data-line="2"><span class="go">('drift', 'static', 'select')</span>
+</span><span data-line="3"><span class="gp">&gt;&gt;&gt; </span><span class="nb">sorted</span><span class="p">(</span><span class="n">m</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">MOVES</span> <span class="k">if</span> <span class="n">move_kind</span><span class="p">(</span><span class="n">m</span><span class="p">)</span> <span class="o">==</span> <span class="s1">'drift'</span><span class="p">)</span>
+</span><span data-line="4"><span class="go">['drift_down', 'drift_left', 'drift_right', 'drift_up']</span>
+</span></pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="burns.moves.resolve_move">
+<span class="sig-prename descclassname"><span class="pre">burns.moves.</span></span><span class="sig-name descname"><span class="pre">resolve_move</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">move</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aspect</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zoom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.18</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">focus</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">easing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ease-in-out'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_aspect_mismatch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raise'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/burns/moves.html#resolve_move"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#burns.moves.resolve_move" title="Link to this definition">#</a></dt>
+<dd><p>Resolve an authored camera intent against <code class="docutils literal notranslate"><span class="pre">image</span></code> into a path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>move</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference internal" href="burns.path.html#burns.path.BurnsPath" title="burns.path.BurnsPath"><code class="xref py py-class docutils literal notranslate"><span class="pre">BurnsPath</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Mapping" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Mapping</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]]</span>) – a name from <a class="reference internal" href="#burns.moves.MOVES" title="burns.moves.MOVES"><code class="xref py py-data docutils literal notranslate"><span class="pre">MOVES</span></code></a>, or an explicit
+<a class="reference internal" href="burns.path.html#burns.path.BurnsPath" title="burns.path.BurnsPath"><code class="xref py py-class docutils literal notranslate"><span class="pre">BurnsPath</span></code></a> / its <code class="docutils literal notranslate"><span class="pre">to_dict()</span></code> payload. The two
+are the two front doors on this one path: a stored panel that
+carries both a named move and a hand-corrected override passes the
+override here and the choice is made in one place.</p></li>
+<li><p><strong>image</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a></span>) – the still the move is framed against — a path, <code class="docutils literal notranslate"><span class="pre">PIL.Image</span></code> or
+ndarray. <strong>Required, and read every time</strong>: the framing depends on
+what is in the picture, so swapping the still must re-frame. Do not
+cache the returned path against the intent.</p></li>
+<li><p><strong>aspect</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Optional" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Optional</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]</span>) – the delivered <code class="docutils literal notranslate"><span class="pre">width</span> <span class="pre">/</span> <span class="pre">height</span></code>. <code class="docutils literal notranslate"><span class="pre">None</span></code> means “match the
+image”. Required rather than defaulted, because a cut has a
+delivery size and quietly framing for the image’s aspect instead is
+a cover-crop nobody asked for.</p></li>
+<li><p><strong>zoom</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a></span>) – <p>the end magnification. A pure function of the arguments — never
+jittered by <code class="docutils literal notranslate"><span class="pre">seed</span></code> or by a position — but **bounded at both
+ends**, so the number you pass is a request:</p>
+<ul>
+<li><p>capped so the padded keep-region stays framed. A subject filling
+the frame therefore yields a nearly static move; the fix is a
+tighter <code class="docutils literal notranslate"><span class="pre">focus</span></code>, not a bigger <code class="docutils literal notranslate"><span class="pre">zoom</span></code>.</p></li>
+<li><p>floored. <code class="docutils literal notranslate"><span class="pre">push_in</span></code> / <code class="docutils literal notranslate"><span class="pre">pull_out</span></code> inherit
+<code class="docutils literal notranslate"><span class="pre">content_aware_path</span></code>’s <code class="docutils literal notranslate"><span class="pre">min_zoom</span> <span class="pre">+</span> <span class="pre">0.02</span></code> (about 1.07), so a
+barely-there 1.02 push renders as 1.07; <code class="docutils literal notranslate"><span class="pre">hold</span></code> has no such floor
+and honours 1.02 exactly. A drift is floored to whatever leaves
+<a class="reference internal" href="#burns.moves.DRIFT_MIN_ROOM" title="burns.moves.DRIFT_MIN_ROOM"><code class="xref py py-data docutils literal notranslate"><span class="pre">DRIFT_MIN_ROOM</span></code></a> of travel.</p></li>
+</ul>
+</p></li>
+<li><p><strong>focus</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a></span>) – an explicit keep-region overriding the saliency estimate. A
+<a class="reference internal" href="burns.rect.html#burns.rect.Rect" title="burns.rect.Rect"><code class="xref py py-class docutils literal notranslate"><span class="pre">Rect</span></code></a>, a normalized <code class="docutils literal notranslate"><span class="pre">(x,</span> <span class="pre">y,</span> <span class="pre">w,</span> <span class="pre">h)</span></code> tuple, or
+any object with <code class="docutils literal notranslate"><span class="pre">.x/.y/.w/.h</span></code>. When given,
+<a class="reference internal" href="burns.content.html#burns.content.salient_box" title="burns.content.salient_box"><code class="xref py py-func docutils literal notranslate"><span class="pre">salient_box()</span></code></a> is not called at all.</p></li>
+<li><p><strong>seed</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a></span>) – chooses which move <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> becomes, and nothing else. Mint it
+once per panel and store it; never derive it from a position, which
+is the defect this parameter exists to remove.</p></li>
+<li><p><strong>easing</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>], <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Sequence</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]]</span>) – CSS timing function or callable. A callable is fine here but
+cannot be serialized — see <code class="xref py py-meth docutils literal notranslate"><span class="pre">BurnsPath.to_dict()</span></code>. Applies to a
+named move; an explicit path carries its own.</p></li>
+<li><p><strong>on_aspect_mismatch</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – what to do when an explicit path was authored for a
+different <code class="docutils literal notranslate"><span class="pre">output_aspect</span></code> than the one being rendered.
+<code class="docutils literal notranslate"><span class="pre">&quot;raise&quot;</span></code> (default) refuses, because honouring the stored
+rectangles at another shape cover-crops a framing somebody chose by
+hand. <code class="docutils literal notranslate"><span class="pre">&quot;refit&quot;</span></code> rebuilds each keyframe at the new aspect,
+<strong>keeping what the author actually chose</strong> — where the camera looks
+at each instant, and how far in it is — and changing only the window
+shape. A cut in a second aspect is a real workflow (a vertical
+edit of a landscape film), and a panel carries <em>one</em> path, not one
+per delivery, so “author a second path” is not a remedy a caller
+can take; <code class="docutils literal notranslate"><span class="pre">&quot;refit&quot;</span></code> is.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference internal" href="burns.path.html#burns.path.BurnsPath" title="burns.path.BurnsPath"><code class="xref py py-class docutils literal notranslate"><span class="pre">BurnsPath</span></code></a></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A <a class="reference internal" href="burns.path.html#burns.path.BurnsPath" title="burns.path.BurnsPath"><code class="xref py py-class docutils literal notranslate"><span class="pre">BurnsPath</span></code></a>. Duration is not part of it; pass that
+to the renderer.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#burns.moves.MoveError" title="burns.moves.MoveError"><strong>MoveError</strong></a> – an unknown move name, a malformed <code class="docutils literal notranslate"><span class="pre">focus</span></code>, a non-positive
+    <code class="docutils literal notranslate"><span class="pre">zoom</span></code> or <code class="docutils literal notranslate"><span class="pre">aspect</span></code>, or — under the default
+    <code class="docutils literal notranslate"><span class="pre">on_aspect_mismatch=&quot;raise&quot;</span></code> — an explicit path whose
+    <code class="docutils literal notranslate"><span class="pre">output_aspect</span></code> contradicts <code class="docutils literal notranslate"><span class="pre">aspect</span></code>.</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code class="docutils literal notranslate"><span class="pre">image</span></code> is opened for every <em>named</em> move. For an explicit path it is
+read only when refitting, since resolved geometry needs no picture.</p>
+</div>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">img</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">600</span><span class="p">,</span> <span class="mi">800</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">'uint8'</span><span class="p">);</span> <span class="n">img</span><span class="p">[</span><span class="mi">300</span><span class="p">:</span><span class="mi">460</span><span class="p">,</span> <span class="mi">500</span><span class="p">:</span><span class="mi">700</span><span class="p">]</span> <span class="o">=</span> <span class="mi">230</span>
+</span></pre></div>
+</div>
+<p>A named move is a decision, so the seed does not touch it:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">resolve_move</span><span class="p">(</span><span class="s2">"push_in"</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="n">img</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="mi">16</span> <span class="o">/</span> <span class="mi">9</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> \
+</span><span data-line="2"><span class="gp">... </span>    <span class="n">resolve_move</span><span class="p">(</span><span class="s2">"push_in"</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="n">img</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="mi">16</span> <span class="o">/</span> <span class="mi">9</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">999</span><span class="p">)</span>
+</span><span data-line="3"><span class="go">True</span>
+</span></pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> is where the seed does its one job:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">=</span> <span class="n">resolve_move</span><span class="p">(</span><span class="s2">"auto"</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="n">img</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="mi">16</span> <span class="o">/</span> <span class="mi">9</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">a</span> <span class="o">==</span> <span class="n">resolve_move</span><span class="p">(</span><span class="s2">"auto"</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="n">img</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="mi">16</span> <span class="o">/</span> <span class="mi">9</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</span><span data-line="3"><span class="go">True</span>
+</span></pre></div>
+</div>
+<p>A drift travels — and <code class="docutils literal notranslate"><span class="pre">drift_right</span></code> ends further right:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">resolve_move</span><span class="p">(</span><span class="s2">"drift_right"</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="n">img</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="mi">16</span> <span class="o">/</span> <span class="mi">9</span><span class="p">)</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span><span class="o">.</span><span class="n">x</span> <span class="o">&gt;</span> <span class="n">d</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span><span class="o">.</span><span class="n">x</span>
+</span><span data-line="3"><span class="go">True</span>
+</span></pre></div>
+</div>
+<p>An explicit path is the other front door, returned as authored:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">burns</span><span class="w"> </span><span class="kn">import</span> <span class="n">BurnsPath</span><span class="p">,</span> <span class="n">Rect</span>
+</span><span data-line="2"><span class="gp">&gt;&gt;&gt; </span><span class="n">hand</span> <span class="o">=</span> <span class="n">BurnsPath</span><span class="o">.</span><span class="n">from_start_end</span><span class="p">(</span>
+</span><span data-line="3"><span class="gp">... </span>    <span class="n">Rect</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">Rect</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">,</span> <span class="mf">0.6</span><span class="p">),</span> <span class="n">output_aspect</span><span class="o">=</span><span class="mi">16</span> <span class="o">/</span> <span class="mi">9</span>
+</span><span data-line="4"><span class="gp">... </span><span class="p">)</span>
+</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="n">resolve_move</span><span class="p">(</span><span class="n">hand</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(),</span> <span class="n">image</span><span class="o">=</span><span class="n">img</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="mi">16</span> <span class="o">/</span> <span class="mi">9</span><span class="p">)</span> <span class="o">==</span> <span class="n">hand</span>
+</span><span data-line="6"><span class="go">True</span>
+</span></pre></div>
+</div>
+<p>Rendering it at another delivery refuses by default, and <code class="docutils literal notranslate"><span class="pre">&quot;refit&quot;</span></code>
+keeps the authored look while changing the window shape:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="gp">&gt;&gt;&gt; </span><span class="n">resolve_move</span><span class="p">(</span><span class="n">hand</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="n">img</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="mi">9</span> <span class="o">/</span> <span class="mi">16</span><span class="p">)</span>
+</span><span data-line="2"><span class="gt">Traceback (most recent call last):</span>
+</span><span data-line="3"><span class="w">    </span><span class="o">...</span>
+</span><span data-line="4"><span class="gr">burns.moves.MoveError</span>: <span class="n">...</span>
+</span><span data-line="5"><span class="gp">&gt;&gt;&gt; </span><span class="n">v</span> <span class="o">=</span> <span class="n">resolve_move</span><span class="p">(</span><span class="n">hand</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="n">img</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="mi">9</span> <span class="o">/</span> <span class="mi">16</span><span class="p">,</span>
+</span><span data-line="6"><span class="gp">... </span>                 <span class="n">on_aspect_mismatch</span><span class="o">=</span><span class="s2">"refit"</span><span class="p">)</span>
+</span><span data-line="7"><span class="gp">&gt;&gt;&gt; </span><span class="n">v</span><span class="o">.</span><span class="n">output_aspect</span> <span class="o">==</span> <span class="mi">9</span> <span class="o">/</span> <span class="mi">16</span>
+</span><span data-line="8"><span class="go">True</span>
+</span><span data-line="9"><span class="gp">&gt;&gt;&gt; </span><span class="n">before</span> <span class="o">=</span> <span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">hand</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span><span class="o">.</span><span class="n">center</span><span class="p">]</span>
+</span><span data-line="10"><span class="gp">&gt;&gt;&gt; </span><span class="n">after</span> <span class="o">=</span> <span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">v</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span><span class="o">.</span><span class="n">center</span><span class="p">]</span>
+</span><span data-line="11"><span class="gp">&gt;&gt;&gt; </span><span class="n">before</span> <span class="o">==</span> <span class="n">after</span>          <span class="c1"># the author's framing, at the new shape</span>
+</span><span data-line="12"><span class="go">True</span>
+</span></pre></div>
+</div>
+</dd></dl>
+
+</section>
+
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"><div class="navigation-prev">
+    <a href="burns.easing.html">
+      <i class="i-lucide chevron-left"></i>
+      <div class="page-info">
+        <span>Previous</span><div class="title">burns.easing</div></div>
+    </a>
+  </div><div class="navigation-next">
+    <a href="burns.path.html">
+      <div class="page-info">
+        <span>Next</span>
+        <div class="title">burns.path</div>
+      </div>
+      <i class="i-lucide chevron-right"></i>
+    </a>
+  </div></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright">
+  <p>
+    Made with
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials">
+  <a href="https://github.com/thorwhalen/burns" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
+    </div>
+  </div>
+</footer>
+      <script src="../_static/documentation_options.js?v=544df88d"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../_static/copybutton.js?v=fd10adb8"></script>
+      <script src="../_static/shibuya.js?v=50760d75"></script></body>
+</html>

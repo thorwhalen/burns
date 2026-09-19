@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="en" data-accent-color="cyan" data-content_root="../../">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"><title>burns.moves - burns</title><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><script>
+    function setColorMode(t){let e=document.documentElement;e.setAttribute("data-color-mode",t);let a=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches,s=t;"auto"===t&&(s=a?"dark":"light"),"light"===s?(e.classList.remove("dark"),e.classList.add("light")):(e.classList.remove("light"),e.classList.add("dark"))}
+    setColorMode(localStorage._theme||"auto");
+  </script><link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=d88b86f9" />
+    <link rel="stylesheet" type="text/css" href="../../_static/shibuya.css?v=2ceb65ce" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link media="print" rel="stylesheet" type="text/css" href="../../_static/print.css?v=20ff2c19" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --sy-f-text: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+  --sy-f-heading: "Inter", var(--sy-f-sys), var(--sy-f-cjk), sans-serif;
+}
+</style>
+    
+  <meta property="og:type" content="website"/><meta property="og:title" content="burns.moves"/>
+    <meta name="twitter:card" content="summary"/>
+  </head>
+<body><div class="sy-head">
+  <div class="sy-head-blur"></div>
+  <div class="sy-head-inner sy-container mx-auto">
+    <a class="sy-head-brand" href="../../index.html">
+      
+      
+      <strong>burns</strong>
+    </a>
+    <div class="sy-head-nav" id="head-nav">
+      <nav class="sy-head-links"></nav>
+      <div class="sy-head-extra flex items-center print:hidden"><form class="searchbox flex items-center" action="../../search.html" method="get">
+  <input type="text" name="q" placeholder="Search" />
+  <kbd>/</kbd>
+</form><div class="sy-head-socials">
+  <a href="https://github.com/thorwhalen/burns" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div></div>
+    </div>
+    <div class="sy-head-actions flex items-center shrink-0 print:hidden"><button class="js-theme theme-switch flex items-center"
+data-aria-auto="Switch to light color mode"
+data-aria-light="Switch to dark color mode"
+data-aria-dark="Switch to auto color mode">
+<i class="i-lucide theme-icon"></i>
+</button><button class="md:hidden flex items-center js-menu" aria-label="Menu" type="button" aria-controls="head-nav" aria-expanded="false">
+        <div class="hamburger">
+          <span class="hamburger_1"></span>
+          <span class="hamburger_2"></span>
+          <span class="hamburger_3"></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+<div class="sy-page sy-container flex mx-auto">
+  <aside id="lside" class="sy-lside md:w-72 md:shrink-0 print:hidden">
+    <div class="sy-lside-inner md:sticky">
+      <div class="sy-scrollbar p-6">
+        <div class="globaltoc" data-expand-depth="0"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">API reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../_autosummary/burns.html">burns</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../_autosummary/burns.backends.html">burns.backends</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../_autosummary/burns.content.html">burns.content</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../_autosummary/burns.easing.html">burns.easing</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../_autosummary/burns.moves.html">burns.moves</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../_autosummary/burns.path.html">burns.path</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../_autosummary/burns.rect.html">burns.rect</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../_autosummary/burns.render.html">burns.render</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../ai-agents.html">For AI agents</a></li>
+</ul>
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="lside-overlay js-menu" role="button" aria-label="Close left sidebar" aria-controls="lside" aria-expanded="false"></div>
+  <aside id="rside" class="sy-rside pb-3 w-64 shrink-0 order-last">
+    <button class="rside-close js-menu xl:hidden" aria-label="Close Table of Contents" type="button" aria-controls="rside" aria-expanded="false">
+      <i class="i-lucide close"></i>
+    </button>
+    <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div id="ethical-ad-placement" data-ea-publisher="readthedocs"></div></div>
+  </aside>
+  <div class="rside-overlay js-menu" role="button" aria-label="Close Table of Contents" aria-controls="rside" aria-expanded="false"></div>
+  <main class="sy-main w-full max-sm:max-w-full print:pt-6">
+<div class="sy-breadcrumbs" role="navigation">
+  <div class="sy-breadcrumbs-inner flex items-center">
+    <div class="md:hidden mr-3">
+      <button class="js-menu" aria-label="Menu" type="button" aria-controls="lside" aria-expanded="false">
+        <i class="i-lucide menu"></i>
+      </button>
+    </div>
+    <ol class="flex-1" itemscope itemtype="https://schema.org/BreadcrumbList"><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../../index.html"><span itemprop="name">burns</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="1" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <a itemprop="item" href="../index.html"><span itemprop="name">Module code</span></a>
+        <span>/</span>
+        <meta itemprop="position" content="2" />
+      </li><li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+        <strong itemprop="name">burns.moves</strong>
+        <meta itemprop="position" content="3" />
+      </li></ol>
+    <div class="xl:hidden ml-1">
+      <button class="js-menu" aria-label="Show table of contents" type="button" aria-controls="rside"
+        aria-expanded="false">
+        <i class="i-lucide outdent"></i>
+      </button>
+    </div>
+  </div>
+</div><div class="flex flex-col break-words justify-between">
+      <div class="relative min-w-0 max-w-6xl px-6 pb-6 pt-8 xl:px-12">
+  <article class="yue dark-code" role="main">
+          <h1>Source code for burns.moves</h1><div class="highlight"><pre>
+<span></span><span data-line="1"><span class="sd">"""The named camera moves, and the one resolver that expands one into a path.</span>
+</span><span data-line="2">
+</span><span data-line="3"><span class="sd">A :class:`~burns.path.BurnsPath` is *resolved geometry*: rectangles measured</span>
+</span><span data-line="4"><span class="sd">against one picture's pixels. That makes it the wrong thing to store when the</span>
+</span><span data-line="5"><span class="sd">picture can change. What an editor wants to keep is the **authored intent** —</span>
+</span><span data-line="6"><span class="sd">"push in on this, gently" — and have the rectangles computed against whatever</span>
+</span><span data-line="7"><span class="sd">image is in the slot at render time. Replace the still and the move re-frames;</span>
+</span><span data-line="8"><span class="sd">keep the still and the move is exactly what it was.</span>
+</span><span data-line="9">
+</span><span data-line="10"><span class="sd">So this module is the vocabulary (:data:`MOVES`) plus the one function that</span>
+</span><span data-line="11"><span class="sd">turns an intent into geometry (:func:`resolve_move`).</span>
+</span><span data-line="12">
+</span><span data-line="13"><span class="sd">**One code path, two front doors.** ``resolve_move`` takes a *name* or an</span>
+</span><span data-line="14"><span class="sd">explicit ``BurnsPath`` (or its ``to_dict()`` payload), so a caller that stores</span>
+</span><span data-line="15"><span class="sd">both a named move and an optional hand-corrected path override makes one call</span>
+</span><span data-line="16"><span class="sd">and the choice between them is made here — once — rather than once per consumer.</span>
+</span><span data-line="17"><span class="sd">This is ``an.ir.camera.camera_keys``' arrangement: one table, not two tables</span>
+</span><span data-line="18"><span class="sd">reconciled by a test.</span>
+</span><span data-line="19">
+</span><span data-line="20"><span class="sd">**``seed`` replaces the ordinal, and does one job.** The motion in a sequence</span>
+</span><span data-line="21"><span class="sd">used to be derived from each panel's *position* — style by ``i % 2``, zoom by</span>
+</span><span data-line="22"><span class="sd">``i % 4``, push-or-pull by the parity of ``i``. Reordering one panel therefore</span>
+</span><span data-line="23"><span class="sd">changed the camera on every panel after it, and "keep this move, change this</span>
+</span><span data-line="24"><span class="sd">picture" was unexpressible. ``resolve_move`` is a pure function of its</span>
+</span><span data-line="25"><span class="sd">arguments and never of a position; a caller mints a ``seed`` once, stores it</span>
+</span><span data-line="26"><span class="sd">beside the move, and the move survives every reorder.</span>
+</span><span data-line="27">
+</span><span data-line="28"><span class="sd">The seed's *only* job is choosing which concrete move ``"auto"`` becomes</span>
+</span><span data-line="29"><span class="sd">(:func:`choose_move`). It deliberately does **not** perturb a named move's zoom</span>
+</span><span data-line="30"><span class="sd">or framing: a named move is a decision, and a decision a seed can still nudge</span>
+</span><span data-line="31"><span class="sd">is not one. Variety across a sequence comes from ``"auto"`` and from the</span>
+</span><span data-line="32"><span class="sd">pictures themselves — the content-aware framing differs per image already.</span>
+</span><span data-line="33">
+</span><span data-line="34"><span class="sd">    &gt;&gt;&gt; import numpy as np</span>
+</span><span data-line="35"><span class="sd">    &gt;&gt;&gt; img = np.zeros((600, 800, 3), dtype='uint8'); img[380:520, 120:300] = 210</span>
+</span><span data-line="36"><span class="sd">    &gt;&gt;&gt; path = resolve_move("push_in", image=img, aspect=16 / 9, seed=41)</span>
+</span><span data-line="37"><span class="sd">    &gt;&gt;&gt; path.evaluate(1.0).zoom &gt;= path.evaluate(0.0).zoom</span>
+</span><span data-line="38"><span class="sd">    True</span>
+</span><span data-line="39"><span class="sd">    &gt;&gt;&gt; resolve_move("hold", image=img, aspect=16 / 9).evaluate(0.0) == \\</span>
+</span><span data-line="40"><span class="sd">    ...     resolve_move("hold", image=img, aspect=16 / 9).evaluate(1.0)</span>
+</span><span data-line="41"><span class="sd">    True</span>
+</span><span data-line="42"><span class="sd">"""</span>
+</span><span data-line="43">
+</span><span data-line="44"><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+</span><span data-line="45">
+</span><span data-line="46"><span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+</span><span data-line="47"><span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">dataclass</span>
+</span><span data-line="48"><span class="kn">from</span><span class="w"> </span><span class="nn">types</span><span class="w"> </span><span class="kn">import</span> <span class="n">MappingProxyType</span>
+</span><span data-line="49"><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Union</span>
+</span><span data-line="50">
+</span><span data-line="51"><span class="kn">from</span><span class="w"> </span><span class="nn">burns.content</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+</span><span data-line="52">    <span class="n">Box</span><span class="p">,</span>
+</span><span data-line="53">    <span class="n">DFLT_KEEP_PAD</span><span class="p">,</span>
+</span><span data-line="54">    <span class="n">as_pil</span><span class="p">,</span>
+</span><span data-line="55">    <span class="n">axis_maxima</span><span class="p">,</span>
+</span><span data-line="56">    <span class="n">content_aware_path</span><span class="p">,</span>
+</span><span data-line="57">    <span class="n">fit_zoom</span><span class="p">,</span>
+</span><span data-line="58">    <span class="n">keep_window</span><span class="p">,</span>
+</span><span data-line="59">    <span class="n">pad_box</span><span class="p">,</span>
+</span><span data-line="60">    <span class="n">salient_box</span><span class="p">,</span>
+</span><span data-line="61"><span class="p">)</span>
+</span><span data-line="62"><span class="kn">from</span><span class="w"> </span><span class="nn">burns.easing</span><span class="w"> </span><span class="kn">import</span> <span class="n">DFLT_EASING</span><span class="p">,</span> <span class="n">EasingLike</span>
+</span><span data-line="63"><span class="kn">from</span><span class="w"> </span><span class="nn">burns.path</span><span class="w"> </span><span class="kn">import</span> <span class="n">BurnsPath</span>
+</span><span data-line="64"><span class="kn">from</span><span class="w"> </span><span class="nn">burns.rect</span><span class="w"> </span><span class="kn">import</span> <span class="n">Rect</span>
+</span><span data-line="65">
+</span><span data-line="66"><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+</span><span data-line="67">    <span class="s2">"MOVES"</span><span class="p">,</span>
+</span><span data-line="68">    <span class="s2">"AUTO_WEIGHTS"</span><span class="p">,</span>
+</span><span data-line="69">    <span class="s2">"RESOLVER_IMPL_VERSION"</span><span class="p">,</span>
+</span><span data-line="70">    <span class="s2">"DFLT_ZOOM"</span><span class="p">,</span>
+</span><span data-line="71">    <span class="s2">"DRIFT_TRAVEL"</span><span class="p">,</span>
+</span><span data-line="72">    <span class="s2">"DRIFT_SPAN"</span><span class="p">,</span>
+</span><span data-line="73">    <span class="s2">"DRIFT_MIN_ROOM"</span><span class="p">,</span>
+</span><span data-line="74">    <span class="s2">"MoveError"</span><span class="p">,</span>
+</span><span data-line="75">    <span class="s2">"choose_move"</span><span class="p">,</span>
+</span><span data-line="76">    <span class="s2">"move_kind"</span><span class="p">,</span>
+</span><span data-line="77">    <span class="s2">"resolve_move"</span><span class="p">,</span>
+</span><span data-line="78"><span class="p">]</span>
+</span><span data-line="79">
+</span><span data-line="80"><span class="c1">#: The identity of the resolver's *geometry*, for a caller's cache key.</span>
+</span><span data-line="81"><span class="c1">#:</span>
+</span><span data-line="82"><span class="c1">#: A stored panel is an intent, so the pixels it becomes depend on constants</span>
+</span><span data-line="83"><span class="c1">#: that live here — :data:`DFLT_ZOOM`, :data:`DRIFT_TRAVEL`, :data:`DRIFT_SPAN`,</span>
+</span><span data-line="84"><span class="c1">#: :data:`DRIFT_MIN_ROOM`, :data:`AUTO_WEIGHTS` and the order</span>
+</span><span data-line="85"><span class="c1">#: :func:`choose_move` draws from. Retune any of them and an **unchanged** panel</span>
+</span><span data-line="86"><span class="c1">#: renders differently.</span>
+</span><span data-line="87"><span class="c1">#:</span>
+</span><span data-line="88"><span class="c1">#: A consumer that caches a render keyed on the panel alone would therefore</span>
+</span><span data-line="89"><span class="c1">#: serve the old frames forever, or silently produce a cut that disagrees with</span>
+</span><span data-line="90"><span class="c1">#: its siblings. Put this in the key. It is ``nw.Transform.impl_version``'s</span>
+</span><span data-line="91"><span class="c1">#: contract — *a lock, not a receipt*: bump it whenever the geometry changes for</span>
+</span><span data-line="92"><span class="c1">#: an unchanged input, and leave it alone for a docstring or a new move name.</span>
+</span><span data-line="93"><span class="c1">#:</span>
+</span><span data-line="94"><span class="c1">#: Deliberately **not** the package version: a burns release that touches only</span>
+</span><span data-line="95"><span class="c1">#: the renderer must not invalidate anybody's cut, and</span>
+</span><span data-line="96"><span class="c1">#: ``importlib.metadata.version("burns")`` is unreliable here besides.</span>
+</span><span data-line="97"><span class="n">RESOLVER_IMPL_VERSION</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
+</span><span data-line="98">
+</span><span data-line="99"><span class="c1">#: Default end magnification. Enough that a slow push reads as movement on a</span>
+</span><span data-line="100"><span class="c1">#: 1080p frame, little enough that a found still is not visibly softened by the</span>
+</span><span data-line="101"><span class="c1">#: upscale.</span>
+</span><span data-line="102"><span class="c1">#:</span>
+</span><span data-line="103"><span class="c1">#: A **drift** may render slightly above it: reaching :data:`DRIFT_SPAN` needs</span>
+</span><span data-line="104"><span class="c1">#: :data:`DRIFT_MIN_ROOM` of travel room, which at this zoom is marginally more</span>
+</span><span data-line="105"><span class="c1">#: than the window leaves, so the floor raises it to ~1.2. That is the floor</span>
+</span><span data-line="106"><span class="c1">#: working, not a jitter — it is a pure function of the arguments.</span>
+</span><span data-line="107"><span class="n">DFLT_ZOOM</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.18</span>
+</span><span data-line="108">
+</span><span data-line="109"><span class="c1">#: How much of the available travel a drift uses, as a fraction of the room the</span>
+</span><span data-line="110"><span class="c1">#: window leaves inside the image. Less than ``1.0`` on purpose: a drift that</span>
+</span><span data-line="111"><span class="c1">#: runs wall to wall starts and ends against an edge, which reads as the frame</span>
+</span><span data-line="112"><span class="c1">#: hitting a stop rather than as a camera continuing past the cut.</span>
+</span><span data-line="113"><span class="n">DRIFT_TRAVEL</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span>
+</span><span data-line="114">
+</span><span data-line="115"><span class="c1">#: A ceiling on that travel, as a fraction of the **window** rather than of the</span>
+</span><span data-line="116"><span class="c1">#: image — how far the camera crosses its own frame.</span>
+</span><span data-line="117"><span class="c1">#:</span>
+</span><span data-line="118"><span class="c1">#: Without it a drift's speed is whatever room the picture happened to leave,</span>
+</span><span data-line="119"><span class="c1">#: which is not the same on both axes: on a 4:3 still delivered at 16:9 there is</span>
+</span><span data-line="120"><span class="c1">#: twice as much vertical room as horizontal, so ``drift_up`` travelled ~29 % of</span>
+</span><span data-line="121"><span class="c1">#: the frame where ``drift_left`` travelled ~9 % — the same named gesture at</span>
+</span><span data-line="122"><span class="c1">#: three times the speed, decided by the aspect of the picture. ``an``'s camera</span>
+</span><span data-line="123"><span class="c1">#: hit the same asymmetry from the other direction and answered it the same way,</span>
+</span><span data-line="124"><span class="c1">#: with one fraction of the frame per axis (``an.ir.camera.PAN_FRACTION``).</span>
+</span><span data-line="125"><span class="c1">#:</span>
+</span><span data-line="126"><span class="c1">#: A tenth is calibrated against what the room-limited horizontal case already</span>
+</span><span data-line="127"><span class="c1">#: produces at :data:`DFLT_ZOOM`, and against ``ken_burns_path(style="drift")``'s</span>
+</span><span data-line="128"><span class="c1">#: ~7 %: legible at 1080p over a normal panel, and not a whip.</span>
+</span><span data-line="129"><span class="n">DRIFT_SPAN</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.10</span>
+</span><span data-line="130">
+</span><span data-line="131"><span class="c1">#: The least travel room a drift will accept, in image units. When the</span>
+</span><span data-line="132"><span class="c1">#: requested ``zoom`` leaves less, the zoom is *raised* until it does — the same</span>
+</span><span data-line="133"><span class="c1">#: way ``content_aware_path``'s ``min_zoom`` floor wins over its framing cap.</span>
+</span><span data-line="134"><span class="c1">#: A drift with no room is a hold, and silently returning one is the failure</span>
+</span><span data-line="135"><span class="c1">#: this floor exists to prevent.</span>
+</span><span data-line="136"><span class="c1">#:</span>
+</span><span data-line="137"><span class="c1">#: **It is derived, not chosen**, and the derivation is the point. Travel is</span>
+</span><span data-line="138"><span class="c1">#: ``min(room * DRIFT_TRAVEL, size * DRIFT_SPAN)`` with ``size == 1 - room``, so</span>
+</span><span data-line="139"><span class="c1">#: the span can only ever bind when</span>
+</span><span data-line="140"><span class="c1">#: ``room &gt;= DRIFT_SPAN / (DRIFT_TRAVEL + DRIFT_SPAN)`` — one sixth, at the</span>
+</span><span data-line="141"><span class="c1">#: values above. Set below that and the two constants can *never* both bind:</span>
+</span><span data-line="142"><span class="c1">#: the floor silently wins everywhere, every room-limited drift crosses</span>
+</span><span data-line="143"><span class="c1">#: ``DRIFT_TRAVEL * DRIFT_MIN_ROOM / (1 - DRIFT_MIN_ROOM)`` of its frame, and</span>
+</span><span data-line="144"><span class="c1">#: :data:`DRIFT_SPAN`'s promise that the two axes read at the same speed holds</span>
+</span><span data-line="145"><span class="c1">#: only on pictures with room to spare. At ``0.08`` it measured 2.3x apart on a</span>
+</span><span data-line="146"><span class="c1">#: portrait still delivered at 16:9 — the exact asymmetry DRIFT_SPAN exists to</span>
+</span><span data-line="147"><span class="c1">#: remove. ``tests/test_moves.py`` pins the relationship, so changing either</span>
+</span><span data-line="148"><span class="c1">#: constant without the other fails.</span>
+</span><span data-line="149"><span class="n">DRIFT_MIN_ROOM</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DRIFT_SPAN</span> <span class="o">/</span> <span class="p">(</span><span class="n">DRIFT_TRAVEL</span> <span class="o">+</span> <span class="n">DRIFT_SPAN</span><span class="p">)</span>
+</span><span data-line="150">
+</span><span data-line="151"><span class="c1">#: Slack when comparing a stored path's ``output_aspect`` against the render's.</span>
+</span><span data-line="152"><span class="c1">#: **Relative**, not absolute: an absolute tolerance on a ratio is four times</span>
+</span><span data-line="153"><span class="c1">#: stricter for 2.39:1 scope than for a 9:16 vertical, which is not a judgement</span>
+</span><span data-line="154"><span class="c1">#: anybody made. It exists only to absorb float noise between two spellings of</span>
+</span><span data-line="155"><span class="c1">#: the same shape (``1920 / 1080`` against ``16 / 9``), never to let a genuinely</span>
+</span><span data-line="156"><span class="c1">#: different delivery through.</span>
+</span><span data-line="157"><span class="n">_ASPECT_REL_TOL</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-9</span>
+</span><span data-line="158">
+</span><span data-line="159">
+<div class="viewcode-block" id="MoveError">
+<a class="viewcode-back" href="../../_autosummary/burns.moves.html#burns.MoveError">[docs]</a>
+</span><span data-line="160"><span class="k">class</span><span class="w"> </span><span class="nc">MoveError</span><span class="p">(</span><span class="ne">ValueError</span><span class="p">):</span>
+</span><span data-line="161"><span class="w">    </span><span class="sd">"""A move that cannot be resolved into a path.</span>
+</span><span data-line="162">
+</span><span data-line="163"><span class="sd">    A plain :class:`ValueError` subclass, so a consumer that already catches</span>
+</span><span data-line="164"><span class="sd">    ``ValueError`` around its authoring layer keeps working, and so nothing</span>
+</span><span data-line="165"><span class="sd">    downstream needs to import :mod:`burns.moves` to handle it.</span>
+</span><span data-line="166"><span class="sd">    """</span></div>
+
+</span><span data-line="167">
+</span><span data-line="168">
+</span><span data-line="169"><span class="c1"># --------------------------------------------------------------------------</span>
+</span><span data-line="170"><span class="c1"># The table</span>
+</span><span data-line="171"><span class="c1"># --------------------------------------------------------------------------</span>
+</span><span data-line="172">
+</span><span data-line="173">
+</span><span data-line="174"><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span data-line="175"><span class="k">class</span><span class="w"> </span><span class="nc">_Frame</span><span class="p">:</span>
+</span><span data-line="176"><span class="w">    </span><span class="sd">"""Everything a move builder needs: the picture, the intent, the delivery."""</span>
+</span><span data-line="177">
+</span><span data-line="178">    <span class="n">img_w</span><span class="p">:</span> <span class="nb">int</span>
+</span><span data-line="179">    <span class="n">img_h</span><span class="p">:</span> <span class="nb">int</span>
+</span><span data-line="180">    <span class="n">keep</span><span class="p">:</span> <span class="n">Box</span>  <span class="c1"># the UNPADDED keep-region; each builder pads as it needs</span>
+</span><span data-line="181">    <span class="n">zoom</span><span class="p">:</span> <span class="nb">float</span>
+</span><span data-line="182">    <span class="n">aspect</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
+</span><span data-line="183">    <span class="n">easing</span><span class="p">:</span> <span class="n">EasingLike</span>
+</span><span data-line="184">
+</span><span data-line="185">    <span class="nd">@property</span>
+</span><span data-line="186">    <span class="k">def</span><span class="w"> </span><span class="nf">padded</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Box</span><span class="p">:</span>
+</span><span data-line="187">        <span class="k">return</span> <span class="n">pad_box</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">keep</span><span class="p">,</span> <span class="n">DFLT_KEEP_PAD</span><span class="p">)</span>
+</span><span data-line="188">
+</span><span data-line="189">    <span class="nd">@property</span>
+</span><span data-line="190">    <span class="k">def</span><span class="w"> </span><span class="nf">center</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
+</span><span data-line="191">        <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">padded</span>
+</span><span data-line="192">        <span class="k">return</span> <span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="n">w</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">y</span> <span class="o">+</span> <span class="n">h</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+</span><span data-line="193">
+</span><span data-line="194">    <span class="k">def</span><span class="w"> </span><span class="nf">capped_zoom</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+</span><span data-line="195"><span class="w">        </span><span class="sd">"""``zoom``, capped so the padded keep-region still fits the window."""</span>
+</span><span data-line="196">        <span class="n">cap</span> <span class="o">=</span> <span class="n">fit_zoom</span><span class="p">(</span>
+</span><span data-line="197">            <span class="bp">self</span><span class="o">.</span><span class="n">img_w</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">img_h</span><span class="p">,</span> <span class="n">keep</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">padded</span><span class="p">,</span> <span class="n">output_aspect</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">aspect</span>
+</span><span data-line="198">        <span class="p">)</span>
+</span><span data-line="199">        <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zoom</span><span class="p">,</span> <span class="n">cap</span> <span class="o">*</span> <span class="mf">0.98</span><span class="p">))</span>
+</span><span data-line="200">
+</span><span data-line="201">
+</span><span data-line="202"><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span data-line="203"><span class="k">class</span><span class="w"> </span><span class="nc">_MoveSpec</span><span class="p">:</span>
+</span><span data-line="204"><span class="w">    </span><span class="sd">"""One row of the vocabulary: how a name is grouped, and how it is built."""</span>
+</span><span data-line="205">
+</span><span data-line="206">    <span class="n">kind</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># "zoom" | "drift" | "static" | "select"</span>
+</span><span data-line="207">    <span class="n">build</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">_Frame</span><span class="p">],</span> <span class="n">BurnsPath</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span>
+</span><span data-line="208">
+</span><span data-line="209">
+</span><span data-line="210"><span class="k">def</span><span class="w"> </span><span class="nf">_zoom_move</span><span class="p">(</span><span class="n">mode</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">_Frame</span><span class="p">],</span> <span class="n">BurnsPath</span><span class="p">]:</span>
+</span><span data-line="211"><span class="w">    </span><span class="sd">"""A zoom-led move: two windows on the same centre, differing in zoom."""</span>
+</span><span data-line="212">
+</span><span data-line="213">    <span class="k">def</span><span class="w"> </span><span class="nf">build</span><span class="p">(</span><span class="n">f</span><span class="p">:</span> <span class="n">_Frame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BurnsPath</span><span class="p">:</span>
+</span><span data-line="214">        <span class="k">return</span> <span class="n">content_aware_path</span><span class="p">(</span>
+</span><span data-line="215">            <span class="n">f</span><span class="o">.</span><span class="n">img_w</span><span class="p">,</span>
+</span><span data-line="216">            <span class="n">f</span><span class="o">.</span><span class="n">img_h</span><span class="p">,</span>
+</span><span data-line="217">            <span class="n">subject</span><span class="o">=</span><span class="n">f</span><span class="o">.</span><span class="n">keep</span><span class="p">,</span>
+</span><span data-line="218">            <span class="n">output_aspect</span><span class="o">=</span><span class="n">f</span><span class="o">.</span><span class="n">aspect</span><span class="p">,</span>
+</span><span data-line="219">            <span class="n">zoom</span><span class="o">=</span><span class="n">f</span><span class="o">.</span><span class="n">zoom</span><span class="p">,</span>
+</span><span data-line="220">            <span class="n">keep_pad</span><span class="o">=</span><span class="n">DFLT_KEEP_PAD</span><span class="p">,</span>
+</span><span data-line="221">            <span class="n">mode</span><span class="o">=</span><span class="n">mode</span><span class="p">,</span>
+</span><span data-line="222">            <span class="n">easing</span><span class="o">=</span><span class="n">f</span><span class="o">.</span><span class="n">easing</span><span class="p">,</span>
+</span><span data-line="223">        <span class="p">)</span>
+</span><span data-line="224">
+</span><span data-line="225">    <span class="k">return</span> <span class="n">build</span>
+</span><span data-line="226">
+</span><span data-line="227">
+</span><span data-line="228"><span class="k">def</span><span class="w"> </span><span class="nf">_static</span><span class="p">(</span><span class="n">f</span><span class="p">:</span> <span class="n">_Frame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BurnsPath</span><span class="p">:</span>
+</span><span data-line="229"><span class="w">    </span><span class="sd">"""A hold: two keyframes with equal rects.</span>
+</span><span data-line="230">
+</span><span data-line="231"><span class="sd">    Two rather than one because that is what the spec calls a hold, and because</span>
+</span><span data-line="232"><span class="sd">    the TypeScript schema requires at least two keyframes — a one-keyframe path</span>
+</span><span data-line="233"><span class="sd">    is valid Python and invalid on the wire, so nothing here emits one.</span>
+</span><span data-line="234">
+</span><span data-line="235"><span class="sd">    ``zoom`` is honoured: a hold is a *static framing*, not necessarily the</span>
+</span><span data-line="236"><span class="sd">    whole picture. Pass ``zoom=1.0`` for the untouched frame.</span>
+</span><span data-line="237"><span class="sd">    """</span>
+</span><span data-line="238">    <span class="n">window</span> <span class="o">=</span> <span class="n">keep_window</span><span class="p">(</span>
+</span><span data-line="239">        <span class="n">f</span><span class="o">.</span><span class="n">img_w</span><span class="p">,</span>
+</span><span data-line="240">        <span class="n">f</span><span class="o">.</span><span class="n">img_h</span><span class="p">,</span>
+</span><span data-line="241">        <span class="n">center</span><span class="o">=</span><span class="n">f</span><span class="o">.</span><span class="n">center</span><span class="p">,</span>
+</span><span data-line="242">        <span class="n">zoom</span><span class="o">=</span><span class="n">f</span><span class="o">.</span><span class="n">capped_zoom</span><span class="p">(),</span>
+</span><span data-line="243">        <span class="n">output_aspect</span><span class="o">=</span><span class="n">f</span><span class="o">.</span><span class="n">aspect</span><span class="p">,</span>
+</span><span data-line="244">    <span class="p">)</span>
+</span><span data-line="245">    <span class="k">return</span> <span class="n">BurnsPath</span><span class="p">(</span>
+</span><span data-line="246">        <span class="n">keyframes</span><span class="o">=</span><span class="p">((</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">window</span><span class="p">),</span> <span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">window</span><span class="p">)),</span>
+</span><span data-line="247">        <span class="n">easing</span><span class="o">=</span><span class="n">f</span><span class="o">.</span><span class="n">easing</span><span class="p">,</span>
+</span><span data-line="248">        <span class="n">output_aspect</span><span class="o">=</span><span class="n">f</span><span class="o">.</span><span class="n">aspect</span><span class="p">,</span>
+</span><span data-line="249">    <span class="p">)</span>
+</span><span data-line="250">
+</span><span data-line="251">
+</span><span data-line="252"><span class="k">def</span><span class="w"> </span><span class="nf">_drift</span><span class="p">(</span><span class="n">axis</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">sign</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">_Frame</span><span class="p">],</span> <span class="n">BurnsPath</span><span class="p">]:</span>
+</span><span data-line="253"><span class="w">    </span><span class="sd">"""A pan-led move: one window translated along ``axis``.</span>
+</span><span data-line="254">
+</span><span data-line="255"><span class="sd">    **The name is the direction the CAMERA travels**, which is the direction the</span>
+</span><span data-line="256"><span class="sd">    *content* appears to travel the other way — ``drift_right`` ends with the</span>
+</span><span data-line="257"><span class="sd">    window further right, so the picture slides left across the frame. This is</span>
+</span><span data-line="258"><span class="sd">    the convention ``ken_burns_path(style="drift")`` and ``an``'s ``pan_left``</span>
+</span><span data-line="259"><span class="sd">    already use; the opposite reading is the one people reach for first, which</span>
+</span><span data-line="260"><span class="sd">    is why it is written down rather than inferred.</span>
+</span><span data-line="261">
+</span><span data-line="262"><span class="sd">    The travel is centred on the keep-region, so the subject is mid-frame at the</span>
+</span><span data-line="263"><span class="sd">    midpoint of the move rather than arriving or departing; the cross axis stays</span>
+</span><span data-line="264"><span class="sd">    locked to the keep-region, so a horizontal drift cannot slide off a face.</span>
+</span><span data-line="265"><span class="sd">    """</span>
+</span><span data-line="266">
+</span><span data-line="267">    <span class="k">def</span><span class="w"> </span><span class="nf">build</span><span class="p">(</span><span class="n">f</span><span class="p">:</span> <span class="n">_Frame</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BurnsPath</span><span class="p">:</span>
+</span><span data-line="268">        <span class="n">zoom</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">capped_zoom</span><span class="p">(),</span> <span class="n">_zoom_for_room</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">axis</span><span class="p">))</span>
+</span><span data-line="269">        <span class="n">window</span> <span class="o">=</span> <span class="n">keep_window</span><span class="p">(</span>
+</span><span data-line="270">            <span class="n">f</span><span class="o">.</span><span class="n">img_w</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">img_h</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="n">f</span><span class="o">.</span><span class="n">center</span><span class="p">,</span> <span class="n">zoom</span><span class="o">=</span><span class="n">zoom</span><span class="p">,</span> <span class="n">output_aspect</span><span class="o">=</span><span class="n">f</span><span class="o">.</span><span class="n">aspect</span>
+</span><span data-line="271">        <span class="p">)</span>
+</span><span data-line="272">        <span class="n">size</span> <span class="o">=</span> <span class="n">window</span><span class="o">.</span><span class="n">w</span> <span class="k">if</span> <span class="n">axis</span> <span class="o">==</span> <span class="s2">"x"</span> <span class="k">else</span> <span class="n">window</span><span class="o">.</span><span class="n">h</span>
+</span><span data-line="273">        <span class="n">base</span> <span class="o">=</span> <span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">center</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">axis</span> <span class="o">==</span> <span class="s2">"x"</span> <span class="k">else</span> <span class="n">f</span><span class="o">.</span><span class="n">center</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="n">size</span> <span class="o">/</span> <span class="mi">2</span>
+</span><span data-line="274">        <span class="n">lo</span><span class="p">,</span> <span class="n">hi</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">size</span><span class="p">)</span>
+</span><span data-line="275">        <span class="c1"># Up to half the room, but never more than DRIFT_SPAN of the frame, so</span>
+</span><span data-line="276">        <span class="c1"># a vertical and a horizontal drift read at the same speed on a picture</span>
+</span><span data-line="277">        <span class="c1"># whose two axes leave very different amounts of room.</span>
+</span><span data-line="278">        <span class="n">half</span> <span class="o">=</span> <span class="nb">min</span><span class="p">((</span><span class="n">hi</span> <span class="o">-</span> <span class="n">lo</span><span class="p">)</span> <span class="o">*</span> <span class="n">DRIFT_TRAVEL</span><span class="p">,</span> <span class="n">size</span> <span class="o">*</span> <span class="n">DRIFT_SPAN</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span>
+</span><span data-line="279">        <span class="c1"># Slide the whole travel interval inside the image rather than clamping</span>
+</span><span data-line="280">        <span class="c1"># each end: clamping ends independently collapses the travel to zero</span>
+</span><span data-line="281">        <span class="c1"># whenever the keep-region sits near an edge, which is a silent hold.</span>
+</span><span data-line="282">        <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">base</span> <span class="o">-</span> <span class="n">half</span><span class="p">,</span> <span class="n">base</span> <span class="o">+</span> <span class="n">half</span>
+</span><span data-line="283">        <span class="k">if</span> <span class="n">a</span> <span class="o">&lt;</span> <span class="n">lo</span><span class="p">:</span>
+</span><span data-line="284">            <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">lo</span><span class="p">,</span> <span class="n">lo</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">half</span>
+</span><span data-line="285">        <span class="k">elif</span> <span class="n">b</span> <span class="o">&gt;</span> <span class="n">hi</span><span class="p">:</span>
+</span><span data-line="286">            <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">hi</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">half</span><span class="p">,</span> <span class="n">hi</span>
+</span><span data-line="287">        <span class="n">first</span><span class="p">,</span> <span class="n">last</span> <span class="o">=</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="k">if</span> <span class="n">sign</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
+</span><span data-line="288">        <span class="k">if</span> <span class="n">axis</span> <span class="o">==</span> <span class="s2">"x"</span><span class="p">:</span>
+</span><span data-line="289">            <span class="n">start</span> <span class="o">=</span> <span class="n">Rect</span><span class="p">(</span><span class="n">first</span><span class="p">,</span> <span class="n">window</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">window</span><span class="o">.</span><span class="n">w</span><span class="p">,</span> <span class="n">window</span><span class="o">.</span><span class="n">h</span><span class="p">)</span>
+</span><span data-line="290">            <span class="n">end</span> <span class="o">=</span> <span class="n">Rect</span><span class="p">(</span><span class="n">last</span><span class="p">,</span> <span class="n">window</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">window</span><span class="o">.</span><span class="n">w</span><span class="p">,</span> <span class="n">window</span><span class="o">.</span><span class="n">h</span><span class="p">)</span>
+</span><span data-line="291">        <span class="k">else</span><span class="p">:</span>
+</span><span data-line="292">            <span class="n">start</span> <span class="o">=</span> <span class="n">Rect</span><span class="p">(</span><span class="n">window</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">first</span><span class="p">,</span> <span class="n">window</span><span class="o">.</span><span class="n">w</span><span class="p">,</span> <span class="n">window</span><span class="o">.</span><span class="n">h</span><span class="p">)</span>
+</span><span data-line="293">            <span class="n">end</span> <span class="o">=</span> <span class="n">Rect</span><span class="p">(</span><span class="n">window</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">last</span><span class="p">,</span> <span class="n">window</span><span class="o">.</span><span class="n">w</span><span class="p">,</span> <span class="n">window</span><span class="o">.</span><span class="n">h</span><span class="p">)</span>
+</span><span data-line="294">        <span class="k">return</span> <span class="n">BurnsPath</span><span class="o">.</span><span class="n">from_start_end</span><span class="p">(</span>
+</span><span data-line="295">            <span class="n">start</span><span class="o">.</span><span class="n">clamped</span><span class="p">(),</span> <span class="n">end</span><span class="o">.</span><span class="n">clamped</span><span class="p">(),</span> <span class="n">easing</span><span class="o">=</span><span class="n">f</span><span class="o">.</span><span class="n">easing</span><span class="p">,</span> <span class="n">output_aspect</span><span class="o">=</span><span class="n">f</span><span class="o">.</span><span class="n">aspect</span>
+</span><span data-line="296">        <span class="p">)</span>
+</span><span data-line="297">
+</span><span data-line="298">    <span class="k">return</span> <span class="n">build</span>
+</span><span data-line="299">
+</span><span data-line="300">
+</span><span data-line="301"><span class="k">def</span><span class="w"> </span><span class="nf">_zoom_for_room</span><span class="p">(</span><span class="n">f</span><span class="p">:</span> <span class="n">_Frame</span><span class="p">,</span> <span class="n">axis</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+</span><span data-line="302"><span class="w">    </span><span class="sd">"""The zoom at which the window leaves :data:`DRIFT_MIN_ROOM` to travel.</span>
+</span><span data-line="303">
+</span><span data-line="304"><span class="sd">    The window is ``min(m / z, 1)`` of the image on ``axis``, so the room is</span>
+</span><span data-line="305"><span class="sd">    ``1 - m / z`` and the zoom that buys ``r`` of room is ``m / (1 - r)``.</span>
+</span><span data-line="306"><span class="sd">    """</span>
+</span><span data-line="307">    <span class="n">wmax</span><span class="p">,</span> <span class="n">hmax</span> <span class="o">=</span> <span class="n">axis_maxima</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">img_w</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">img_h</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">aspect</span><span class="p">)</span>
+</span><span data-line="308">    <span class="n">m</span> <span class="o">=</span> <span class="n">wmax</span> <span class="k">if</span> <span class="n">axis</span> <span class="o">==</span> <span class="s2">"x"</span> <span class="k">else</span> <span class="n">hmax</span>
+</span><span data-line="309">    <span class="k">return</span> <span class="n">m</span> <span class="o">/</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">DRIFT_MIN_ROOM</span><span class="p">)</span>
+</span><span data-line="310">
+</span><span data-line="311">
+</span><span data-line="312"><span class="c1">#: The vocabulary, as ONE table. ``MOVES`` and :func:`move_kind` are read off</span>
+</span><span data-line="313"><span class="c1">#: it, so a UI that groups the directional moves separately from the static and</span>
+</span><span data-line="314"><span class="c1">#: automatic ones does not maintain a second list that can disagree with this</span>
+</span><span data-line="315"><span class="c1">#: one about what a valid move is.</span>
+</span><span data-line="316"><span class="c1">#:</span>
+</span><span data-line="317"><span class="c1">#: ``"auto"`` carries no builder: it is a *selector* over the others, resolved</span>
+</span><span data-line="318"><span class="c1">#: to a concrete name by :func:`choose_move` before any geometry is built.</span>
+</span><span data-line="319"><span class="n">_MOVES</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">_MoveSpec</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+</span><span data-line="320">    <span class="s2">"push_in"</span><span class="p">:</span> <span class="n">_MoveSpec</span><span class="p">(</span><span class="s2">"zoom"</span><span class="p">,</span> <span class="n">_zoom_move</span><span class="p">(</span><span class="s2">"in"</span><span class="p">)),</span>
+</span><span data-line="321">    <span class="s2">"pull_out"</span><span class="p">:</span> <span class="n">_MoveSpec</span><span class="p">(</span><span class="s2">"zoom"</span><span class="p">,</span> <span class="n">_zoom_move</span><span class="p">(</span><span class="s2">"out"</span><span class="p">)),</span>
+</span><span data-line="322">    <span class="s2">"drift_left"</span><span class="p">:</span> <span class="n">_MoveSpec</span><span class="p">(</span><span class="s2">"drift"</span><span class="p">,</span> <span class="n">_drift</span><span class="p">(</span><span class="s2">"x"</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">)),</span>
+</span><span data-line="323">    <span class="s2">"drift_right"</span><span class="p">:</span> <span class="n">_MoveSpec</span><span class="p">(</span><span class="s2">"drift"</span><span class="p">,</span> <span class="n">_drift</span><span class="p">(</span><span class="s2">"x"</span><span class="p">,</span> <span class="o">+</span><span class="mf">1.0</span><span class="p">)),</span>
+</span><span data-line="324">    <span class="s2">"drift_up"</span><span class="p">:</span> <span class="n">_MoveSpec</span><span class="p">(</span><span class="s2">"drift"</span><span class="p">,</span> <span class="n">_drift</span><span class="p">(</span><span class="s2">"y"</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">)),</span>
+</span><span data-line="325">    <span class="s2">"drift_down"</span><span class="p">:</span> <span class="n">_MoveSpec</span><span class="p">(</span><span class="s2">"drift"</span><span class="p">,</span> <span class="n">_drift</span><span class="p">(</span><span class="s2">"y"</span><span class="p">,</span> <span class="o">+</span><span class="mf">1.0</span><span class="p">)),</span>
+</span><span data-line="326">    <span class="s2">"hold"</span><span class="p">:</span> <span class="n">_MoveSpec</span><span class="p">(</span><span class="s2">"static"</span><span class="p">,</span> <span class="n">_static</span><span class="p">),</span>
+</span><span data-line="327">    <span class="s2">"auto"</span><span class="p">:</span> <span class="n">_MoveSpec</span><span class="p">(</span><span class="s2">"select"</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+</span><span data-line="328"><span class="p">}</span>
+</span><span data-line="329">
+</span><span data-line="330"><span class="c1">#: Every name a stored ``move`` field may hold — one vocabulary, because it is</span>
+</span><span data-line="331"><span class="c1">#: one field. ``"hold"`` and ``"auto"`` sit beside the directional moves for</span>
+</span><span data-line="332"><span class="c1">#: that reason: splitting them into separate constants would make a consumer</span>
+</span><span data-line="333"><span class="c1">#: union two tuples to validate one field. They differ in *kind*, not in</span>
+</span><span data-line="334"><span class="c1">#: membership, and :func:`move_kind` is where that difference is read.</span>
+</span><span data-line="335"><span class="c1">#:</span>
+</span><span data-line="336"><span class="c1">#: **burns owns this vocabulary.** A consumer that needs to validate its own</span>
+</span><span data-line="337"><span class="c1">#: stored field before a render (rather than discovering a typo five minutes</span>
+</span><span data-line="338"><span class="c1">#: in) will mirror it; that mirror must be pinned equal to this tuple by a test</span>
+</span><span data-line="339"><span class="c1">#: that *fails* when burns is absent rather than skipping, or the two drift</span>
+</span><span data-line="340"><span class="c1">#: silently. burns is deliberately strict about the spelling — no case folding</span>
+</span><span data-line="341"><span class="c1">#: and no whitespace stripping — so a mirror written as a plain membership test</span>
+</span><span data-line="342"><span class="c1">#: agrees with it exactly.</span>
+</span><span data-line="343"><span class="n">MOVES</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">_MOVES</span><span class="p">)</span>
+</span><span data-line="344">
+</span><span data-line="345"><span class="c1">#: How often ``"auto"`` picks each move, as integer weights. Pushes and pulls</span>
+</span><span data-line="346"><span class="c1">#: dominate because a commentary film is mostly faces and documents, where a</span>
+</span><span data-line="347"><span class="c1">#: drift wanders off the thing being talked about; the drifts are there so a</span>
+</span><span data-line="348"><span class="c1">#: long sequence does not read as one move repeated.</span>
+</span><span data-line="349"><span class="c1">#: Read-only on purpose. The pool :func:`choose_move` draws from is built once</span>
+</span><span data-line="350"><span class="c1">#: at import, so assigning into a plain dict here would change the documented</span>
+</span><span data-line="351"><span class="c1">#: weights and change nothing about the moves — a silent no-op in a name that</span>
+</span><span data-line="352"><span class="c1">#: is in ``__all__``. Retuning these is a burns change that bumps</span>
+</span><span data-line="353"><span class="c1">#: :data:`RESOLVER_IMPL_VERSION`, not something a consumer does at runtime.</span>
+</span><span data-line="354"><span class="n">AUTO_WEIGHTS</span><span class="p">:</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="n">MappingProxyType</span><span class="p">(</span>
+</span><span data-line="355">    <span class="p">{</span>
+</span><span data-line="356">        <span class="s2">"push_in"</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+</span><span data-line="357">        <span class="s2">"pull_out"</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+</span><span data-line="358">        <span class="s2">"drift_left"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+</span><span data-line="359">        <span class="s2">"drift_right"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+</span><span data-line="360">        <span class="s2">"drift_up"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+</span><span data-line="361">        <span class="s2">"drift_down"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+</span><span data-line="362">    <span class="p">}</span>
+</span><span data-line="363"><span class="p">)</span>
+</span><span data-line="364">
+</span><span data-line="365"><span class="n">_AUTO_POOL</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+</span><span data-line="366">    <span class="n">name</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">weight</span> <span class="ow">in</span> <span class="n">AUTO_WEIGHTS</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">weight</span><span class="p">)</span>
+</span><span data-line="367"><span class="p">)</span>
+</span><span data-line="368">
+</span><span data-line="369">
+<div class="viewcode-block" id="move_kind">
+<a class="viewcode-back" href="../../_autosummary/burns.moves.html#burns.move_kind">[docs]</a>
+</span><span data-line="370"><span class="k">def</span><span class="w"> </span><span class="nf">move_kind</span><span class="p">(</span><span class="n">move</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span><span data-line="371"><span class="w">    </span><span class="sd">"""How ``move`` is grouped: ``"zoom"``, ``"drift"``, ``"static"``, ``"select"``.</span>
+</span><span data-line="372">
+</span><span data-line="373"><span class="sd">    For a UI that wants a compass of directions separately from the rest, read</span>
+</span><span data-line="374"><span class="sd">    off the same table :func:`resolve_move` dispatches on.</span>
+</span><span data-line="375">
+</span><span data-line="376"><span class="sd">    Examples:</span>
+</span><span data-line="377"><span class="sd">        &gt;&gt;&gt; move_kind("drift_left"), move_kind("hold"), move_kind("auto")</span>
+</span><span data-line="378"><span class="sd">        ('drift', 'static', 'select')</span>
+</span><span data-line="379"><span class="sd">        &gt;&gt;&gt; sorted(m for m in MOVES if move_kind(m) == 'drift')</span>
+</span><span data-line="380"><span class="sd">        ['drift_down', 'drift_left', 'drift_right', 'drift_up']</span>
+</span><span data-line="381"><span class="sd">    """</span>
+</span><span data-line="382">    <span class="n">spec</span> <span class="o">=</span> <span class="n">_MOVES</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">move</span><span class="p">)</span>
+</span><span data-line="383">    <span class="k">if</span> <span class="n">spec</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="384">        <span class="k">raise</span> <span class="n">MoveError</span><span class="p">(</span><span class="n">_unknown_move_message</span><span class="p">(</span><span class="n">move</span><span class="p">))</span>
+</span><span data-line="385">    <span class="k">return</span> <span class="n">spec</span><span class="o">.</span><span class="n">kind</span></div>
+
+</span><span data-line="386">
+</span><span data-line="387">
+</span><span data-line="388"><span class="c1"># --------------------------------------------------------------------------</span>
+</span><span data-line="389"><span class="c1"># The seed</span>
+</span><span data-line="390"><span class="c1"># --------------------------------------------------------------------------</span>
+</span><span data-line="391">
+</span><span data-line="392">
+</span><span data-line="393"><span class="k">def</span><span class="w"> </span><span class="nf">_mix</span><span class="p">(</span><span class="n">seed</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+</span><span data-line="394"><span class="w">    </span><span class="sd">"""A stable 64-bit scramble of ``seed`` (splitmix64's finalizer).</span>
+</span><span data-line="395">
+</span><span data-line="396"><span class="sd">    Python's ``hash()`` cannot be the basis of a *persisted* choice: it is</span>
+</span><span data-line="397"><span class="sd">    salted for strings and unspecified for large integers, so the move a stored</span>
+</span><span data-line="398"><span class="sd">    seed resolves to could differ between processes. This is arithmetic, so it</span>
+</span><span data-line="399"><span class="sd">    does not.</span>
+</span><span data-line="400">
+</span><span data-line="401"><span class="sd">    Examples:</span>
+</span><span data-line="402"><span class="sd">        &gt;&gt;&gt; _mix(0) == _mix(0)</span>
+</span><span data-line="403"><span class="sd">        True</span>
+</span><span data-line="404"><span class="sd">        &gt;&gt;&gt; _mix(0) != _mix(1)</span>
+</span><span data-line="405"><span class="sd">        True</span>
+</span><span data-line="406"><span class="sd">    """</span>
+</span><span data-line="407">    <span class="n">mask</span> <span class="o">=</span> <span class="mh">0xFFFFFFFFFFFFFFFF</span>
+</span><span data-line="408">    <span class="n">x</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span> <span class="o">+</span> <span class="mh">0x9E3779B97F4A7C15</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">mask</span>
+</span><span data-line="409">    <span class="n">x</span> <span class="o">=</span> <span class="p">((</span><span class="n">x</span> <span class="o">^</span> <span class="p">(</span><span class="n">x</span> <span class="o">&gt;&gt;</span> <span class="mi">30</span><span class="p">))</span> <span class="o">*</span> <span class="mh">0xBF58476D1CE4E5B9</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">mask</span>
+</span><span data-line="410">    <span class="n">x</span> <span class="o">=</span> <span class="p">((</span><span class="n">x</span> <span class="o">^</span> <span class="p">(</span><span class="n">x</span> <span class="o">&gt;&gt;</span> <span class="mi">27</span><span class="p">))</span> <span class="o">*</span> <span class="mh">0x94D049BB133111EB</span><span class="p">)</span> <span class="o">&amp;</span> <span class="n">mask</span>
+</span><span data-line="411">    <span class="k">return</span> <span class="n">x</span> <span class="o">^</span> <span class="p">(</span><span class="n">x</span> <span class="o">&gt;&gt;</span> <span class="mi">31</span><span class="p">)</span>
+</span><span data-line="412">
+</span><span data-line="413">
+<div class="viewcode-block" id="choose_move">
+<a class="viewcode-back" href="../../_autosummary/burns.moves.html#burns.choose_move">[docs]</a>
+</span><span data-line="414"><span class="k">def</span><span class="w"> </span><span class="nf">choose_move</span><span class="p">(</span><span class="n">seed</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span><span data-line="415"><span class="w">    </span><span class="sd">"""Which concrete move ``"auto"`` resolves to for ``seed``.</span>
+</span><span data-line="416">
+</span><span data-line="417"><span class="sd">    Public because "auto" is a decision a person may want to *see* (a UI</span>
+</span><span data-line="418"><span class="sd">    showing ``auto → drift_left``) and to *pin* (liking what auto chose and</span>
+</span><span data-line="419"><span class="sd">    storing that name instead, so it survives a change to the weights).</span>
+</span><span data-line="420">
+</span><span data-line="421"><span class="sd">    A pure function of ``seed`` alone — not of the image, and not of any</span>
+</span><span data-line="422"><span class="sd">    position in a sequence. That is what makes a panel's move survive both a</span>
+</span><span data-line="423"><span class="sd">    reorder and a swapped still.</span>
+</span><span data-line="424">
+</span><span data-line="425"><span class="sd">    Examples:</span>
+</span><span data-line="426"><span class="sd">        &gt;&gt;&gt; choose_move(7) == choose_move(7)</span>
+</span><span data-line="427"><span class="sd">        True</span>
+</span><span data-line="428"><span class="sd">        &gt;&gt;&gt; choose_move(7) in MOVES and choose_move(7) != 'auto'</span>
+</span><span data-line="429"><span class="sd">        True</span>
+</span><span data-line="430"><span class="sd">        &gt;&gt;&gt; len({choose_move(s) for s in range(60)}) &gt; 1   # not one move forever</span>
+</span><span data-line="431"><span class="sd">        True</span>
+</span><span data-line="432"><span class="sd">    """</span>
+</span><span data-line="433">    <span class="k">return</span> <span class="n">_AUTO_POOL</span><span class="p">[</span><span class="n">_mix</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span> <span class="o">%</span> <span class="nb">len</span><span class="p">(</span><span class="n">_AUTO_POOL</span><span class="p">)]</span></div>
+
+</span><span data-line="434">
+</span><span data-line="435">
+</span><span data-line="436"><span class="c1"># --------------------------------------------------------------------------</span>
+</span><span data-line="437"><span class="c1"># The resolver</span>
+</span><span data-line="438"><span class="c1"># --------------------------------------------------------------------------</span>
+</span><span data-line="439">
+</span><span data-line="440"><span class="c1">#: What ``move`` accepts: a name, a built path, or a ``to_dict()`` payload.</span>
+</span><span data-line="441"><span class="n">MoveLike</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">BurnsPath</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span>
+</span><span data-line="442">
+</span><span data-line="443"><span class="c1">#: What ``focus`` accepts: a :class:`~burns.rect.Rect`, a 4-tuple, or anything</span>
+</span><span data-line="444"><span class="c1">#: with ``.x/.y/.w/.h``. burns does not define a competing rectangle type and</span>
+</span><span data-line="445"><span class="c1">#: does not require consumers to import its own — a pydantic model with those</span>
+</span><span data-line="446"><span class="c1">#: four fields is a focus box.</span>
+</span><span data-line="447"><span class="n">FocusLike</span> <span class="o">=</span> <span class="n">Any</span>
+</span><span data-line="448">
+</span><span data-line="449">
+<div class="viewcode-block" id="resolve_move">
+<a class="viewcode-back" href="../../_autosummary/burns.moves.html#burns.resolve_move">[docs]</a>
+</span><span data-line="450"><span class="k">def</span><span class="w"> </span><span class="nf">resolve_move</span><span class="p">(</span>
+</span><span data-line="451">    <span class="n">move</span><span class="p">:</span> <span class="n">MoveLike</span><span class="p">,</span>
+</span><span data-line="452">    <span class="o">*</span><span class="p">,</span>
+</span><span data-line="453">    <span class="n">image</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+</span><span data-line="454">    <span class="n">aspect</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
+</span><span data-line="455">    <span class="n">zoom</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">DFLT_ZOOM</span><span class="p">,</span>
+</span><span data-line="456">    <span class="n">focus</span><span class="p">:</span> <span class="n">FocusLike</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+</span><span data-line="457">    <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+</span><span data-line="458">    <span class="n">easing</span><span class="p">:</span> <span class="n">EasingLike</span> <span class="o">=</span> <span class="n">DFLT_EASING</span><span class="p">,</span>
+</span><span data-line="459">    <span class="n">on_aspect_mismatch</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"raise"</span><span class="p">,</span>
+</span><span data-line="460"><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BurnsPath</span><span class="p">:</span>
+</span><span data-line="461"><span class="w">    </span><span class="sd">"""Resolve an authored camera intent against ``image`` into a path.</span>
+</span><span data-line="462">
+</span><span data-line="463"><span class="sd">    Args:</span>
+</span><span data-line="464"><span class="sd">        move: a name from :data:`MOVES`, or an explicit</span>
+</span><span data-line="465"><span class="sd">            :class:`~burns.path.BurnsPath` / its ``to_dict()`` payload. The two</span>
+</span><span data-line="466"><span class="sd">            are the two front doors on this one path: a stored panel that</span>
+</span><span data-line="467"><span class="sd">            carries both a named move and a hand-corrected override passes the</span>
+</span><span data-line="468"><span class="sd">            override here and the choice is made in one place.</span>
+</span><span data-line="469"><span class="sd">        image: the still the move is framed against — a path, ``PIL.Image`` or</span>
+</span><span data-line="470"><span class="sd">            ndarray. **Required, and read every time**: the framing depends on</span>
+</span><span data-line="471"><span class="sd">            what is in the picture, so swapping the still must re-frame. Do not</span>
+</span><span data-line="472"><span class="sd">            cache the returned path against the intent.</span>
+</span><span data-line="473"><span class="sd">        aspect: the delivered ``width / height``. ``None`` means "match the</span>
+</span><span data-line="474"><span class="sd">            image". Required rather than defaulted, because a cut has a</span>
+</span><span data-line="475"><span class="sd">            delivery size and quietly framing for the image's aspect instead is</span>
+</span><span data-line="476"><span class="sd">            a cover-crop nobody asked for.</span>
+</span><span data-line="477"><span class="sd">        zoom: the end magnification. A pure function of the arguments — never</span>
+</span><span data-line="478"><span class="sd">            jittered by ``seed`` or by a position — but **bounded at both</span>
+</span><span data-line="479"><span class="sd">            ends**, so the number you pass is a request:</span>
+</span><span data-line="480">
+</span><span data-line="481"><span class="sd">            * capped so the padded keep-region stays framed. A subject filling</span>
+</span><span data-line="482"><span class="sd">              the frame therefore yields a nearly static move; the fix is a</span>
+</span><span data-line="483"><span class="sd">              tighter ``focus``, not a bigger ``zoom``.</span>
+</span><span data-line="484"><span class="sd">            * floored. ``push_in`` / ``pull_out`` inherit</span>
+</span><span data-line="485"><span class="sd">              ``content_aware_path``'s ``min_zoom + 0.02`` (about 1.07), so a</span>
+</span><span data-line="486"><span class="sd">              barely-there 1.02 push renders as 1.07; ``hold`` has no such floor</span>
+</span><span data-line="487"><span class="sd">              and honours 1.02 exactly. A drift is floored to whatever leaves</span>
+</span><span data-line="488"><span class="sd">              :data:`DRIFT_MIN_ROOM` of travel.</span>
+</span><span data-line="489"><span class="sd">        focus: an explicit keep-region overriding the saliency estimate. A</span>
+</span><span data-line="490"><span class="sd">            :class:`~burns.rect.Rect`, a normalized ``(x, y, w, h)`` tuple, or</span>
+</span><span data-line="491"><span class="sd">            any object with ``.x/.y/.w/.h``. When given,</span>
+</span><span data-line="492"><span class="sd">            :func:`~burns.content.salient_box` is not called at all.</span>
+</span><span data-line="493"><span class="sd">        seed: chooses which move ``"auto"`` becomes, and nothing else. Mint it</span>
+</span><span data-line="494"><span class="sd">            once per panel and store it; never derive it from a position, which</span>
+</span><span data-line="495"><span class="sd">            is the defect this parameter exists to remove.</span>
+</span><span data-line="496"><span class="sd">        easing: CSS timing function or callable. A callable is fine here but</span>
+</span><span data-line="497"><span class="sd">            cannot be serialized — see :meth:`BurnsPath.to_dict`. Applies to a</span>
+</span><span data-line="498"><span class="sd">            named move; an explicit path carries its own.</span>
+</span><span data-line="499"><span class="sd">        on_aspect_mismatch: what to do when an explicit path was authored for a</span>
+</span><span data-line="500"><span class="sd">            different ``output_aspect`` than the one being rendered.</span>
+</span><span data-line="501"><span class="sd">            ``"raise"`` (default) refuses, because honouring the stored</span>
+</span><span data-line="502"><span class="sd">            rectangles at another shape cover-crops a framing somebody chose by</span>
+</span><span data-line="503"><span class="sd">            hand. ``"refit"`` rebuilds each keyframe at the new aspect,</span>
+</span><span data-line="504"><span class="sd">            **keeping what the author actually chose** — where the camera looks</span>
+</span><span data-line="505"><span class="sd">            at each instant, and how far in it is — and changing only the window</span>
+</span><span data-line="506"><span class="sd">            shape. A cut in a second aspect is a real workflow (a vertical</span>
+</span><span data-line="507"><span class="sd">            edit of a landscape film), and a panel carries *one* path, not one</span>
+</span><span data-line="508"><span class="sd">            per delivery, so "author a second path" is not a remedy a caller</span>
+</span><span data-line="509"><span class="sd">            can take; ``"refit"`` is.</span>
+</span><span data-line="510">
+</span><span data-line="511"><span class="sd">    Returns:</span>
+</span><span data-line="512"><span class="sd">        A :class:`~burns.path.BurnsPath`. Duration is not part of it; pass that</span>
+</span><span data-line="513"><span class="sd">        to the renderer.</span>
+</span><span data-line="514">
+</span><span data-line="515"><span class="sd">    Raises:</span>
+</span><span data-line="516"><span class="sd">        MoveError: an unknown move name, a malformed ``focus``, a non-positive</span>
+</span><span data-line="517"><span class="sd">            ``zoom`` or ``aspect``, or — under the default</span>
+</span><span data-line="518"><span class="sd">            ``on_aspect_mismatch="raise"`` — an explicit path whose</span>
+</span><span data-line="519"><span class="sd">            ``output_aspect`` contradicts ``aspect``.</span>
+</span><span data-line="520">
+</span><span data-line="521"><span class="sd">    Note:</span>
+</span><span data-line="522"><span class="sd">        ``image`` is opened for every *named* move. For an explicit path it is</span>
+</span><span data-line="523"><span class="sd">        read only when refitting, since resolved geometry needs no picture.</span>
+</span><span data-line="524">
+</span><span data-line="525"><span class="sd">    Examples:</span>
+</span><span data-line="526"><span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+</span><span data-line="527"><span class="sd">        &gt;&gt;&gt; img = np.zeros((600, 800, 3), dtype='uint8'); img[300:460, 500:700] = 230</span>
+</span><span data-line="528">
+</span><span data-line="529"><span class="sd">        A named move is a decision, so the seed does not touch it:</span>
+</span><span data-line="530">
+</span><span data-line="531"><span class="sd">        &gt;&gt;&gt; resolve_move("push_in", image=img, aspect=16 / 9, seed=1) == \\</span>
+</span><span data-line="532"><span class="sd">        ...     resolve_move("push_in", image=img, aspect=16 / 9, seed=999)</span>
+</span><span data-line="533"><span class="sd">        True</span>
+</span><span data-line="534">
+</span><span data-line="535"><span class="sd">        ``"auto"`` is where the seed does its one job:</span>
+</span><span data-line="536">
+</span><span data-line="537"><span class="sd">        &gt;&gt;&gt; a = resolve_move("auto", image=img, aspect=16 / 9, seed=3)</span>
+</span><span data-line="538"><span class="sd">        &gt;&gt;&gt; a == resolve_move("auto", image=img, aspect=16 / 9, seed=3)</span>
+</span><span data-line="539"><span class="sd">        True</span>
+</span><span data-line="540">
+</span><span data-line="541"><span class="sd">        A drift travels — and ``drift_right`` ends further right:</span>
+</span><span data-line="542">
+</span><span data-line="543"><span class="sd">        &gt;&gt;&gt; d = resolve_move("drift_right", image=img, aspect=16 / 9)</span>
+</span><span data-line="544"><span class="sd">        &gt;&gt;&gt; d.evaluate(1.0).x &gt; d.evaluate(0.0).x</span>
+</span><span data-line="545"><span class="sd">        True</span>
+</span><span data-line="546">
+</span><span data-line="547"><span class="sd">        An explicit path is the other front door, returned as authored:</span>
+</span><span data-line="548">
+</span><span data-line="549"><span class="sd">        &gt;&gt;&gt; from burns import BurnsPath, Rect</span>
+</span><span data-line="550"><span class="sd">        &gt;&gt;&gt; hand = BurnsPath.from_start_end(</span>
+</span><span data-line="551"><span class="sd">        ...     Rect(0, 0, 1, 1), Rect(0.1, 0.1, 0.6, 0.6), output_aspect=16 / 9</span>
+</span><span data-line="552"><span class="sd">        ... )</span>
+</span><span data-line="553"><span class="sd">        &gt;&gt;&gt; resolve_move(hand.to_dict(), image=img, aspect=16 / 9) == hand</span>
+</span><span data-line="554"><span class="sd">        True</span>
+</span><span data-line="555">
+</span><span data-line="556"><span class="sd">        Rendering it at another delivery refuses by default, and ``"refit"``</span>
+</span><span data-line="557"><span class="sd">        keeps the authored look while changing the window shape:</span>
+</span><span data-line="558">
+</span><span data-line="559"><span class="sd">        &gt;&gt;&gt; resolve_move(hand, image=img, aspect=9 / 16)</span>
+</span><span data-line="560"><span class="sd">        Traceback (most recent call last):</span>
+</span><span data-line="561"><span class="sd">            ...</span>
+</span><span data-line="562"><span class="sd">        burns.moves.MoveError: ...</span>
+</span><span data-line="563"><span class="sd">        &gt;&gt;&gt; v = resolve_move(hand, image=img, aspect=9 / 16,</span>
+</span><span data-line="564"><span class="sd">        ...                  on_aspect_mismatch="refit")</span>
+</span><span data-line="565"><span class="sd">        &gt;&gt;&gt; v.output_aspect == 9 / 16</span>
+</span><span data-line="566"><span class="sd">        True</span>
+</span><span data-line="567"><span class="sd">        &gt;&gt;&gt; before = [round(c, 4) for c in hand.evaluate(1.0).center]</span>
+</span><span data-line="568"><span class="sd">        &gt;&gt;&gt; after = [round(c, 4) for c in v.evaluate(1.0).center]</span>
+</span><span data-line="569"><span class="sd">        &gt;&gt;&gt; before == after          # the author's framing, at the new shape</span>
+</span><span data-line="570"><span class="sd">        True</span>
+</span><span data-line="571"><span class="sd">    """</span>
+</span><span data-line="572">    <span class="n">aspect</span> <span class="o">=</span> <span class="n">_checked_aspect</span><span class="p">(</span><span class="n">aspect</span><span class="p">)</span>
+</span><span data-line="573">    <span class="k">if</span> <span class="n">on_aspect_mismatch</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">_ASPECT_MISMATCH_ACTIONS</span><span class="p">:</span>
+</span><span data-line="574">        <span class="k">raise</span> <span class="n">MoveError</span><span class="p">(</span>
+</span><span data-line="575">            <span class="sa">f</span><span class="s2">"on_aspect_mismatch must be one of "</span>
+</span><span data-line="576">            <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">_ASPECT_MISMATCH_ACTIONS</span><span class="p">)</span><span class="si">}</span><span class="s2">, got </span><span class="si">{</span><span class="n">on_aspect_mismatch</span><span class="si">!r}</span><span class="s2">"</span>
+</span><span data-line="577">        <span class="p">)</span>
+</span><span data-line="578">
+</span><span data-line="579">    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">move</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
+</span><span data-line="580">        <span class="k">try</span><span class="p">:</span>
+</span><span data-line="581">            <span class="n">move</span> <span class="o">=</span> <span class="n">BurnsPath</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">move</span><span class="p">))</span>
+</span><span data-line="582">        <span class="k">except</span> <span class="p">(</span><span class="ne">KeyError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+</span><span data-line="583">            <span class="k">raise</span> <span class="n">MoveError</span><span class="p">(</span>
+</span><span data-line="584">                <span class="sa">f</span><span class="s2">"a mapping passed as `move` is read as a BurnsPath.to_dict() "</span>
+</span><span data-line="585">                <span class="sa">f</span><span class="s2">"payload and this one is not well-formed (</span><span class="si">{</span><span class="n">e</span><span class="si">!r}</span><span class="s2">). A move name "</span>
+</span><span data-line="586">                <span class="sa">f</span><span class="s2">"goes in as a string, one of </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">MOVES</span><span class="p">)</span><span class="si">}</span><span class="s2">."</span>
+</span><span data-line="587">            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+</span><span data-line="588">    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">move</span><span class="p">,</span> <span class="n">BurnsPath</span><span class="p">):</span>
+</span><span data-line="589">        <span class="k">return</span> <span class="n">_adopt</span><span class="p">(</span><span class="n">move</span><span class="p">,</span> <span class="n">aspect</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="n">image</span><span class="p">,</span> <span class="n">on_mismatch</span><span class="o">=</span><span class="n">on_aspect_mismatch</span><span class="p">)</span>
+</span><span data-line="590">    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">move</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+</span><span data-line="591">        <span class="k">raise</span> <span class="n">MoveError</span><span class="p">(</span><span class="n">_unknown_move_message</span><span class="p">(</span><span class="n">move</span><span class="p">))</span>
+</span><span data-line="592">
+</span><span data-line="593">    <span class="c1"># No `.strip()`: leniency here is invisible divergence. A consumer that</span>
+</span><span data-line="594">    <span class="c1"># mirrors MOVES to validate its own field (braidio's panel body does)</span>
+</span><span data-line="595">    <span class="c1"># rejects " push_in " while burns would accept it, so the same stored</span>
+</span><span data-line="596">    <span class="c1"># value is valid in one package and not the other.</span>
+</span><span data-line="597">    <span class="n">name</span> <span class="o">=</span> <span class="n">move</span>
+</span><span data-line="598">    <span class="n">spec</span> <span class="o">=</span> <span class="n">_MOVES</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+</span><span data-line="599">    <span class="k">if</span> <span class="n">spec</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="600">        <span class="k">raise</span> <span class="n">MoveError</span><span class="p">(</span><span class="n">_unknown_move_message</span><span class="p">(</span><span class="n">move</span><span class="p">))</span>
+</span><span data-line="601">    <span class="k">if</span> <span class="n">spec</span><span class="o">.</span><span class="n">kind</span> <span class="o">==</span> <span class="s2">"select"</span><span class="p">:</span>
+</span><span data-line="602">        <span class="n">name</span> <span class="o">=</span> <span class="n">choose_move</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+</span><span data-line="603">        <span class="n">spec</span> <span class="o">=</span> <span class="n">_MOVES</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+</span><span data-line="604">
+</span><span data-line="605">    <span class="n">img</span> <span class="o">=</span> <span class="n">as_pil</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+</span><span data-line="606">    <span class="n">img_w</span><span class="p">,</span> <span class="n">img_h</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">size</span>
+</span><span data-line="607">    <span class="n">keep</span> <span class="o">=</span> <span class="n">_focus_box</span><span class="p">(</span><span class="n">focus</span><span class="p">)</span> <span class="k">if</span> <span class="n">focus</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">salient_box</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+</span><span data-line="608">    <span class="k">return</span> <span class="n">spec</span><span class="o">.</span><span class="n">build</span><span class="p">(</span>
+</span><span data-line="609">        <span class="n">_Frame</span><span class="p">(</span>
+</span><span data-line="610">            <span class="n">img_w</span><span class="o">=</span><span class="n">img_w</span><span class="p">,</span>
+</span><span data-line="611">            <span class="n">img_h</span><span class="o">=</span><span class="n">img_h</span><span class="p">,</span>
+</span><span data-line="612">            <span class="n">keep</span><span class="o">=</span><span class="n">keep</span><span class="p">,</span>
+</span><span data-line="613">            <span class="n">zoom</span><span class="o">=</span><span class="n">_checked_zoom</span><span class="p">(</span><span class="n">zoom</span><span class="p">),</span>
+</span><span data-line="614">            <span class="n">aspect</span><span class="o">=</span><span class="n">aspect</span><span class="p">,</span>
+</span><span data-line="615">            <span class="n">easing</span><span class="o">=</span><span class="n">easing</span><span class="p">,</span>
+</span><span data-line="616">        <span class="p">)</span>
+</span><span data-line="617">    <span class="p">)</span></div>
+
+</span><span data-line="618">
+</span><span data-line="619">
+</span><span data-line="620"><span class="c1">#: What ``on_aspect_mismatch`` accepts. A tuple rather than an enum because it</span>
+</span><span data-line="621"><span class="c1">#: crosses the wire as a plain string from whatever surface the caller exposes.</span>
+</span><span data-line="622"><span class="n">_ASPECT_MISMATCH_ACTIONS</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="s2">"raise"</span><span class="p">,</span> <span class="s2">"refit"</span><span class="p">)</span>
+</span><span data-line="623">
+</span><span data-line="624">
+</span><span data-line="625"><span class="k">def</span><span class="w"> </span><span class="nf">_checked_aspect</span><span class="p">(</span><span class="n">aspect</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="kc">None</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+</span><span data-line="626"><span class="w">    </span><span class="sd">"""``aspect`` as a positive float, or ``None``, or a refusal.</span>
+</span><span data-line="627">
+</span><span data-line="628"><span class="sd">    ``0.0`` and a negative are refused rather than passed through. Zero is</span>
+</span><span data-line="629"><span class="sd">    falsy, so it would reach :func:`~burns.content.axis_maxima` and quietly mean</span>
+</span><span data-line="630"><span class="sd">    "match the image" — exactly the cover-crop-nobody-asked-for this argument is</span>
+</span><span data-line="631"><span class="sd">    required in order to prevent, arriving as a plausible ``width / height``</span>
+</span><span data-line="632"><span class="sd">    from a body whose width was never filled in. A negative produces a</span>
+</span><span data-line="633"><span class="sd">    negative-width window that still passes ``Rect.is_contained()`` and reaches</span>
+</span><span data-line="634"><span class="sd">    the renderer. :meth:`Rect.from_center_zoom` already refuses a non-positive</span>
+</span><span data-line="635"><span class="sd">    zoom; this is the same rule at the new front door.</span>
+</span><span data-line="636"><span class="sd">    """</span>
+</span><span data-line="637">    <span class="k">if</span> <span class="n">aspect</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="638">        <span class="k">return</span> <span class="kc">None</span>
+</span><span data-line="639">    <span class="k">try</span><span class="p">:</span>
+</span><span data-line="640">        <span class="n">value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">aspect</span><span class="p">)</span>
+</span><span data-line="641">    <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+</span><span data-line="642">        <span class="k">raise</span> <span class="n">MoveError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"aspect must be a number or None, got </span><span class="si">{</span><span class="n">aspect</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+</span><span data-line="643">    <span class="k">if</span> <span class="ow">not</span> <span class="n">value</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">value</span> <span class="o">!=</span> <span class="n">value</span> <span class="ow">or</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="s2">"inf"</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="s2">"-inf"</span><span class="p">)):</span>
+</span><span data-line="644">        <span class="k">raise</span> <span class="n">MoveError</span><span class="p">(</span>
+</span><span data-line="645">            <span class="sa">f</span><span class="s2">"aspect must be a positive, finite width/height ratio, or None to "</span>
+</span><span data-line="646">            <span class="sa">f</span><span class="s2">"match the image — got </span><span class="si">{</span><span class="n">aspect</span><span class="si">!r}</span><span class="s2">. A 0 here would silently mean "</span>
+</span><span data-line="647">            <span class="s2">"'match the image', which is the cover-crop this argument exists to "</span>
+</span><span data-line="648">            <span class="s2">"make impossible."</span>
+</span><span data-line="649">        <span class="p">)</span>
+</span><span data-line="650">    <span class="k">return</span> <span class="n">value</span>
+</span><span data-line="651">
+</span><span data-line="652">
+</span><span data-line="653"><span class="k">def</span><span class="w"> </span><span class="nf">_checked_zoom</span><span class="p">(</span><span class="n">zoom</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+</span><span data-line="654"><span class="w">    </span><span class="sd">"""``zoom`` as a positive float, or a refusal (as ``Rect.from_center_zoom``)."""</span>
+</span><span data-line="655">    <span class="k">try</span><span class="p">:</span>
+</span><span data-line="656">        <span class="n">value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">zoom</span><span class="p">)</span>
+</span><span data-line="657">    <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+</span><span data-line="658">        <span class="k">raise</span> <span class="n">MoveError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"zoom must be a number, got </span><span class="si">{</span><span class="n">zoom</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+</span><span data-line="659">    <span class="k">if</span> <span class="ow">not</span> <span class="n">value</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">value</span> <span class="o">!=</span> <span class="n">value</span> <span class="ow">or</span> <span class="n">value</span> <span class="o">==</span> <span class="nb">float</span><span class="p">(</span><span class="s2">"inf"</span><span class="p">):</span>
+</span><span data-line="660">        <span class="k">raise</span> <span class="n">MoveError</span><span class="p">(</span>
+</span><span data-line="661">            <span class="sa">f</span><span class="s2">"zoom must be a positive, finite magnification (1.0 = the whole "</span>
+</span><span data-line="662">            <span class="sa">f</span><span class="s2">"frame), got </span><span class="si">{</span><span class="n">zoom</span><span class="si">!r}</span><span class="s2">"</span>
+</span><span data-line="663">        <span class="p">)</span>
+</span><span data-line="664">    <span class="k">return</span> <span class="n">value</span>
+</span><span data-line="665">
+</span><span data-line="666">
+</span><span data-line="667"><span class="k">def</span><span class="w"> </span><span class="nf">_aspects_agree</span><span class="p">(</span><span class="n">stored</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">aspect</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="kc">None</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+</span><span data-line="668"><span class="w">    </span><span class="sd">"""Whether two aspect ratios are the same shape up to float noise."""</span>
+</span><span data-line="669">    <span class="k">if</span> <span class="n">aspect</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span data-line="670">        <span class="k">return</span> <span class="kc">False</span>
+</span><span data-line="671">    <span class="k">return</span> <span class="n">math</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">stored</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">aspect</span><span class="p">),</span> <span class="n">rel_tol</span><span class="o">=</span><span class="n">_ASPECT_REL_TOL</span><span class="p">)</span>
+</span><span data-line="672">
+</span><span data-line="673">
+</span><span data-line="674"><span class="k">def</span><span class="w"> </span><span class="nf">_adopt</span><span class="p">(</span>
+</span><span data-line="675">    <span class="n">path</span><span class="p">:</span> <span class="n">BurnsPath</span><span class="p">,</span>
+</span><span data-line="676">    <span class="n">aspect</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="kc">None</span><span class="p">],</span>
+</span><span data-line="677">    <span class="o">*</span><span class="p">,</span>
+</span><span data-line="678">    <span class="n">image</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+</span><span data-line="679">    <span class="n">on_mismatch</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+</span><span data-line="680"><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BurnsPath</span><span class="p">:</span>
+</span><span data-line="681"><span class="w">    </span><span class="sd">"""An explicit path, reconciled with the delivery aspect.</span>
+</span><span data-line="682">
+</span><span data-line="683"><span class="sd">    A hand-corrected path is *resolved geometry*: its rectangles were drawn for</span>
+</span><span data-line="684"><span class="sd">    one output shape. Silently honouring them at another cover-crops somebody's</span>
+</span><span data-line="685"><span class="sd">    authored framing, which is the shape of defect this module exists to</span>
+</span><span data-line="686"><span class="sd">    remove — so that never happens. What happens instead is the caller's call.</span>
+</span><span data-line="687">
+</span><span data-line="688"><span class="sd">    ``output_aspect=None`` is not a mismatch — it is a path that says "match the</span>
+</span><span data-line="689"><span class="sd">    image", a deliberate authoring choice, and is preserved.</span>
+</span><span data-line="690"><span class="sd">    """</span>
+</span><span data-line="691">    <span class="n">stored</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">output_aspect</span>
+</span><span data-line="692">    <span class="k">if</span> <span class="n">stored</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">_aspects_agree</span><span class="p">(</span><span class="n">stored</span><span class="p">,</span> <span class="n">aspect</span><span class="p">):</span>
+</span><span data-line="693">        <span class="k">return</span> <span class="n">path</span>
+</span><span data-line="694">    <span class="k">if</span> <span class="n">on_mismatch</span> <span class="o">==</span> <span class="s2">"refit"</span><span class="p">:</span>
+</span><span data-line="695">        <span class="n">img_w</span><span class="p">,</span> <span class="n">img_h</span> <span class="o">=</span> <span class="n">as_pil</span><span class="p">(</span><span class="n">image</span><span class="p">)</span><span class="o">.</span><span class="n">size</span>
+</span><span data-line="696">        <span class="k">return</span> <span class="n">_refit</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">img_w</span><span class="p">,</span> <span class="n">img_h</span><span class="p">,</span> <span class="n">aspect</span><span class="p">)</span>
+</span><span data-line="697">    <span class="k">raise</span> <span class="n">MoveError</span><span class="p">(</span>
+</span><span data-line="698">        <span class="sa">f</span><span class="s2">"this panel carries an explicit BurnsPath authored for "</span>
+</span><span data-line="699">        <span class="sa">f</span><span class="s2">"output_aspect=</span><span class="si">{</span><span class="n">stored</span><span class="si">!r}</span><span class="s2">, but the cut is being rendered at "</span>
+</span><span data-line="700">        <span class="sa">f</span><span class="s2">"aspect=</span><span class="si">{</span><span class="n">aspect</span><span class="si">!r}</span><span class="s2">. Its rectangles were drawn against the first shape, "</span>
+</span><span data-line="701">        <span class="s2">"so honouring them at the second would silently crop the framing "</span>
+</span><span data-line="702">        <span class="s2">"somebody chose by hand. Either render this cut at the aspect the path "</span>
+</span><span data-line="703">        <span class="s2">"was authored for, pass on_aspect_mismatch='refit' to keep the authored "</span>
+</span><span data-line="704">        <span class="s2">"look at the new shape, or drop the override so the named move re-frames."</span>
+</span><span data-line="705">    <span class="p">)</span>
+</span><span data-line="706">
+</span><span data-line="707">
+</span><span data-line="708"><span class="k">def</span><span class="w"> </span><span class="nf">_refit</span><span class="p">(</span>
+</span><span data-line="709">    <span class="n">path</span><span class="p">:</span> <span class="n">BurnsPath</span><span class="p">,</span> <span class="n">img_w</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">img_h</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">aspect</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span>
+</span><span data-line="710"><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BurnsPath</span><span class="p">:</span>
+</span><span data-line="711"><span class="w">    </span><span class="sd">"""Rebuild every keyframe at ``aspect``, keeping what the author chose.</span>
+</span><span data-line="712">
+</span><span data-line="713"><span class="sd">    A keyframe says two things a person decided — *where the camera is looking*</span>
+</span><span data-line="714"><span class="sd">    and *how far in it is* — plus one thing the delivery decided, the window's</span>
+</span><span data-line="715"><span class="sd">    shape. Refitting keeps the first two and recomputes the third, so a</span>
+</span><span data-line="716"><span class="sd">    landscape film's hand-corrected move survives into a vertical cut as the</span>
+</span><span data-line="717"><span class="sd">    same move rather than as a refusal or a silent crop.</span>
+</span><span data-line="718">
+</span><span data-line="719"><span class="sd">    It is **not** lossless and does not pretend to be: a 16:9 window refitted to</span>
+</span><span data-line="720"><span class="sd">    9:16 shows less to the sides and more above and below, because that is what</span>
+</span><span data-line="721"><span class="sd">    the delivery is. What it guarantees is that the centre and the zoom are the</span>
+</span><span data-line="722"><span class="sd">    author's at every instant.</span>
+</span><span data-line="723"><span class="sd">    """</span>
+</span><span data-line="724">    <span class="n">keyframes</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span>
+</span><span data-line="725">        <span class="p">(</span>
+</span><span data-line="726">            <span class="n">t</span><span class="p">,</span>
+</span><span data-line="727">            <span class="n">keep_window</span><span class="p">(</span>
+</span><span data-line="728">                <span class="n">img_w</span><span class="p">,</span> <span class="n">img_h</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="n">rect</span><span class="o">.</span><span class="n">center</span><span class="p">,</span> <span class="n">zoom</span><span class="o">=</span><span class="n">rect</span><span class="o">.</span><span class="n">zoom</span><span class="p">,</span> <span class="n">output_aspect</span><span class="o">=</span><span class="n">aspect</span>
+</span><span data-line="729">            <span class="p">),</span>
+</span><span data-line="730">        <span class="p">)</span>
+</span><span data-line="731">        <span class="k">for</span> <span class="n">t</span><span class="p">,</span> <span class="n">rect</span> <span class="ow">in</span> <span class="n">path</span><span class="o">.</span><span class="n">keyframes</span>
+</span><span data-line="732">    <span class="p">)</span>
+</span><span data-line="733">    <span class="k">return</span> <span class="n">BurnsPath</span><span class="p">(</span>
+</span><span data-line="734">        <span class="n">keyframes</span><span class="o">=</span><span class="n">keyframes</span><span class="p">,</span>
+</span><span data-line="735">        <span class="n">easing</span><span class="o">=</span><span class="n">path</span><span class="o">.</span><span class="n">easing</span><span class="p">,</span>
+</span><span data-line="736">        <span class="n">interp</span><span class="o">=</span><span class="n">path</span><span class="o">.</span><span class="n">interp</span><span class="p">,</span>
+</span><span data-line="737">        <span class="n">output_aspect</span><span class="o">=</span><span class="n">aspect</span><span class="p">,</span>
+</span><span data-line="738">        <span class="n">version</span><span class="o">=</span><span class="n">path</span><span class="o">.</span><span class="n">version</span><span class="p">,</span>
+</span><span data-line="739">    <span class="p">)</span>
+</span><span data-line="740">
+</span><span data-line="741">
+</span><span data-line="742"><span class="k">def</span><span class="w"> </span><span class="nf">_focus_box</span><span class="p">(</span><span class="n">focus</span><span class="p">:</span> <span class="n">FocusLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Box</span><span class="p">:</span>
+</span><span data-line="743"><span class="w">    </span><span class="sd">"""Normalize ``focus`` to a ``(x, y, w, h)`` box, or say why it is not one."""</span>
+</span><span data-line="744">    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">focus</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">):</span>
+</span><span data-line="745">        <span class="c1"># What a stored focus looks like after a JSON round-trip, which is how</span>
+</span><span data-line="746">        <span class="c1"># it reaches a consumer that persists panels rather than holds models.</span>
+</span><span data-line="747">        <span class="n">missing</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"x"</span><span class="p">,</span> <span class="s2">"y"</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">,</span> <span class="s2">"h"</span><span class="p">)</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">focus</span><span class="p">]</span>
+</span><span data-line="748">        <span class="k">if</span> <span class="n">missing</span><span class="p">:</span>
+</span><span data-line="749">            <span class="k">raise</span> <span class="n">MoveError</span><span class="p">(</span>
+</span><span data-line="750">                <span class="sa">f</span><span class="s2">"a focus mapping needs the keys x, y, w, h — missing </span><span class="si">{</span><span class="n">missing</span><span class="si">}</span><span class="s2">"</span>
+</span><span data-line="751">            <span class="p">)</span>
+</span><span data-line="752">        <span class="n">box</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">focus</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"x"</span><span class="p">,</span> <span class="s2">"y"</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">,</span> <span class="s2">"h"</span><span class="p">))</span>
+</span><span data-line="753">    <span class="k">elif</span> <span class="nb">all</span><span class="p">(</span><span class="nb">hasattr</span><span class="p">(</span><span class="n">focus</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"x"</span><span class="p">,</span> <span class="s2">"y"</span><span class="p">,</span> <span class="s2">"w"</span><span class="p">,</span> <span class="s2">"h"</span><span class="p">)):</span>
+</span><span data-line="754">        <span class="c1"># Covers Rect and every structural rectangle a consumer already has —</span>
+</span><span data-line="755">        <span class="c1"># burns does not make anyone import its type to say where to look.</span>
+</span><span data-line="756">        <span class="n">box</span> <span class="o">=</span> <span class="p">(</span><span class="n">focus</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">focus</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">focus</span><span class="o">.</span><span class="n">w</span><span class="p">,</span> <span class="n">focus</span><span class="o">.</span><span class="n">h</span><span class="p">)</span>
+</span><span data-line="757">    <span class="k">else</span><span class="p">:</span>
+</span><span data-line="758">        <span class="k">try</span><span class="p">:</span>
+</span><span data-line="759">            <span class="n">box</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">focus</span><span class="p">)</span>
+</span><span data-line="760">        <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">)</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+</span><span data-line="761">            <span class="c1"># ValueError as well as TypeError: a str is iterable, so `focus="nope"`</span>
+</span><span data-line="762">            <span class="c1"># reached float() and escaped as a bare ValueError from a generator</span>
+</span><span data-line="763">            <span class="c1"># expression, three frames from anything that named the argument.</span>
+</span><span data-line="764">            <span class="k">raise</span> <span class="n">MoveError</span><span class="p">(</span>
+</span><span data-line="765">                <span class="sa">f</span><span class="s2">"focus must be a Rect, a normalized (x, y, w, h) sequence of 4 "</span>
+</span><span data-line="766">                <span class="sa">f</span><span class="s2">"components, or an object with .x/.y/.w/.h — got "</span>
+</span><span data-line="767">                <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">focus</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">focus</span><span class="si">!r}</span><span class="s2">"</span>
+</span><span data-line="768">            <span class="p">)</span> <span class="kn">from</span><span class="w"> </span><span class="nn">e</span>
+</span><span data-line="769">        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">box</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">4</span><span class="p">:</span>
+</span><span data-line="770">            <span class="k">raise</span> <span class="n">MoveError</span><span class="p">(</span>
+</span><span data-line="771">                <span class="sa">f</span><span class="s2">"focus must have exactly 4 components (x, y, w, h), got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">box</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
+</span><span data-line="772">            <span class="p">)</span>
+</span><span data-line="773">    <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">box</span><span class="p">)</span>
+</span><span data-line="774">    <span class="k">if</span> <span class="n">w</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">h</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+</span><span data-line="775">        <span class="k">raise</span> <span class="n">MoveError</span><span class="p">(</span>
+</span><span data-line="776">            <span class="sa">f</span><span class="s2">"focus must have positive width and height, got </span><span class="si">{</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="p">,</span><span class="w"> </span><span class="n">w</span><span class="p">,</span><span class="w"> </span><span class="n">h</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span>
+</span><span data-line="777">        <span class="p">)</span>
+</span><span data-line="778">    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="o">-</span><span class="mf">1e-6</span> <span class="o">&lt;=</span> <span class="n">x</span> <span class="ow">and</span> <span class="o">-</span><span class="mf">1e-6</span> <span class="o">&lt;=</span> <span class="n">y</span> <span class="ow">and</span> <span class="n">x</span> <span class="o">+</span> <span class="n">w</span> <span class="o">&lt;=</span> <span class="mi">1</span> <span class="o">+</span> <span class="mf">1e-6</span> <span class="ow">and</span> <span class="n">y</span> <span class="o">+</span> <span class="n">h</span> <span class="o">&lt;=</span> <span class="mi">1</span> <span class="o">+</span> <span class="mf">1e-6</span><span class="p">):</span>
+</span><span data-line="779">        <span class="k">raise</span> <span class="n">MoveError</span><span class="p">(</span>
+</span><span data-line="780">            <span class="sa">f</span><span class="s2">"focus must lie inside the image in normalized [0, 1] units with a "</span>
+</span><span data-line="781">            <span class="sa">f</span><span class="s2">"top-left origin, got </span><span class="si">{</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="p">,</span><span class="w"> </span><span class="n">w</span><span class="p">,</span><span class="w"> </span><span class="n">h</span><span class="p">)</span><span class="si">}</span><span class="s2">. A box in pixels is the usual "</span>
+</span><span data-line="782">            <span class="s2">"cause — divide by the image's width and height."</span>
+</span><span data-line="783">        <span class="p">)</span>
+</span><span data-line="784">    <span class="k">return</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span>
+</span><span data-line="785">
+</span><span data-line="786">
+</span><span data-line="787"><span class="k">def</span><span class="w"> </span><span class="nf">_unknown_move_message</span><span class="p">(</span><span class="n">move</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+</span><span data-line="788">    <span class="k">return</span> <span class="p">(</span>
+</span><span data-line="789">        <span class="sa">f</span><span class="s2">"unknown camera move </span><span class="si">{</span><span class="n">move</span><span class="si">!r}</span><span class="s2">. The vocabulary is </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">MOVES</span><span class="p">)</span><span class="si">}</span><span class="s2">. "</span>
+</span><span data-line="790">        <span class="s2">"Pass an explicit BurnsPath (or its to_dict() payload) for a move the "</span>
+</span><span data-line="791">        <span class="s2">"names do not cover."</span>
+</span><span data-line="792">    <span class="p">)</span>
+</span></pre></div>
+        </article><button class="back-to-top" type="button">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+    <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+  </svg>
+  <span>Back to top</span>
+</button><div class="navigation flex print:hidden"></div></div>
+    </div>
+  </main>
+</div>
+<footer class="sy-foot">
+  <div class="sy-foot-inner sy-container mx-auto">
+    <div class="sy-foot-reserved md:flex justify-between items-center">
+      <div class="sy-foot-copyright">
+  <p>
+    Made with
+    
+    <a href="https://shibuya.lepture.com">Shibuya theme</a>.
+  </p>
+</div>
+      <div class="sy-foot-socials">
+  <a href="https://github.com/thorwhalen/burns" aria-label="GitHub">
+    <iconify-icon icon="simple-icons:github"></iconify-icon>
+  </a></div>
+    </div>
+  </div>
+</footer>
+      <script src="../../_static/documentation_options.js?v=544df88d"></script>
+      <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+      <script src="../../_static/copybutton.js?v=fd10adb8"></script>
+      <script src="../../_static/shibuya.js?v=50760d75"></script>
+      <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs";
+
+
+
+
+
+const initStyles = () => {
+    const defaultStyle = document.createElement('style');
+    defaultStyle.textContent = "pre.mermaid {\n    /* Same as .mermaid-container > pre */\n    display: block;\n    width: 100%;\n}\n\npre.mermaid > svg {\n    /* Same as .mermaid-container > pre > svg */\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}";
+    document.head.appendChild(defaultStyle);
+
+    const fullscreenStyle = document.createElement('style');
+    fullscreenStyle.textContent = ".mermaid-container {\n    position: relative;\n    display: flex;\n    flex-direction: row;\n    width: 100%;\n}\n\n.mermaid-container > pre {\n    display: block;\n    width: 100%;\n}\n\n.mermaid-container > pre > svg {\n    height: 500px;\n    width: 100%;\n    max-width: 100% !important;\n}\n\n.mermaid-fullscreen-btn {\n    position: absolute;\n    width: 28px;\n    height: 28px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.3);\n    border-radius: 4px;\n    cursor: pointer;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    transition: all 0.2s;\n    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);\n    font-size: 14px;\n    line-height: 1;\n    padding: 0;\n    color: #333;\n}\n\n.mermaid-fullscreen-btn:hover {\n    opacity: 100% !important;\n    background: rgba(255, 255, 255, 1);\n    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-btn.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.3);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-btn.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 3px 10px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal {\n    display: none;\n    position: fixed !important;\n    top: 0 !important;\n    left: 0 !important;\n    width: 95vw;\n    height: 100vh;\n    background: rgba(255, 255, 255, 0.98);\n    z-index: 9999;\n    padding: 20px;\n    overflow: auto;\n}\n\n.mermaid-fullscreen-modal.dark-theme {\n    background: rgba(0, 0, 0, 0.98);\n}\n\n.mermaid-fullscreen-modal.active {\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen {\n    position: relative;\n    width: 95vw;\n    height: 90vh;\n    max-width: 95vw;\n    max-height: 90vh;\n    background: white;\n    border-radius: 8px;\n    padding: 20px;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);\n    overflow: auto;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen.dark-theme {\n    background: #1a1a1a;\n    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);\n}\n\n.mermaid-container-fullscreen pre.mermaid {\n    width: 100%;\n    height: 100%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.mermaid-container-fullscreen .mermaid svg {\n    height: 100% !important;\n    width: 100% !important;\n    cursor: grab;\n}\n\n.mermaid-fullscreen-close {\n    position: fixed !important;\n    top: 20px !important;\n    right: 20px !important;\n    width: 40px;\n    height: 40px;\n    background: rgba(255, 255, 255, 0.95);\n    border: 1px solid rgba(0, 0, 0, 0.2);\n    border-radius: 50%;\n    cursor: pointer;\n    z-index: 10000;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);\n    transition: all 0.2s;\n    font-size: 24px;\n    line-height: 1;\n    color: #333;\n}\n\n.mermaid-fullscreen-close:hover {\n    background: white;\n    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);\n    transform: scale(1.1);\n}\n\n.mermaid-fullscreen-close.dark-theme {\n    background: rgba(50, 50, 50, 0.95);\n    border: 1px solid rgba(255, 255, 255, 0.2);\n    color: #e0e0e0;\n}\n\n.mermaid-fullscreen-close.dark-theme:hover {\n    background: rgba(60, 60, 60, 1);\n    box-shadow: 0 6px 16px rgba(255, 255, 255, 0.2);\n}\n\n.mermaid-fullscreen-modal .mermaid-fullscreen-btn {\n    display: none !important;\n}";
+    document.head.appendChild(fullscreenStyle);
+}
+
+// Detect if page has dark background
+const isDarkTheme = () => {
+    // We use a set of heuristics:
+    // 1. Check for common dark mode classes or attributes
+    // 2. Check computed background color brightness
+    if (document.documentElement.classList.contains('dark') ||
+        document.documentElement.getAttribute('data-theme') === 'dark' ||
+        document.body.classList.contains('dark') ||
+        document.body.getAttribute('data-theme') === 'dark') {
+        // console.log("Dark theme detected via class/attribute");
+        return true;
+    }
+    if (document.documentElement.classList.contains('light') ||
+        document.documentElement.getAttribute('data-theme') === 'light' ||
+        document.body.classList.contains('light') ||
+        document.body.getAttribute('data-theme') === 'light') {
+        // console.log("Light theme detected via class/attribute");
+        return false;
+    }
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        // console.log("Dark theme detected via prefers-color-scheme");
+        return true;
+    }
+    const bgColor = window.getComputedStyle(document.body).backgroundColor;
+    const match = bgColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)/);
+    if (match) {
+        const r = parseInt(match[1]);
+        const g = parseInt(match[2]);
+        const b = parseInt(match[3]);
+        const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+        // console.log("Background color brightness:", brightness);
+        return brightness < 128;
+    }
+    // console.log("No dark or light theme detected, defaulting to light theme");
+    return false;
+};
+
+let darkTheme = isDarkTheme();
+let modal = null;
+let modalContent = null;
+let previousScrollOffset = [window.scrollX, window.scrollY];
+let _lazyObserver = null;
+let _renderQueue = Promise.resolve();
+let closeModal = () => {};
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal?.classList.contains('active')) {
+        closeModal();
+    }
+});
+
+// Apply d3 zoom to each SVG. Idempotent: an SVG already wrapped is skipped,
+// so this is safe to call both for the initial batch and for diagrams that
+// render lazily once they become visible.
+const addZoomToSvgs = (svgs) => {
+    svgs.each(function() {
+        if (this.getAttribute('data-zoom-applied') === 'true') return;
+        var svg = d3.select(this);
+        svg.html("<g class='wrapper'>" + svg.html() + "</g>");
+        var inner = svg.select("g");
+        var zoom = d3.zoom().on("zoom", function(event) {
+            inner.attr("transform", event.transform);
+        });
+        svg.call(zoom);
+        this.setAttribute('data-zoom-applied', 'true');
+    });
+};
+
+const runMermaid = async (rerun) => {
+    console.log("Running mermaid diagrams, rerun =", rerun);
+    // clear all existing mermaid charts
+    let all_mermaids = document.querySelectorAll(".mermaid");
+
+    if (rerun) {
+        // Disconnect any previous lazy rendering observer
+        if (_lazyObserver) {
+            _lazyObserver.disconnect();
+            _lazyObserver = null;
+        }
+
+        all_mermaids.forEach((el) => {
+            el.removeAttribute('data-mermaid-deferred');
+            el.removeAttribute('data-mermaid-render-failed');
+            if(!el.hasAttribute("data-original-code")) {
+                // store original code
+                // console.log(`Storing original code for first run: `, el.innerHTML);
+                el.setAttribute('data-original-code', el.innerHTML);
+            }
+            if(el.getAttribute("data-processed") === "true") {
+                // remove and restore original
+                el.removeAttribute("data-processed");
+                // console.log(`Restoring original code for re-run: `, el.getAttribute('data-original-code'));
+                el.innerHTML = el.getAttribute('data-original-code');
+            } else {
+                // store original code
+                // console.log(`Storing original code for re-run: `, el.innerHTML);
+                el.setAttribute('data-original-code', el.innerHTML);
+            }
+        });
+
+        // Separate visible and hidden elements. Mermaid's layout engine measures
+        // text dimensions via the DOM, which fails for elements hidden by a parent
+        // (e.g., Reveal.js non-active slides, sphinx-design unopened tabs),
+        // producing broken SVGs. Render visible elements now, defer hidden ones.
+        const visible = [];
+        const hidden = [];
+        all_mermaids.forEach((el) => {
+            // offsetParent is null for display:none ancestors.
+            // getClientRects().length > 0 catches position:fixed elements
+            // (which also have null offsetParent but are still visible).
+            if (el.offsetParent !== null || el.getClientRects().length > 0) {
+                visible.push(el);
+            } else {
+                hidden.push(el);
+                el.setAttribute('data-mermaid-deferred', 'true');
+            }
+        });
+
+        if (visible.length > 0) {
+            try {
+                await mermaid.run({ nodes: visible });
+            } catch (e) {
+                console.error("Mermaid rendering failed:", e);
+            }
+        }
+
+        // Lazily render hidden elements when they become visible.
+        // Uses a promise chain (_renderQueue) to serialize rendering,
+        // since IntersectionObserver may report multiple entries at once
+        // and mermaid.run() is not safe to call concurrently.
+        if (hidden.length > 0) {
+            if (typeof IntersectionObserver === 'undefined') {
+                console.warn("IntersectionObserver not available; hidden mermaid diagrams will not render.");
+            } else {
+                _renderQueue = Promise.resolve();
+                _lazyObserver = new IntersectionObserver((entries) => {
+                    for (const entry of entries) {
+                        if (entry.isIntersecting && entry.target.getAttribute("data-processed") !== "true") {
+                            _lazyObserver.unobserve(entry.target);
+                            const el = entry.target;
+                            _renderQueue = _renderQueue.then(async () => {
+                                try {
+                                    await mermaid.run({ nodes: [el] });
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    // Apply zoom to the now-rendered diagram, matching
+                                    // the decoration visible diagrams receive.
+                                    if (false) {
+                                        addZoomToSvgs(d3.selectAll("").select(function() {
+                                            return this.querySelector("svg");
+                                        }));
+                                    }
+                                } catch (e) {
+                                    console.error("Mermaid deferred rendering failed:", e);
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    el.setAttribute('data-mermaid-render-failed', 'true');
+                                }
+                            });
+                        }
+                    }
+                });
+                hidden.forEach((el) => _lazyObserver.observe(el));
+            }
+        }
+    }
+
+    all_mermaids = document.querySelectorAll(".mermaid");
+    // Exclude deferred (hidden) and render-failed elements from completion checks
+    const mermaids_active = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])");
+    const mermaids_processed = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])[data-processed='true']");
+
+    if (false) {
+        const mermaids_to_add_zoom = 0 === -1 ? mermaids_active.length : 0;
+        if(mermaids_to_add_zoom > 0) {
+            var svgs = d3.selectAll("").select(function() {
+                return this.querySelector("svg");
+            });
+            // Wait until every active (visible) diagram has rendered. Deferred
+            // diagrams are excluded, so a fixed d3_node_count that counts a
+            // hidden diagram no longer loops forever waiting for its SVG.
+            if(mermaids_active.length !== mermaids_processed.length) {
+                setTimeout(() => runMermaid(false), 200);
+                return;
+            }
+            addZoomToSvgs(svgs);
+        }
+    } else if(mermaids_active.length !== mermaids_processed.length) {
+        // Wait for mermaid to process all diagrams
+        setTimeout(() => runMermaid(false), 200);
+        return;
+    }
+
+    // Stop here if not adding fullscreen capability
+    if (!true) return;
+
+    if (modal !== null ) {
+        // Destroy existing modal
+        modal.remove();
+        modal = null;
+        modalContent = null;
+    }
+
+    modal = document.createElement('div');
+    modal.className = 'mermaid-fullscreen-modal' + (darkTheme ? ' dark-theme' : '');
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-label', 'Fullscreen diagram viewer');
+    modal.innerHTML = `
+        <button class="mermaid-fullscreen-close${darkTheme ? ' dark-theme' : ''}" aria-label="Close fullscreen">✕</button>
+        <div class="mermaid-container-fullscreen${darkTheme ? ' dark-theme' : ''}"></div>
+    `;
+    document.body.appendChild(modal);
+
+    modalContent = modal.querySelector('.mermaid-container-fullscreen');
+    const closeBtn = modal.querySelector('.mermaid-fullscreen-close');
+
+    closeModal = () => {
+        modal.classList.remove('active');
+        modalContent.innerHTML = '';
+        document.body.style.overflow = ''
+        window.scrollTo({left: previousScrollOffset[0], top: previousScrollOffset[1], behavior: 'instant'});
+    };
+
+    closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+    });
+    document.querySelectorAll('.mermaid').forEach((mermaidDiv) => {
+        if (mermaidDiv.parentNode.classList.contains('mermaid-container') ||
+            mermaidDiv.closest('.mermaid-fullscreen-modal')) {
+            // Already processed, adjust button class if needed
+            const existingBtn = mermaidDiv.parentNode.querySelector('.mermaid-fullscreen-btn');
+            if (existingBtn) {
+                existingBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
+            }
+            return;
+        }
+
+        const container = document.createElement('div');
+        container.className = 'mermaid-container';
+        mermaidDiv.parentNode.insertBefore(container, mermaidDiv);
+        container.appendChild(mermaidDiv);
+
+        const fullscreenBtn = document.createElement('button');
+        fullscreenBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
+        fullscreenBtn.setAttribute('aria-label', 'View diagram in fullscreen');
+        fullscreenBtn.textContent = "\u26f6";
+        fullscreenBtn.style.opacity = "50%";
+
+        // Calculate dynamic position based on diagram's margin and padding
+        const diagramStyle = window.getComputedStyle(mermaidDiv);
+        const marginTop = parseFloat(diagramStyle.marginTop) || 0;
+        const marginRight = parseFloat(diagramStyle.marginRight) || 0;
+        const paddingTop = parseFloat(diagramStyle.paddingTop) || 0;
+        const paddingRight = parseFloat(diagramStyle.paddingRight) || 0;
+        fullscreenBtn.style.top = `${marginTop + paddingTop + 4}px`;
+        fullscreenBtn.style.right = `${marginRight + paddingRight + 4}px`;
+
+        fullscreenBtn.addEventListener('click', () => {
+            previousScrollOffset = [window.scrollX, window.scrollY];
+            const clone = mermaidDiv.cloneNode(true);
+            modalContent.innerHTML = '';
+            modalContent.appendChild(clone);
+
+            const svg = clone.querySelector('svg');
+            if (svg) {
+                svg.removeAttribute('width');
+                svg.removeAttribute('height');
+                svg.style.width = '100%';
+                svg.style.height = 'auto';
+                svg.style.maxWidth = '100%';
+                svg.style.display = 'block';
+
+                if (false) {
+                    setTimeout(() => {
+                        const g = svg.querySelector('g');
+                        if (g) {
+                            var svgD3 = d3.select(svg);
+                            svgD3.html("<g class='wrapper'>" + svgD3.html() + "</g>");
+                            var inner = svgD3.select("g");
+                            var zoom = d3.zoom().on("zoom", function(event) {
+                                inner.attr("transform", event.transform);
+                            });
+                            svgD3.call(zoom);
+                        }
+                    }, 100);
+                }
+            }
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        });
+        container.appendChild(fullscreenBtn);
+    });
+};
+
+
+
+const load = async () => {
+    initStyles();
+
+
+    await runMermaid(true);
+
+    const reRunIfThemeChanges = async () => {
+        const newDarkTheme = isDarkTheme();
+        if (newDarkTheme !== darkTheme) {
+            darkTheme = newDarkTheme;
+            console.log("Theme change detected, re-running mermaid with", darkTheme ? "dark" : "default", "theme");
+            await mermaid.initialize(
+                {...{"startOnLoad": false},
+                ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
+                }
+            );
+            await runMermaid(true);
+        }
+    };
+
+    // Update theme classes when theme changes
+    const themeObserver = new MutationObserver(reRunIfThemeChanges);
+    themeObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class', 'style', 'data-theme']
+    });
+    themeObserver.observe(document.body, {
+        attributes: true,
+        attributeFilter: ['class', 'style', 'data-theme']
+    });
+};
+
+
+
+
+
+console.log("Initializing mermaid with", darkTheme ? "dark" : "default", "theme");
+mermaid.initialize(
+    {...{"startOnLoad": false},
+    ...{ darkMode: darkTheme, theme: darkTheme ? "dark" : "default" },
+    }
+);
+
+window.addEventListener("load", load);
+window.runMermaid = runMermaid;</script></body>
+</html>

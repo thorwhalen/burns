@@ -12,6 +12,9 @@
       content_aware_path
       content_aware_path_for
       salient_box
+      choose_move
+      move_kind
+      resolve_move
       ken_burns_video
       ken_burns_film
       parse_easing
@@ -27,6 +30,12 @@
       BurnsPath
       RenderBackend
    
+   .. rubric:: Exceptions
+
+   .. autosummary::
+   
+      MoveError
+   
 .. rubric:: Modules
 
 .. autosummary::
@@ -36,6 +45,7 @@
    backends
    content
    easing
+   moves
    path
    rect
    render

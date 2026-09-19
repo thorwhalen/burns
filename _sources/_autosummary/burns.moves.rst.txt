@@ -1,0 +1,32 @@
+burns.moves
+===========
+
+.. automodule:: burns.moves
+
+   
+   .. rubric:: Module Attributes
+
+   .. autosummary::
+   
+      RESOLVER_IMPL_VERSION
+      DFLT_ZOOM
+      DRIFT_TRAVEL
+      DRIFT_SPAN
+      DRIFT_MIN_ROOM
+      MOVES
+      AUTO_WEIGHTS
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      choose_move
+      move_kind
+      resolve_move
+   
+   .. rubric:: Exceptions
+
+   .. autosummary::
+   
+      MoveError
+   
