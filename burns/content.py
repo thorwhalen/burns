@@ -18,6 +18,12 @@ Detection is **injected**, not built in: faces come from a caller-supplied
 stays dependency-light and deterministic. Boxes everywhere are normalized
 ``(x, y, w, h)`` in ``[0, 1]`` with a top-left origin — the same convention as
 :class:`~burns.rect.Rect`.
+
+The geometry :func:`content_aware_path` is built from is exported rather than
+inlined — :func:`axis_maxima`, :func:`keep_window`, :func:`fit_zoom` and
+:func:`pad_box`. :mod:`burns.moves` builds its static and drift moves out of the
+same four, so "a window of this zoom, at this output aspect, centred here" has
+one implementation rather than one per move.
 """
 
 from __future__ import annotations
@@ -46,18 +52,131 @@ def _union(boxes: Iterable[Box]) -> Box:
     return (x0, y0, x1 - x0, y1 - y0)
 
 
+#: Where the keep-region defaults to when nothing is known about the picture:
+#: a generous centered box. Not the full frame — that would give the framing
+#: nothing to hold on to and every zoom would be capped to a standstill.
+DFLT_KEEP_BOX: Box = (0.15, 0.15, 0.7, 0.7)
+
+#: Fractional breathing room around the keep-region. Framing a subject with its
+#: own bounding box hard against the window edge reads as a crop, not a frame.
+DFLT_KEEP_PAD: float = 0.18
+
+
+def as_pil(image: Any):
+    """Open / convert ``image`` (path, ``PIL.Image``, or ndarray) to a PIL image.
+
+    The single entry point for "the caller gave me *some* kind of image". Used
+    by every function here that needs pixels or a size, so a new accepted input
+    type is added in one place — and so a path is opened once per call rather
+    than once per function that wants it.
+    """
+    from PIL import Image as PIL_Image
+    import numpy as np
+
+    if isinstance(image, np.ndarray):
+        return PIL_Image.fromarray(image)
+    if isinstance(image, PIL_Image.Image):
+        return image
+    return PIL_Image.open(image)
+
+
+def pad_box(box: Box, pad: float = DFLT_KEEP_PAD) -> Box:
+    """Grow ``box`` by ``pad`` of its own size on every side, clipped to the image.
+
+    Examples:
+        >>> [round(v, 4) for v in pad_box((0.4, 0.4, 0.2, 0.2), 0.25)]
+        [0.35, 0.35, 0.3, 0.3]
+        >>> pad_box((0.0, 0.0, 1.0, 1.0), 0.5)  # already the whole image
+        (0.0, 0.0, 1.0, 1.0)
+    """
+    x, y, w, h = box
+    x = _clamp(x - w * pad)
+    y = _clamp(y - h * pad)
+    return (x, y, min(1 - x, w * (1 + 2 * pad)), min(1 - y, h * (1 + 2 * pad)))
+
+
+def axis_maxima(
+    img_w: int, img_h: int, output_aspect: Union[float, None] = None
+) -> tuple[float, float]:
+    """The largest ``(w, h)`` window, in image units, matching ``output_aspect``.
+
+    At zoom ``1.0`` this is the window the render fills; one of the two is
+    always ``1.0`` (the axis that limits) and the other is what the output
+    aspect leaves of the opposite one. ``output_aspect=None`` means "match the
+    image", so both are ``1.0``.
+
+    Examples:
+        >>> axis_maxima(1600, 900)                    # aspect follows the image
+        (1.0, 1.0)
+        >>> [round(v, 4) for v in axis_maxima(1600, 1200, 16 / 9)]  # 4:3 -> 16:9
+        [1.0, 0.75]
+        >>> [round(v, 4) for v in axis_maxima(1080, 1920, 16 / 9)]  # portrait
+        [1.0, 0.3164]
+    """
+    if not output_aspect:
+        return (1.0, 1.0)
+    A = float(output_aspect)
+    if img_w / img_h >= A:  # image wider than output: width is the limit
+        return (A * img_h / img_w, 1.0)
+    return (1.0, (img_w / A) / img_h)
+
+
+def keep_window(
+    img_w: int,
+    img_h: int,
+    *,
+    center: tuple[float, float],
+    zoom: float,
+    output_aspect: Union[float, None] = None,
+) -> Rect:
+    """The window of ``zoom``, at ``output_aspect``, centred on ``center``.
+
+    Clamped inside the image by sliding, never by resizing (see
+    :meth:`~burns.rect.Rect.clamped`) — shrinking would change the window's
+    aspect and make the rendered frame breathe.
+
+    Examples:
+        >>> keep_window(1000, 1000, center=(0.5, 0.5), zoom=2.0)
+        Rect(x=0.25, y=0.25, w=0.5, h=0.5)
+        >>> keep_window(1000, 1000, center=(0.95, 0.5), zoom=2.0)  # rides the wall
+        Rect(x=0.5, y=0.25, w=0.5, h=0.5)
+    """
+    wmax, hmax = axis_maxima(img_w, img_h, output_aspect)
+    w = min(wmax / zoom, 1.0)
+    h = min(hmax / zoom, 1.0)
+    cx, cy = center
+    return Rect(cx - w / 2, cy - h / 2, w, h).clamped()
+
+
+def fit_zoom(
+    img_w: int,
+    img_h: int,
+    *,
+    keep: Box,
+    output_aspect: Union[float, None] = None,
+) -> float:
+    """The largest zoom at which ``keep`` still fits inside the window.
+
+    ``keep`` is taken as given — pad it with :func:`pad_box` first if you want
+    the subject framed rather than touching the edges.
+
+    Examples:
+        >>> round(fit_zoom(1000, 1000, keep=(0.25, 0.25, 0.5, 0.5)), 4)
+        2.0
+        >>> round(fit_zoom(1000, 1000, keep=(0.0, 0.0, 1.0, 1.0)), 4)  # fills it
+        1.0
+    """
+    wmax, hmax = axis_maxima(img_w, img_h, output_aspect)
+    _, _, kw, kh = keep
+    return min(wmax / max(kw, 1e-3), hmax / max(kh, 1e-3))
+
+
 def _gray_array(image: Any, downscale: int):
     """Return a small 2-D float grayscale array from a path / PIL image / ndarray."""
     import numpy as np
     from PIL import Image as PIL_Image
 
-    if isinstance(image, np.ndarray):
-        img = PIL_Image.fromarray(image)
-    elif isinstance(image, PIL_Image.Image):
-        img = image
-    else:
-        img = PIL_Image.open(image)
-    img = img.convert("L")
+    img = as_pil(image).convert("L")
     w, h = img.size
     scale = downscale / max(w, h)
     if scale < 1.0:
@@ -94,7 +213,7 @@ def salient_box(
 
     a = _gray_array(image, downscale)
     if a.ndim != 2 or min(a.shape) < 4:
-        return (0.15, 0.15, 0.7, 0.7)
+        return DFLT_KEEP_BOX
     e = np.zeros_like(a)
     e[:, :-1] += np.abs(np.diff(a, axis=1))
     e[:-1, :] += np.abs(np.diff(a, axis=0))
@@ -102,7 +221,7 @@ def salient_box(
     ys, xs = np.where(e >= max(thr, 1e-6))
     H, W = a.shape
     if xs.size < 8:
-        return (0.15, 0.15, 0.7, 0.7)
+        return DFLT_KEEP_BOX
     x0, x1 = np.percentile(xs, [trim_pct, 100 - trim_pct])
     y0, y1 = np.percentile(ys, [trim_pct, 100 - trim_pct])
     bx, by = x0 / W, y0 / H
@@ -131,7 +250,7 @@ def content_aware_path(
     output_aspect: Union[float, None] = None,
     zoom: float = 1.3,
     min_zoom: float = 1.05,
-    keep_pad: float = 0.18,
+    keep_pad: float = DFLT_KEEP_PAD,
     mode: str = "auto",
     easing: EasingLike = DFLT_EASING,
 ) -> BurnsPath:
@@ -168,31 +287,20 @@ def content_aware_path(
         >>> content_aware_path(100, 100, subject=(0,0,1,1)) == content_aware_path(100, 100, subject=(0,0,1,1))
         True
     """
-    A = float(output_aspect) if output_aspect else (img_w / img_h)
     faces = list(faces or [])
-    keep = _union(faces) if faces else (subject if subject else (0.15, 0.15, 0.7, 0.7))
+    keep = pad_box(
+        _union(faces) if faces else (subject if subject else DFLT_KEEP_BOX), keep_pad
+    )
     kx, ky, kw, kh = keep
-    kx = _clamp(kx - kw * keep_pad)
-    ky = _clamp(ky - kh * keep_pad)
-    kw = min(1 - kx, kw * (1 + 2 * keep_pad))
-    kh = min(1 - ky, kh * (1 + 2 * keep_pad))
     cx, cy = kx + kw / 2, ky + kh / 2
 
-    imgA = img_w / img_h
-    if imgA >= A:  # image wider than output: width is the limit
-        wmax, hmax = A * img_h / img_w, 1.0
-    else:
-        wmax, hmax = 1.0, (img_w / A) / img_h
-
     def window(z: float) -> Rect:
-        w = min(wmax / z, 1.0)
-        h = min(hmax / z, 1.0)
-        x = _clamp(cx - w / 2, 0, 1 - w)
-        y = _clamp(cy - h / 2, 0, 1 - h)
-        return Rect(x, y, w, h)
+        return keep_window(
+            img_w, img_h, center=(cx, cy), zoom=z, output_aspect=output_aspect
+        )
 
     # largest zoom at which the whole keep-region still fits the window
-    z_fit = min(wmax / max(kw, 1e-3), hmax / max(kh, 1e-3))
+    z_fit = fit_zoom(img_w, img_h, keep=keep, output_aspect=output_aspect)
     z_in = max(min_zoom + 0.02, min(zoom, z_fit * 0.98))
     z_in = max(z_in, 1.0)
     z_out = max(1.0, min(z_in - 0.12, z_fit * 0.98))
@@ -216,6 +324,7 @@ def content_aware_path(
 def content_aware_path_for(
     image: Any,
     *,
+    subject: Optional[Box] = None,
     faces: Sequence[Box] = (),
     faces_detector: Optional[FacesDetector] = None,
     index: int = 0,
@@ -228,23 +337,32 @@ def content_aware_path_for(
 
     Keeps burns dependency-light: pass an LLM/cv2/manual ``faces_detector`` when
     you want face-aware framing; omit it for saliency-only (sky-avoiding) motion.
-    """
-    from PIL import Image as PIL_Image
-    import numpy as np
 
-    if isinstance(image, np.ndarray):
-        img = PIL_Image.fromarray(image)
-    elif isinstance(image, PIL_Image.Image):
-        img = image
-    else:
-        img = PIL_Image.open(image)
+    ``subject`` is an explicit keep-region that **replaces** the saliency
+    estimate — for a caller who already knows what the picture is about (a
+    hand-drawn crop, an upstream detector, a stored authoring decision). It is a
+    named parameter rather than one more key in ``**kwargs`` because those are
+    forwarded to :func:`content_aware_path`, which already takes ``subject`` —
+    so passing it that way raised ``TypeError: got multiple values`` two frames
+    down. When given, :func:`salient_box` is **not called**: the override is
+    total, and computing an estimate only to discard it is how a partial
+    override quietly lets saliency back in.
+
+    Examples:
+        >>> import numpy as np
+        >>> a = np.zeros((600, 800, 3), dtype='uint8'); a[80:200, 60:200] = 220
+        >>> p = content_aware_path_for(a, subject=(0.7, 0.7, 0.2, 0.2), index=1)
+        >>> r = p.evaluate(1.0)                     # framed on the override,
+        >>> r.x + r.w / 2 > 0.5 and r.y + r.h / 2 > 0.5   # not the bright corner
+        True
+    """
+    img = as_pil(image)
     iw, ih = img.size
     detected = list(faces) or (list(faces_detector(img)) if faces_detector else [])
-    subject = salient_box(img)
     return content_aware_path(
         iw,
         ih,
-        subject=subject,
+        subject=subject if subject is not None else salient_box(img),
         faces=detected,
         index=index,
         output_aspect=output_aspect,
