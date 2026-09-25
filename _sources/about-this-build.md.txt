@@ -5,19 +5,19 @@ orphan: true
 
 # About this build
 
-This documentation was built on **2026-09-19 22:13 UTC** from commit <a href="https://github.com/thorwhalen/burns/commit/69d55ffa9ce91d0593b2c16228354af20ed809e3"><code>69d55ff</code></a> on branch <code>main</code>, for **burns 0.0.14** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-09-25 01:19 UTC** from commit <a href="https://github.com/thorwhalen/burns/commit/34d2909e4063b445077cd96bcfc4671637b44623"><code>34d2909</code></a> on branch <code>main</code>, for **burns 0.0.15** (from <code>pyproject.toml</code>).
 
 :::{warning}
 The documentation and the package may be misaligned:
 
-- The documented version (0.0.14) is behind the latest release on PyPI (0.0.15): `pip install burns` gives newer code than these docs describe.
+- The documented version (0.0.15) is behind the latest release on PyPI (0.0.16): `pip install burns` gives newer code than these docs describe.
 :::
 
 ## Source
 
 | | |
 |---|---|
-| Commit | <a href="https://github.com/thorwhalen/burns/commit/69d55ffa9ce91d0593b2c16228354af20ed809e3"><code>69d55ffa9ce91d0593b2c16228354af20ed809e3</code></a> |
+| Commit | <a href="https://github.com/thorwhalen/burns/commit/34d2909e4063b445077cd96bcfc4671637b44623"><code>34d2909e4063b445077cd96bcfc4671637b44623</code></a> |
 | Branch | <code>main</code> |
 | Tags at this commit | none |
 | Working tree | clean |
@@ -28,9 +28,9 @@ The documentation and the package may be misaligned:
 | | |
 |---|---|
 | Repository | <code>thorwhalen/burns</code> |
-| Run | <a href="https://github.com/thorwhalen/burns/actions/runs/35472570827">35472570827</a> |
+| Run | <a href="https://github.com/thorwhalen/burns/actions/runs/36081269691">36081269691</a> |
 | Ref | <code>refs/heads/main</code> |
-| Event commit | <code>69d55ffa9ce91d0593b2c16228354af20ed809e3</code> (in the history of the built commit) |
+| Event commit | <code>34d2909e4063b445077cd96bcfc4671637b44623</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -55,13 +55,13 @@ The documentation and the package may be misaligned:
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/burns/0.0.15/">0.0.15</a>, newer than the documented version (0.0.14).
+Latest release: <a href="https://pypi.org/project/burns/0.0.16/">0.0.16</a>, newer than the documented version (0.0.15).
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/thorwhalen/burns && cd burns
-git checkout 69d55ffa9ce91d0593b2c16228354af20ed809e3
+git checkout 34d2909e4063b445077cd96bcfc4671637b44623
 pip install "epythet==0.2.12"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

@@ -1,0 +1,19 @@
+# burns
+
+> Ken Burns pan/zoom video effects: turn a still image (or a sequence of stills) into a cinematic pan/zoom film.
+
+
+## Pages in this subsection
+
+- [burns](burns.html.md): burns — Ken Burns pan/zoom video effects.
+- [burns.backends](burns.backends.html.md): Pluggable single-clip render backends — the open-closed seam.
+- [burns.content](burns.content.html.md): Content-aware Ken Burns: choose crop windows that keep the subject (and any
+- [burns.easing](burns.easing.html.md): Timing functions (easing) for Ken Burns motion.
+- [burns.moves](burns.moves.html.md): The named camera moves, and the one resolver that expands one into a path.
+- [burns.path](burns.path.html.md): The render-agnostic Ken Burns motion spec: &#96;BurnsPath&#96;.
+- [burns.rect](burns.rect.html.md): The Ken Burns viewport rectangle — the render-agnostic geometric atom.
+- [burns.render](burns.render.html.md): Ken Burns &#42;&#42;renderers&#42;&#42; — turn still images into pan/zoom video.
+
+## Optional
+
+- [Top-level llms.txt](../llms.txt): Complete documentation index.

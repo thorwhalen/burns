@@ -1,32 +1,32 @@
 {
   "schema_version": 1,
-  "built_at": "2026-09-19T22:13:46Z",
+  "built_at": "2026-09-25T01:19:05Z",
   "package": {
     "name": "burns",
-    "version": "0.0.14",
+    "version": "0.0.15",
     "display_name": "burns",
     "source": "pyproject.toml"
   },
   "git": {
     "available": true,
-    "commit": "69d55ffa9ce91d0593b2c16228354af20ed809e3",
-    "short_commit": "69d55ff",
+    "commit": "34d2909e4063b445077cd96bcfc4671637b44623",
+    "short_commit": "34d2909",
     "branch": "main",
     "tags": [],
     "dirty": false,
     "remote_url": "https://github.com/thorwhalen/burns",
-    "commit_url": "https://github.com/thorwhalen/burns/commit/69d55ffa9ce91d0593b2c16228354af20ed809e3",
+    "commit_url": "https://github.com/thorwhalen/burns/commit/34d2909e4063b445077cd96bcfc4671637b44623",
     "error": null
   },
   "ci": {
     "provider": "github",
     "repository": "thorwhalen/burns",
-    "sha": "69d55ffa9ce91d0593b2c16228354af20ed809e3",
+    "sha": "34d2909e4063b445077cd96bcfc4671637b44623",
     "sha_in_history": true,
     "ref": "refs/heads/main",
     "ref_name": "main",
-    "run_id": "35472570827",
-    "run_url": "https://github.com/thorwhalen/burns/actions/runs/35472570827",
+    "run_id": "36081269691",
+    "run_url": "https://github.com/thorwhalen/burns/actions/runs/36081269691",
     "server_url": "https://github.com"
   },
   "tools": {
@@ -56,20 +56,20 @@
   },
   "site": {
     "modules_documented": 8,
-    "objects_documented": 81
+    "objects_documented": 82
   },
   "pypi": {
     "checked": true,
-    "latest": "0.0.15",
+    "latest": "0.0.16",
     "relation": "behind",
     "error": null
   },
-  "reproduce": "git clone https://github.com/thorwhalen/burns && cd burns\ngit checkout 69d55ffa9ce91d0593b2c16228354af20ed809e3\npip install \"epythet==0.2.12\"\nepythet quickstart . --ignore tests/ scrap/ examples/",
+  "reproduce": "git clone https://github.com/thorwhalen/burns && cd burns\ngit checkout 34d2909e4063b445077cd96bcfc4671637b44623\npip install \"epythet==0.2.12\"\nepythet quickstart . --ignore tests/ scrap/ examples/",
   "warnings": [],
   "alignment": {
     "aligned": false,
     "notes": [
-      "The documented version (0.0.14) is behind the latest release on PyPI (0.0.15): `pip install burns` gives newer code than these docs describe."
+      "The documented version (0.0.15) is behind the latest release on PyPI (0.0.16): `pip install burns` gives newer code than these docs describe."
     ]
   }
 }

@@ -351,8 +351,14 @@ exactly what it was. So store <code class="docutils literal notranslate"><span c
 <p><strong>One code path, two front doors.</strong> <code class="docutils literal notranslate"><span class="pre">move</span></code> takes a name <em>or</em> an explicit
 <code class="docutils literal notranslate"><span class="pre">BurnsPath</span></code> (or its <code class="docutils literal notranslate"><span class="pre">to_dict()</span></code> payload), so a panel carrying a hand-corrected
 override and a panel carrying a name make the same call:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">resolve_move</span><span class="p">(</span><span class="n">panel</span><span class="o">.</span><span class="n">path</span> <span class="ow">or</span> <span class="n">panel</span><span class="o">.</span><span class="n">move</span><span class="p">,</span> <span class="n">image</span><span class="o">=</span><span class="n">still</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="mi">16</span> <span class="o">/</span> <span class="mi">9</span><span class="p">,</span>
-</span><span data-line="2">             <span class="n">zoom</span><span class="o">=</span><span class="n">panel</span><span class="o">.</span><span class="n">zoom</span><span class="p">,</span> <span class="n">focus</span><span class="o">=</span><span class="n">panel</span><span class="o">.</span><span class="n">focus</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="n">panel</span><span class="o">.</span><span class="n">seed</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span data-line="1"><span class="n">resolve_move</span><span class="p">(</span>
+</span><span data-line="2">    <span class="n">panel</span><span class="o">.</span><span class="n">path</span> <span class="ow">or</span> <span class="n">panel</span><span class="o">.</span><span class="n">move</span><span class="p">,</span>
+</span><span data-line="3">    <span class="n">image</span><span class="o">=</span><span class="n">still</span><span class="p">,</span>
+</span><span data-line="4">    <span class="n">aspect</span><span class="o">=</span><span class="mi">16</span> <span class="o">/</span> <span class="mi">9</span><span class="p">,</span>
+</span><span data-line="5">    <span class="n">zoom</span><span class="o">=</span><span class="n">panel</span><span class="o">.</span><span class="n">zoom</span><span class="p">,</span>
+</span><span data-line="6">    <span class="n">focus</span><span class="o">=</span><span class="n">panel</span><span class="o">.</span><span class="n">focus</span><span class="p">,</span>
+</span><span data-line="7">    <span class="n">seed</span><span class="o">=</span><span class="n">panel</span><span class="o">.</span><span class="n">seed</span><span class="p">,</span>
+</span><span data-line="8"><span class="p">)</span>
 </span></pre></div>
 </div>
 <p>An override is returned exactly as authored. If its <code class="docutils literal notranslate"><span class="pre">output_aspect</span></code> contradicts
@@ -473,8 +479,8 @@ motion.</p>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">MOVES</span></code></p></td>
 <td><p>The named-move vocabulary — every value a stored <code class="docutils literal notranslate"><span class="pre">move</span></code> field may hold.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">resolve_move(move,</span> <span class="pre">*,</span> <span class="pre">image,</span> <span class="pre">aspect,</span> <span class="pre">zoom=1.18,</span> <span class="pre">focus=None,</span> <span class="pre">seed=0,</span> <span class="pre">easing=&quot;ease-in-out&quot;,</span> <span class="pre">on_aspect_mismatch=&quot;raise&quot;)</span></code></p></td>
-<td><p>Resolve an authored move (a name, or an explicit <code class="docutils literal notranslate"><span class="pre">BurnsPath</span></code>) against an image into a path.</p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">resolve_move(move,</span> <span class="pre">*,</span> <span class="pre">image,</span> <span class="pre">aspect,</span> <span class="pre">zoom=1.18,</span> <span class="pre">focus=None,</span> <span class="pre">seed=0,</span> <span class="pre">easing=&quot;ease-in-out&quot;,</span> <span class="pre">on_aspect_mismatch=&quot;raise&quot;,</span> <span class="pre">content_box=None)</span></code></p></td>
+<td><p>Resolve an authored move (a name, or an explicit <code class="docutils literal notranslate"><span class="pre">BurnsPath</span></code>) against an image into a path. <code class="docutils literal notranslate"><span class="pre">content_box</span></code> is the part of <code class="docutils literal notranslate"><span class="pre">image</span></code> that is picture (saliency runs only there, so a composited fill is never “subject”). When the saliency box reaches three borders and covers about half the picture or more (texture everywhere, as on most photographs; <code class="docutils literal notranslate"><span class="pre">DIFFUSE_KEEP_AREA</span></code>, both ramped), the requested <code class="docutils literal notranslate"><span class="pre">zoom</span></code> is honoured around its centre instead of being capped by it (burns#21). A large subject that really does reach three borders is then cropped more at a strong zoom; pass <code class="docutils literal notranslate"><span class="pre">focus</span></code> for it, since an explicit <code class="docutils literal notranslate"><span class="pre">focus</span></code> always caps.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">RESOLVER_IMPL_VERSION</span></code></p></td>
 <td><p>The identity of the resolver’s geometry — put it in a render cache key.</p></td>
@@ -500,7 +506,7 @@ motion.</p>
 </section>
 </section>
 
-<p class="epythet-provenance" style="font-size:.8em;opacity:.65;margin-top:2.5em;text-align:right">built 2026-09-19 22:13 UTC from <a href="https://github.com/thorwhalen/burns/commit/69d55ffa9ce91d0593b2c16228354af20ed809e3">69d55ff</a> (main) · burns 0.0.14 · <a href="about-this-build.html">about this build</a></p>
+<p class="epythet-provenance" style="font-size:.8em;opacity:.65;margin-top:2.5em;text-align:right">built 2026-09-25 01:19 UTC from <a href="https://github.com/thorwhalen/burns/commit/34d2909e4063b445077cd96bcfc4671637b44623">34d2909</a> (main) · burns 0.0.15 · <a href="about-this-build.html">about this build</a></p>
         </article><button class="back-to-top" type="button">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
     <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
@@ -535,7 +541,7 @@ motion.</p>
     </div>
   </div>
 </footer>
-      <script src="_static/documentation_options.js?v=544df88d"></script>
+      <script src="_static/documentation_options.js?v=f0357c94"></script>
       <script src="_static/doctools.js?v=fd6eb6e6"></script>
       <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="_static/clipboard.min.js?v=a7894cd8"></script>

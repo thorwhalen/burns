@@ -91,6 +91,7 @@ data-aria-dark="Switch to auto color mode">
     <div class="sy-scrollbar sy-rside-inner px-6 xl:top-16 xl:sticky xl:pl-0 pt-6 pb-4"><div class="localtoc"><h3>On this page</h3><ul>
 <li><a class="reference internal" href="#burns.moves.AUTO_WEIGHTS"><code class="docutils literal notranslate"><span class="pre">AUTO_WEIGHTS</span></code></a></li>
 <li><a class="reference internal" href="#burns.moves.DFLT_ZOOM"><code class="docutils literal notranslate"><span class="pre">DFLT_ZOOM</span></code></a></li>
+<li><a class="reference internal" href="#burns.moves.DIFFUSE_KEEP_AREA"><code class="docutils literal notranslate"><span class="pre">DIFFUSE_KEEP_AREA</span></code></a></li>
 <li><a class="reference internal" href="#burns.moves.DRIFT_MIN_ROOM"><code class="docutils literal notranslate"><span class="pre">DRIFT_MIN_ROOM</span></code></a></li>
 <li><a class="reference internal" href="#burns.moves.DRIFT_SPAN"><code class="docutils literal notranslate"><span class="pre">DRIFT_SPAN</span></code></a></li>
 <li><a class="reference internal" href="#burns.moves.DRIFT_TRAVEL"><code class="docutils literal notranslate"><span class="pre">DRIFT_TRAVEL</span></code></a></li>
@@ -184,22 +185,25 @@ pictures themselves — the content-aware framing differs per image already.</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="#burns.moves.RESOLVER_IMPL_VERSION" title="burns.moves.RESOLVER_IMPL_VERSION"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RESOLVER_IMPL_VERSION</span></code></a></p></td>
 <td><p>The identity of the resolver's <em>geometry</em>, for a caller's cache key.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#burns.moves.DFLT_ZOOM" title="burns.moves.DFLT_ZOOM"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DFLT_ZOOM</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#burns.moves.DIFFUSE_KEEP_AREA" title="burns.moves.DIFFUSE_KEEP_AREA"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DIFFUSE_KEEP_AREA</span></code></a></p></td>
+<td><p>The area (share of the picture) around which a saliency keep-region that reaches the borders stops being a subject and becomes a centre hint.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#burns.moves.DFLT_ZOOM" title="burns.moves.DFLT_ZOOM"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DFLT_ZOOM</span></code></a></p></td>
 <td><p>Default end magnification.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#burns.moves.DRIFT_TRAVEL" title="burns.moves.DRIFT_TRAVEL"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DRIFT_TRAVEL</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#burns.moves.DRIFT_TRAVEL" title="burns.moves.DRIFT_TRAVEL"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DRIFT_TRAVEL</span></code></a></p></td>
 <td><p>How much of the available travel a drift uses, as a fraction of the room the window leaves inside the image.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#burns.moves.DRIFT_SPAN" title="burns.moves.DRIFT_SPAN"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DRIFT_SPAN</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#burns.moves.DRIFT_SPAN" title="burns.moves.DRIFT_SPAN"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DRIFT_SPAN</span></code></a></p></td>
 <td><p>A ceiling on that travel, as a fraction of the <strong>window</strong> rather than of the image — how far the camera crosses its own frame.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#burns.moves.DRIFT_MIN_ROOM" title="burns.moves.DRIFT_MIN_ROOM"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DRIFT_MIN_ROOM</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#burns.moves.DRIFT_MIN_ROOM" title="burns.moves.DRIFT_MIN_ROOM"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DRIFT_MIN_ROOM</span></code></a></p></td>
 <td><p>The least travel room a drift will accept, in image units.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#burns.moves.MOVES" title="burns.moves.MOVES"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MOVES</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#burns.moves.MOVES" title="burns.moves.MOVES"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MOVES</span></code></a></p></td>
 <td><p>Every name a stored <code class="docutils literal notranslate"><span class="pre">move</span></code> field may hold — one vocabulary, because it is one field.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#burns.moves.AUTO_WEIGHTS" title="burns.moves.AUTO_WEIGHTS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AUTO_WEIGHTS</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#burns.moves.AUTO_WEIGHTS" title="burns.moves.AUTO_WEIGHTS"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AUTO_WEIGHTS</span></code></a></p></td>
 <td><p>How often <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code> picks each move, as integer weights.</p></td>
 </tr>
 </tbody>
@@ -255,6 +259,23 @@ upscale.</p>
 <a class="reference internal" href="#burns.moves.DRIFT_MIN_ROOM" title="burns.moves.DRIFT_MIN_ROOM"><code class="xref py py-data docutils literal notranslate"><span class="pre">DRIFT_MIN_ROOM</span></code></a> of travel room, which at this zoom is marginally more
 than the window leaves, so the floor raises it to ~1.2. That is the floor
 working, not a jitter — it is a pure function of the arguments.</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="burns.moves.DIFFUSE_KEEP_AREA">
+<span class="sig-prename descclassname"><span class="pre">burns.moves.</span></span><span class="sig-name descname"><span class="pre">DIFFUSE_KEEP_AREA</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.5</span></span><a class="headerlink" href="#burns.moves.DIFFUSE_KEEP_AREA" title="Link to this definition">#</a></dt>
+<dd><p>The area (share of the picture) around which a saliency keep-region that
+reaches the borders stops being a subject and becomes a centre hint.
+On a detailed photograph gradient saliency marks nearly everything, and
+treating that as a subject capped every requested zoom at ~1.0, so
+<code class="docutils literal notranslate"><span class="pre">push_in</span></code> rendered its ~1.07 floor whatever was asked (burns#21, measured
+on 10 of 10 archive photos). Such a region is replaced by the largest keep-
+region that still honours the requested zoom, centred where saliency
+points. An explicit <code class="docutils literal notranslate"><span class="pre">focus</span></code> is never treated this way: it is a decision.
+It is the centre of a ramp (<code class="xref py py-data docutils literal notranslate"><span class="pre">DIFFUSE_KEEP_RAMP</span></code>) and applies only to a
+box touching <code class="xref py py-data docutils literal notranslate"><span class="pre">DIFFUSE_MIN_EDGES</span></code> borders; the default centred box
+(<a class="reference internal" href="burns.content.html#burns.content.DFLT_KEEP_BOX" title="burns.content.DFLT_KEEP_BOX"><code class="xref py py-data docutils literal notranslate"><span class="pre">DFLT_KEEP_BOX</span></code></a>) touches none, so a uniform picture
+keeps its old framing.</p>
 </dd></dl>
 
 <dl class="py data">
@@ -334,7 +355,7 @@ downstream needs to import <a class="reference internal" href="#module-burns.mov
 
 <dl class="py data">
 <dt class="sig sig-object py" id="burns.moves.RESOLVER_IMPL_VERSION">
-<span class="sig-prename descclassname"><span class="pre">burns.moves.</span></span><span class="sig-name descname"><span class="pre">RESOLVER_IMPL_VERSION</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></span><a class="headerlink" href="#burns.moves.RESOLVER_IMPL_VERSION" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">burns.moves.</span></span><span class="sig-name descname"><span class="pre">RESOLVER_IMPL_VERSION</span></span><span class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2</span></span><a class="headerlink" href="#burns.moves.RESOLVER_IMPL_VERSION" title="Link to this definition">#</a></dt>
 <dd><p>The identity of the resolver’s <em>geometry</em>, for a caller’s cache key.</p>
 <p>A stored panel is an intent, so the pixels it becomes depend on constants
 that live here — <a class="reference internal" href="#burns.moves.DFLT_ZOOM" title="burns.moves.DFLT_ZOOM"><code class="xref py py-data docutils literal notranslate"><span class="pre">DFLT_ZOOM</span></code></a>, <a class="reference internal" href="#burns.moves.DRIFT_TRAVEL" title="burns.moves.DRIFT_TRAVEL"><code class="xref py py-data docutils literal notranslate"><span class="pre">DRIFT_TRAVEL</span></code></a>, <a class="reference internal" href="#burns.moves.DRIFT_SPAN" title="burns.moves.DRIFT_SPAN"><code class="xref py py-data docutils literal notranslate"><span class="pre">DRIFT_SPAN</span></code></a>,
@@ -399,7 +420,7 @@ off the same table <a class="reference internal" href="#burns.moves.resolve_move
 
 <dl class="py function">
 <dt class="sig sig-object py" id="burns.moves.resolve_move">
-<span class="sig-prename descclassname"><span class="pre">burns.moves.</span></span><span class="sig-name descname"><span class="pre">resolve_move</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">move</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aspect</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zoom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.18</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">focus</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">easing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ease-in-out'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_aspect_mismatch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raise'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/burns/moves.html#resolve_move"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#burns.moves.resolve_move" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">burns.moves.</span></span><span class="sig-name descname"><span class="pre">resolve_move</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">move</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">image</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aspect</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zoom</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.18</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">focus</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">easing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ease-in-out'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_aspect_mismatch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'raise'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">content_box</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/burns/moves.html#resolve_move"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#burns.moves.resolve_move" title="Link to this definition">#</a></dt>
 <dd><p>Resolve an authored camera intent against <code class="docutils literal notranslate"><span class="pre">image</span></code> into a path.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -421,9 +442,13 @@ a cover-crop nobody asked for.</p></li>
 jittered by <code class="docutils literal notranslate"><span class="pre">seed</span></code> or by a position — but **bounded at both
 ends**, so the number you pass is a request:</p>
 <ul>
-<li><p>capped so the padded keep-region stays framed. A subject filling
-the frame therefore yields a nearly static move; the fix is a
-tighter <code class="docutils literal notranslate"><span class="pre">focus</span></code>, not a bigger <code class="docutils literal notranslate"><span class="pre">zoom</span></code>.</p></li>
+<li><p>capped so the padded keep-region stays framed. A <code class="docutils literal notranslate"><span class="pre">focus</span></code>
+filling the frame therefore yields a nearly static move; the fix
+is a tighter <code class="docutils literal notranslate"><span class="pre">focus</span></code>, not a bigger <code class="docutils literal notranslate"><span class="pre">zoom</span></code>. A keep-region
+that <em>saliency</em> found covering <a class="reference internal" href="#burns.moves.DIFFUSE_KEEP_AREA" title="burns.moves.DIFFUSE_KEEP_AREA"><code class="xref py py-data docutils literal notranslate"><span class="pre">DIFFUSE_KEEP_AREA</span></code></a> or more
+of the picture is only a centre hint and does not cap: on a
+detailed photograph it covers nearly everything, and capping on
+it made every zoom render the same ~1.07.</p></li>
 <li><p>floored. <code class="docutils literal notranslate"><span class="pre">push_in</span></code> / <code class="docutils literal notranslate"><span class="pre">pull_out</span></code> inherit
 <code class="docutils literal notranslate"><span class="pre">content_aware_path</span></code>’s <code class="docutils literal notranslate"><span class="pre">min_zoom</span> <span class="pre">+</span> <span class="pre">0.02</span></code> (about 1.07), so a
 barely-there 1.02 push renders as 1.07; <code class="docutils literal notranslate"><span class="pre">hold</span></code> has no such floor
@@ -441,6 +466,10 @@ is the defect this parameter exists to remove.</p></li>
 <li><p><strong>easing</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Callable" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Callable</span></code></a>[[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>], <a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>], <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Sequence</span></code></a>[<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#float" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>]]</span>) – CSS timing function or callable. A callable is fine here but
 cannot be serialized — see <code class="xref py py-meth docutils literal notranslate"><span class="pre">BurnsPath.to_dict()</span></code>. Applies to a
 named move; an explicit path carries its own.</p></li>
+<li><p><strong>content_box</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a></span>) – the part of <code class="docutils literal notranslate"><span class="pre">image</span></code> that is picture, as a normalized
+<code class="docutils literal notranslate"><span class="pre">(x,</span> <span class="pre">y,</span> <span class="pre">w,</span> <span class="pre">h)</span></code> (same forms as <code class="docutils literal notranslate"><span class="pre">focus</span></code>). Saliency runs inside it,
+so the blurred fill or bars a caller composited around a still do
+not read as subject. Ignored when <code class="docutils literal notranslate"><span class="pre">focus</span></code> is given.</p></li>
 <li><p><strong>on_aspect_mismatch</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a></span>) – what to do when an explicit path was authored for a
 different <code class="docutils literal notranslate"><span class="pre">output_aspect</span></code> than the one being rendered.
 <code class="docutils literal notranslate"><span class="pre">&quot;raise&quot;</span></code> (default) refuses, because honouring the stored
@@ -565,7 +594,7 @@ keeps the authored look while changing the window shape:</p>
     </div>
   </div>
 </footer>
-      <script src="../_static/documentation_options.js?v=544df88d"></script>
+      <script src="../_static/documentation_options.js?v=f0357c94"></script>
       <script src="../_static/doctools.js?v=fd6eb6e6"></script>
       <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
       <script src="../_static/clipboard.min.js?v=a7894cd8"></script>

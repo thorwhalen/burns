@@ -2,7 +2,7 @@
 
 The named camera moves, and the one resolver that expands one into a path.
 
-A [`BurnsPath`](burns.path.html.md#burns.path.BurnsPath) is *resolved geometry*: rectangles measured
+A [`BurnsPath`](burns.path.md#burns.path.BurnsPath) is *resolved geometry*: rectangles measured
 against one picture’s pixels. That makes it the wrong thing to store when the
 picture can change. What an editor wants to keep is the **authored intent** —
 “push in on this, gently” — and have the rectangles computed against whatever
@@ -103,7 +103,7 @@ region that still honours the requested zoom, centred where saliency
 points. An explicit `focus` is never treated this way: it is a decision.
 It is the centre of a ramp (`DIFFUSE_KEEP_RAMP`) and applies only to a
 box touching `DIFFUSE_MIN_EDGES` borders; the default centred box
-([`DFLT_KEEP_BOX`](burns.content.html.md#burns.content.DFLT_KEEP_BOX)) touches none, so a uniform picture
+([`DFLT_KEEP_BOX`](burns.content.md#burns.content.DFLT_KEEP_BOX)) touches none, so a uniform picture
 keeps its old framing.
 
 ### burns.moves.DRIFT_MIN_ROOM *: [float](https://docs.python.org/3/builtins/functions.html#float)* *= 0.16666666666666669*
@@ -247,8 +247,8 @@ off the same table [`resolve_move()`](#burns.moves.resolve_move) dispatches on.
 Resolve an authored camera intent against `image` into a path.
 
 * **Parameters:**
-  * **move** (`Union`[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`BurnsPath`](burns.path.html.md#burns.path.BurnsPath), [`Mapping`](https://docs.python.org/3/library/typing.html#typing.Mapping)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]]) – a name from [`MOVES`](#burns.moves.MOVES), or an explicit
-    [`BurnsPath`](burns.path.html.md#burns.path.BurnsPath) / its `to_dict()` payload. The two
+  * **move** (`Union`[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`BurnsPath`](burns.path.md#burns.path.BurnsPath), [`Mapping`](https://docs.python.org/3/library/typing.html#typing.Mapping)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]]) – a name from [`MOVES`](#burns.moves.MOVES), or an explicit
+    [`BurnsPath`](burns.path.md#burns.path.BurnsPath) / its `to_dict()` payload. The two
     are the two front doors on this one path: a stored panel that
     carries both a named move and a hand-corrected override passes the
     override here and the choice is made in one place.
@@ -278,9 +278,9 @@ Resolve an authored camera intent against `image` into a path.
       and honours 1.02 exactly. A drift is floored to whatever leaves
       [`DRIFT_MIN_ROOM`](#burns.moves.DRIFT_MIN_ROOM) of travel.
   * **focus** ([`Any`](https://docs.python.org/3/library/typing.html#typing.Any)) – an explicit keep-region overriding the saliency estimate. A
-    [`Rect`](burns.rect.html.md#burns.rect.Rect), a normalized `(x, y, w, h)` tuple, or
+    [`Rect`](burns.rect.md#burns.rect.Rect), a normalized `(x, y, w, h)` tuple, or
     any object with `.x/.y/.w/.h`. When given,
-    [`salient_box()`](burns.content.html.md#burns.content.salient_box) is not called at all.
+    [`salient_box()`](burns.content.md#burns.content.salient_box) is not called at all.
   * **seed** ([`int`](https://docs.python.org/3/builtins/functions.html#int)) – chooses which move `"auto"` becomes, and nothing else. Mint it
     once per panel and store it; never derive it from a position, which
     is the defect this parameter exists to remove.
@@ -303,9 +303,9 @@ Resolve an authored camera intent against `image` into a path.
     per delivery, so “author a second path” is not a remedy a caller
     can take; `"refit"` is.
 * **Return type:**
-  [`BurnsPath`](burns.path.html.md#burns.path.BurnsPath)
+  [`BurnsPath`](burns.path.md#burns.path.BurnsPath)
 * **Returns:**
-  A [`BurnsPath`](burns.path.html.md#burns.path.BurnsPath). Duration is not part of it; pass that
+  A [`BurnsPath`](burns.path.md#burns.path.BurnsPath). Duration is not part of it; pass that
   to the renderer.
 * **Raises:**
   [**MoveError**](#burns.moves.MoveError) – an unknown move name, a malformed `focus`, a non-positive

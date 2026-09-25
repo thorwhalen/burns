@@ -1,4 +1,4 @@
-> built 2026-09-19 22:13 UTC from 69d55ff (main) · burns 0.0.14. Details: build_info.json
+> built 2026-09-25 01:19 UTC from 34d2909 (main) · burns 0.0.15. Details: build_info.json
 
 # index.html.md
 
@@ -235,8 +235,14 @@ exactly what it was. So store `(move, zoom, focus, seed)` and call
 override and a panel carrying a name make the same call:
 
 ```python
-resolve_move(panel.path or panel.move, image=still, aspect=16 / 9,
-             zoom=panel.zoom, focus=panel.focus, seed=panel.seed)
+resolve_move(
+    panel.path or panel.move,
+    image=still,
+    aspect=16 / 9,
+    zoom=panel.zoom,
+    focus=panel.focus,
+    seed=panel.seed,
+)
 ```
 
 An override is returned exactly as authored. If its `output_aspect` contradicts
@@ -318,21 +324,21 @@ motion.
 
 ## API
 
-| Object                                                                                                                                                                | What it does                                                                                                                                                  |
-|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `Rect(x, y, w, h)`                                                                                                                                                    | A normalized viewport over the image. `.from_center_zoom`, `.clamped`, `.to_pixels`, `.zoom`, `.center`.                                                      |
-| `BurnsPath`                                                                                                                                                           | The motion spec. `.evaluate(t) -> Rect`, `.from_start_end`, `.push_in`, `.reversed`, `.to_dict` / `.from_dict`.                                               |
-| `ken_burns_path(index, *, style="push", zoom=1.10, pan=0.03, easing="ease-in-out", output_aspect=None)`                                                               | Deterministic per-index `BurnsPath` for a sequence.                                                                                                           |
-| `salient_box(image, *, downscale=320, threshold_pct=72.0, trim_pct=4.0, pad=0.05, min_size=0.35)`                                                                     | Estimate the busy/detailed region of an image as a normalized `(x, y, w, h)` box.                                                                             |
-| `content_aware_path(img_w, img_h, *, subject=None, faces=(), index=0, output_aspect=None, zoom=1.3, min_zoom=1.05, keep_pad=0.18, mode="auto", easing="ease-in-out")` | Pure geometry: a `BurnsPath` that keeps a keep-region framed.                                                                                                 |
-| `content_aware_path_for(image, *, subject=None, faces=(), faces_detector=None, index=0, output_aspect=None, **kwargs)`                                                | The same, deriving subject (`salient_box`) and faces from the image itself. An explicit `subject` replaces the saliency estimate, which is then not computed. |
-| `MOVES`                                                                                                                                                               | The named-move vocabulary — every value a stored `move` field may hold.                                                                                       |
-| `resolve_move(move, *, image, aspect, zoom=1.18, focus=None, seed=0, easing="ease-in-out", on_aspect_mismatch="raise")`                                               | Resolve an authored move (a name, or an explicit `BurnsPath`) against an image into a path.                                                                   |
-| `RESOLVER_IMPL_VERSION`                                                                                                                                               | The identity of the resolver’s geometry — put it in a render cache key.                                                                                       |
-| `choose_move(seed)`                                                                                                                                                   | Which concrete move `"auto"` resolves to for `seed`.                                                                                                          |
-| `move_kind(move)`                                                                                                                                                     | How a move is grouped: `"zoom"`, `"drift"`, `"static"`, `"select"`.                                                                                           |
-| `ken_burns_video(image, path=DEFAULT_BURNS_PATH, *, duration=2.0, fps=30, saveas=None, output_size=None, backend="pillow", ...)`                                      | Render one image into a pan/zoom mp4.                                                                                                                         |
-| `ken_burns_film(panels, *, saveas, fps=30, audio_path=None, ...)`                                                                                                     | Render `(image, path, duration_s)` panels as one continuous film.                                                                                             |
+| Object                                                                                                                                                                | What it does                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `Rect(x, y, w, h)`                                                                                                                                                    | A normalized viewport over the image. `.from_center_zoom`, `.clamped`, `.to_pixels`, `.zoom`, `.center`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `BurnsPath`                                                                                                                                                           | The motion spec. `.evaluate(t) -> Rect`, `.from_start_end`, `.push_in`, `.reversed`, `.to_dict` / `.from_dict`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `ken_burns_path(index, *, style="push", zoom=1.10, pan=0.03, easing="ease-in-out", output_aspect=None)`                                                               | Deterministic per-index `BurnsPath` for a sequence.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `salient_box(image, *, downscale=320, threshold_pct=72.0, trim_pct=4.0, pad=0.05, min_size=0.35)`                                                                     | Estimate the busy/detailed region of an image as a normalized `(x, y, w, h)` box.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| `content_aware_path(img_w, img_h, *, subject=None, faces=(), index=0, output_aspect=None, zoom=1.3, min_zoom=1.05, keep_pad=0.18, mode="auto", easing="ease-in-out")` | Pure geometry: a `BurnsPath` that keeps a keep-region framed.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `content_aware_path_for(image, *, subject=None, faces=(), faces_detector=None, index=0, output_aspect=None, **kwargs)`                                                | The same, deriving subject (`salient_box`) and faces from the image itself. An explicit `subject` replaces the saliency estimate, which is then not computed.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `MOVES`                                                                                                                                                               | The named-move vocabulary — every value a stored `move` field may hold.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| `resolve_move(move, *, image, aspect, zoom=1.18, focus=None, seed=0, easing="ease-in-out", on_aspect_mismatch="raise", content_box=None)`                             | Resolve an authored move (a name, or an explicit `BurnsPath`) against an image into a path. `content_box` is the part of `image` that is picture (saliency runs only there, so a composited fill is never “subject”). When the saliency box reaches three borders and covers about half the picture or more (texture everywhere, as on most photographs; `DIFFUSE_KEEP_AREA`, both ramped), the requested `zoom` is honoured around its centre instead of being capped by it (burns#21). A large subject that really does reach three borders is then cropped more at a strong zoom; pass `focus` for it, since an explicit `focus` always caps. |
+| `RESOLVER_IMPL_VERSION`                                                                                                                                               | The identity of the resolver’s geometry — put it in a render cache key.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| `choose_move(seed)`                                                                                                                                                   | Which concrete move `"auto"` resolves to for `seed`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| `move_kind(move)`                                                                                                                                                     | How a move is grouped: `"zoom"`, `"drift"`, `"static"`, `"select"`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `ken_burns_video(image, path=DEFAULT_BURNS_PATH, *, duration=2.0, fps=30, saveas=None, output_size=None, backend="pillow", ...)`                                      | Render one image into a pan/zoom mp4.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `ken_burns_film(panels, *, saveas, fps=30, audio_path=None, ...)`                                                                                                     | Render `(image, path, duration_s)` panels as one continuous film.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
 <p class="epythet-aggregates">This documentation as a single file: <a href="burns.md">burns.md</a> (Markdown, for agents).</p>
 
 
@@ -1428,7 +1434,7 @@ Register a render backend under `name` (open-closed extension point).
 * **Return type:**
   [`None`](https://docs.python.org/3/builtins/constants.html#None)
 
-### burns.resolve_move(move, , image, aspect, zoom=1.18, focus=None, seed=0, easing='ease-in-out', on_aspect_mismatch='raise')
+### burns.resolve_move(move, , image, aspect, zoom=1.18, focus=None, seed=0, easing='ease-in-out', on_aspect_mismatch='raise', content_box=None)
 
 Resolve an authored camera intent against `image` into a path.
 
@@ -1451,9 +1457,13 @@ Resolve an authored camera intent against `image` into a path.
     the end magnification. A pure function of the arguments — never
     jittered by `seed` or by a position — but \*\*bounded at both
     ends\*\*, so the number you pass is a request:
-    * capped so the padded keep-region stays framed. A subject filling
-      the frame therefore yields a nearly static move; the fix is a
-      tighter `focus`, not a bigger `zoom`.
+    * capped so the padded keep-region stays framed. A `focus`
+      filling the frame therefore yields a nearly static move; the fix
+      is a tighter `focus`, not a bigger `zoom`. A keep-region
+      that *saliency* found covering `DIFFUSE_KEEP_AREA` or more
+      of the picture is only a centre hint and does not cap: on a
+      detailed photograph it covers nearly everything, and capping on
+      it made every zoom render the same ~1.07.
     * floored. `push_in` / `pull_out` inherit
       `content_aware_path`’s `min_zoom + 0.02` (about 1.07), so a
       barely-there 1.02 push renders as 1.07; `hold` has no such floor
@@ -1469,6 +1479,10 @@ Resolve an authored camera intent against `image` into a path.
   * **easing** (`Union`[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Callable`](https://docs.python.org/3/library/typing.html#typing.Callable)[[[`float`](https://docs.python.org/3/builtins/functions.html#float)], [`float`](https://docs.python.org/3/builtins/functions.html#float)], [`Sequence`](https://docs.python.org/3/library/typing.html#typing.Sequence)[[`float`](https://docs.python.org/3/builtins/functions.html#float)]]) – CSS timing function or callable. A callable is fine here but
     cannot be serialized — see [`BurnsPath.to_dict()`](_autosummary/burns.html.md#burns.BurnsPath.to_dict). Applies to a
     named move; an explicit path carries its own.
+  * **content_box** ([`Any`](https://docs.python.org/3/library/typing.html#typing.Any)) – the part of `image` that is picture, as a normalized
+    `(x, y, w, h)` (same forms as `focus`). Saliency runs inside it,
+    so the blurred fill or bars a caller composited around a still do
+    not read as subject. Ignored when `focus` is given.
   * **on_aspect_mismatch** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – what to do when an explicit path was authored for a
     different `output_aspect` than the one being rendered.
     `"raise"` (default) refuses, because honouring the stored
@@ -1639,14 +1653,15 @@ True
 
 ### Module Attributes
 
-| [`RESOLVER_IMPL_VERSION`](_autosummary/burns.moves.html.md#burns.moves.RESOLVER_IMPL_VERSION)   | The identity of the resolver's *geometry*, for a caller's cache key.                                                           |
-|--------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------|
-| [`DFLT_ZOOM`](_autosummary/burns.moves.html.md#burns.moves.DFLT_ZOOM)               | Default end magnification.                                                                                                     |
-| [`DRIFT_TRAVEL`](_autosummary/burns.moves.html.md#burns.moves.DRIFT_TRAVEL)            | How much of the available travel a drift uses, as a fraction of the room the window leaves inside the image.                   |
-| [`DRIFT_SPAN`](_autosummary/burns.moves.html.md#burns.moves.DRIFT_SPAN)              | A ceiling on that travel, as a fraction of the **window** rather than of the image — how far the camera crosses its own frame. |
-| [`DRIFT_MIN_ROOM`](_autosummary/burns.moves.html.md#burns.moves.DRIFT_MIN_ROOM)          | The least travel room a drift will accept, in image units.                                                                     |
-| [`MOVES`](_autosummary/burns.moves.html.md#burns.moves.MOVES)                   | Every name a stored `move` field may hold — one vocabulary, because it is one field.                                           |
-| [`AUTO_WEIGHTS`](_autosummary/burns.moves.html.md#burns.moves.AUTO_WEIGHTS)            | How often `"auto"` picks each move, as integer weights.                                                                        |
+| [`RESOLVER_IMPL_VERSION`](_autosummary/burns.moves.html.md#burns.moves.RESOLVER_IMPL_VERSION)   | The identity of the resolver's *geometry*, for a caller's cache key.                                                                          |
+|--------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|
+| [`DIFFUSE_KEEP_AREA`](_autosummary/burns.moves.html.md#burns.moves.DIFFUSE_KEEP_AREA)       | The area (share of the picture) around which a saliency keep-region that reaches the borders stops being a subject and becomes a centre hint. |
+| [`DFLT_ZOOM`](_autosummary/burns.moves.html.md#burns.moves.DFLT_ZOOM)               | Default end magnification.                                                                                                                    |
+| [`DRIFT_TRAVEL`](_autosummary/burns.moves.html.md#burns.moves.DRIFT_TRAVEL)            | How much of the available travel a drift uses, as a fraction of the room the window leaves inside the image.                                  |
+| [`DRIFT_SPAN`](_autosummary/burns.moves.html.md#burns.moves.DRIFT_SPAN)              | A ceiling on that travel, as a fraction of the **window** rather than of the image — how far the camera crosses its own frame.                |
+| [`DRIFT_MIN_ROOM`](_autosummary/burns.moves.html.md#burns.moves.DRIFT_MIN_ROOM)          | The least travel room a drift will accept, in image units.                                                                                    |
+| [`MOVES`](_autosummary/burns.moves.html.md#burns.moves.MOVES)                   | Every name a stored `move` field may hold — one vocabulary, because it is one field.                                                          |
+| [`AUTO_WEIGHTS`](_autosummary/burns.moves.html.md#burns.moves.AUTO_WEIGHTS)            | How often `"auto"` picks each move, as integer weights.                                                                                       |
 
 ### Functions
 
@@ -1682,6 +1697,21 @@ A **drift** may render slightly above it: reaching [`DRIFT_SPAN`](_autosummary/b
 [`DRIFT_MIN_ROOM`](_autosummary/burns.moves.html.md#burns.moves.DRIFT_MIN_ROOM) of travel room, which at this zoom is marginally more
 than the window leaves, so the floor raises it to ~1.2. That is the floor
 working, not a jitter — it is a pure function of the arguments.
+
+### burns.moves.DIFFUSE_KEEP_AREA *: [float](https://docs.python.org/3/builtins/functions.html#float)* *= 0.5*
+
+The area (share of the picture) around which a saliency keep-region that
+reaches the borders stops being a subject and becomes a centre hint.
+On a detailed photograph gradient saliency marks nearly everything, and
+treating that as a subject capped every requested zoom at ~1.0, so
+`push_in` rendered its ~1.07 floor whatever was asked (burns#21, measured
+on 10 of 10 archive photos). Such a region is replaced by the largest keep-
+region that still honours the requested zoom, centred where saliency
+points. An explicit `focus` is never treated this way: it is a decision.
+It is the centre of a ramp (`DIFFUSE_KEEP_RAMP`) and applies only to a
+box touching `DIFFUSE_MIN_EDGES` borders; the default centred box
+([`DFLT_KEEP_BOX`](_autosummary/burns.content.html.md#burns.content.DFLT_KEEP_BOX)) touches none, so a uniform picture
+keeps its old framing.
 
 ### burns.moves.DRIFT_MIN_ROOM *: [float](https://docs.python.org/3/builtins/functions.html#float)* *= 0.16666666666666669*
 
@@ -1754,7 +1784,7 @@ A plain [`ValueError`](https://docs.python.org/3/builtins/exceptions.html#ValueE
 `ValueError` around its authoring layer keeps working, and so nothing
 downstream needs to import [`burns.moves`](_autosummary/burns.moves.html.md#module-burns.moves) to handle it.
 
-### burns.moves.RESOLVER_IMPL_VERSION *: [int](https://docs.python.org/3/builtins/functions.html#int)* *= 1*
+### burns.moves.RESOLVER_IMPL_VERSION *: [int](https://docs.python.org/3/builtins/functions.html#int)* *= 2*
 
 The identity of the resolver’s *geometry*, for a caller’s cache key.
 
@@ -1819,7 +1849,7 @@ off the same table [`resolve_move()`](_autosummary/burns.moves.html.md#burns.mov
 ['drift_down', 'drift_left', 'drift_right', 'drift_up']
 ```
 
-### burns.moves.resolve_move(move, , image, aspect, zoom=1.18, focus=None, seed=0, easing='ease-in-out', on_aspect_mismatch='raise')
+### burns.moves.resolve_move(move, , image, aspect, zoom=1.18, focus=None, seed=0, easing='ease-in-out', on_aspect_mismatch='raise', content_box=None)
 
 Resolve an authored camera intent against `image` into a path.
 
@@ -1842,9 +1872,13 @@ Resolve an authored camera intent against `image` into a path.
     the end magnification. A pure function of the arguments — never
     jittered by `seed` or by a position — but \*\*bounded at both
     ends\*\*, so the number you pass is a request:
-    * capped so the padded keep-region stays framed. A subject filling
-      the frame therefore yields a nearly static move; the fix is a
-      tighter `focus`, not a bigger `zoom`.
+    * capped so the padded keep-region stays framed. A `focus`
+      filling the frame therefore yields a nearly static move; the fix
+      is a tighter `focus`, not a bigger `zoom`. A keep-region
+      that *saliency* found covering [`DIFFUSE_KEEP_AREA`](_autosummary/burns.moves.html.md#burns.moves.DIFFUSE_KEEP_AREA) or more
+      of the picture is only a centre hint and does not cap: on a
+      detailed photograph it covers nearly everything, and capping on
+      it made every zoom render the same ~1.07.
     * floored. `push_in` / `pull_out` inherit
       `content_aware_path`’s `min_zoom + 0.02` (about 1.07), so a
       barely-there 1.02 push renders as 1.07; `hold` has no such floor
@@ -1860,6 +1894,10 @@ Resolve an authored camera intent against `image` into a path.
   * **easing** (`Union`[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Callable`](https://docs.python.org/3/library/typing.html#typing.Callable)[[[`float`](https://docs.python.org/3/builtins/functions.html#float)], [`float`](https://docs.python.org/3/builtins/functions.html#float)], [`Sequence`](https://docs.python.org/3/library/typing.html#typing.Sequence)[[`float`](https://docs.python.org/3/builtins/functions.html#float)]]) – CSS timing function or callable. A callable is fine here but
     cannot be serialized — see `BurnsPath.to_dict()`. Applies to a
     named move; an explicit path carries its own.
+  * **content_box** ([`Any`](https://docs.python.org/3/library/typing.html#typing.Any)) – the part of `image` that is picture, as a normalized
+    `(x, y, w, h)` (same forms as `focus`). Saliency runs inside it,
+    so the blurred fill or bars a caller composited around a still do
+    not read as subject. Ignored when `focus` is given.
   * **on_aspect_mismatch** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – what to do when an explicit path was authored for a
     different `output_aspect` than the one being rendered.
     `"raise"` (default) refuses, because honouring the stored
@@ -2443,18 +2481,18 @@ Render one image into a pan/zoom video from a `BurnsPath`.
 
 # About this build
 
-This documentation was built on **2026-09-19 22:13 UTC** from commit <a href="https://github.com/thorwhalen/burns/commit/69d55ffa9ce91d0593b2c16228354af20ed809e3"><code>69d55ff</code></a> on branch <code>main</code>, for **burns 0.0.14** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-09-25 01:19 UTC** from commit <a href="https://github.com/thorwhalen/burns/commit/34d2909e4063b445077cd96bcfc4671637b44623"><code>34d2909</code></a> on branch <code>main</code>, for **burns 0.0.15** (from <code>pyproject.toml</code>).
 
 #### WARNING
 The documentation and the package may be misaligned:
 
-- The documented version (0.0.14) is behind the latest release on PyPI (0.0.15): `pip install burns` gives newer code than these docs describe.
+- The documented version (0.0.15) is behind the latest release on PyPI (0.0.16): `pip install burns` gives newer code than these docs describe.
 
 ## Source
 
 |                     |                                                                                                                                                         |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/thorwhalen/burns/commit/69d55ffa9ce91d0593b2c16228354af20ed809e3"><code>69d55ffa9ce91d0593b2c16228354af20ed809e3</code></a> |
+| Commit              | <a href="https://github.com/thorwhalen/burns/commit/34d2909e4063b445077cd96bcfc4671637b44623"><code>34d2909e4063b445077cd96bcfc4671637b44623</code></a> |
 | Branch              | <code>main</code>                                                                                                                                       |
 | Tags at this commit | none                                                                                                                                                    |
 | Working tree        | clean                                                                                                                                                   |
@@ -2465,9 +2503,9 @@ The documentation and the package may be misaligned:
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>thorwhalen/burns</code>                                                              |
-| Run          | <a href="https://github.com/thorwhalen/burns/actions/runs/35472570827">35472570827</a>     |
+| Run          | <a href="https://github.com/thorwhalen/burns/actions/runs/36081269691">36081269691</a>     |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>69d55ffa9ce91d0593b2c16228354af20ed809e3</code> (in the history of the built commit) |
+| Event commit | <code>34d2909e4063b445077cd96bcfc4671637b44623</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -2492,13 +2530,13 @@ The documentation and the package may be misaligned:
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/burns/0.0.15/">0.0.15</a>, newer than the documented version (0.0.14).
+Latest release: <a href="https://pypi.org/project/burns/0.0.16/">0.0.16</a>, newer than the documented version (0.0.15).
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/thorwhalen/burns && cd burns
-git checkout 69d55ffa9ce91d0593b2c16228354af20ed809e3
+git checkout 34d2909e4063b445077cd96bcfc4671637b44623
 pip install "epythet==0.2.12"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```

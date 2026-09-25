@@ -42,7 +42,7 @@ Quickstart:
 
 | [`ken_burns_path`](#burns.ken_burns_path)(index, \*[, style, zoom, pan, ...])   | A deterministic [`BurnsPath`](#burns.BurnsPath) for the `index`-th image of a sequence.                                                                                                                                                      |
 |-------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| [`content_aware_path`](#burns.content_aware_path)(img_w, img_h, \*[, ...])          | A [`BurnsPath`](#burns.BurnsPath) that keeps the subject/faces framed while zooming toward or away from them — the content-aware counterpart of [`ken_burns_path()`](burns.path.html.md#burns.path.ken_burns_path). |
+| [`content_aware_path`](#burns.content_aware_path)(img_w, img_h, \*[, ...])          | A [`BurnsPath`](#burns.BurnsPath) that keeps the subject/faces framed while zooming toward or away from them — the content-aware counterpart of [`ken_burns_path()`](burns.path.md#burns.path.ken_burns_path). |
 | [`content_aware_path_for`](#burns.content_aware_path_for)(image, \*[, subject, ...])    | Convenience: derive the subject (via [`salient_box()`](#burns.salient_box)) and faces (from `faces` or `faces_detector(image)`) straight from `image`, then call [`content_aware_path()`](#burns.content_aware_path).        |
 | [`salient_box`](#burns.salient_box)(image, \*[, downscale, ...])             | Estimate the salient (high-detail) region of `image` as a normalized box.                                                                                                                                                                                               |
 | [`choose_move`](#burns.choose_move)(seed)                                    | Which concrete move `"auto"` resolves to for `seed`.                                                                                                                                                                                                                    |
@@ -78,7 +78,7 @@ Construct it directly from keyframes, or via [`from_start_end()`](#burns.BurnsPa
 deterministic per-index motion across a sequence.
 
 * **Parameters:**
-  * **keyframes** ([`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`float`](https://docs.python.org/3/builtins/functions.html#float), [`Rect`](burns.rect.html.md#burns.rect.Rect)], [`...`](https://docs.python.org/3/builtins/constants.html#Ellipsis)]) – a sequence of `(t, Rect)` waypoints, `t in [0, 1]`,
+  * **keyframes** ([`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`tuple`](https://docs.python.org/3/builtins/stdtypes.html#tuple)[[`float`](https://docs.python.org/3/builtins/functions.html#float), [`Rect`](burns.rect.md#burns.rect.Rect)], [`...`](https://docs.python.org/3/builtins/constants.html#Ellipsis)]) – a sequence of `(t, Rect)` waypoints, `t in [0, 1]`,
     strictly increasing in `t`. Must have at least one entry; the
     first `t` should be `0.0` and the last `1.0` for the whole
     clock to be covered (out-of-range `t` clamps to the ends).
@@ -118,7 +118,7 @@ the eased progress. Pure and deterministic: no image, no I/O, no frame
 count. `t` outside `[0, 1]` clamps to the nearest end.
 
 * **Return type:**
-  [`Rect`](burns.rect.html.md#burns.rect.Rect)
+  [`Rect`](burns.rect.md#burns.rect.Rect)
 
 ### Examples
 
@@ -135,7 +135,7 @@ Rect(x=0.0, y=0.0, w=0.75, h=0.75)
 Rebuild a [`BurnsPath`](#burns.BurnsPath) from [`to_dict()`](#burns.BurnsPath.to_dict) output.
 
 * **Return type:**
-  [`BurnsPath`](burns.path.html.md#burns.path.BurnsPath)
+  [`BurnsPath`](burns.path.md#burns.path.BurnsPath)
 
 ### Examples
 
@@ -150,7 +150,7 @@ True
 The canonical two-rectangle Ken Burns case (Start frame -> End frame).
 
 * **Return type:**
-  [`BurnsPath`](burns.path.html.md#burns.path.BurnsPath)
+  [`BurnsPath`](burns.path.md#burns.path.BurnsPath)
 
 ### Examples
 
@@ -166,7 +166,7 @@ The 90%-case constructor: a slow push from the full image toward
 `to` at `zoom`.
 
 * **Return type:**
-  [`BurnsPath`](burns.path.html.md#burns.path.BurnsPath)
+  [`BurnsPath`](burns.path.md#burns.path.BurnsPath)
 
 ### Examples
 
@@ -183,7 +183,7 @@ Mirrors every keyframe’s time about `0.5` and re-sorts, so the motion
 plays back-to-front. Easing/interp/output_aspect are preserved.
 
 * **Return type:**
-  [`BurnsPath`](burns.path.html.md#burns.path.BurnsPath)
+  [`BurnsPath`](burns.path.md#burns.path.BurnsPath)
 
 ### Examples
 
@@ -220,7 +220,7 @@ A move that cannot be resolved into a path.
 
 A plain [`ValueError`](https://docs.python.org/3/builtins/exceptions.html#ValueError) subclass, so a consumer that already catches
 `ValueError` around its authoring layer keeps working, and so nothing
-downstream needs to import [`burns.moves`](burns.moves.html.md#module-burns.moves) to handle it.
+downstream needs to import [`burns.moves`](burns.moves.md#module-burns.moves) to handle it.
 
 ### *class* burns.Rect(x, y, w, h)
 
@@ -266,7 +266,7 @@ and make the rendered frame breathe/stretch. Windows larger than the
 image in a dimension are centered in that dimension.
 
 * **Return type:**
-  [`Rect`](burns.rect.html.md#burns.rect.Rect)
+  [`Rect`](burns.rect.md#burns.rect.Rect)
 
 ### Examples
 
@@ -290,7 +290,7 @@ image’s — reproducing the legacy behavior exactly. The result is
 clamped to stay inside the image.
 
 * **Return type:**
-  [`Rect`](burns.rect.html.md#burns.rect.Rect)
+  [`Rect`](burns.rect.md#burns.rect.Rect)
 
 ### Examples
 
@@ -322,7 +322,7 @@ False
 Linearly interpolate toward `other` by `t` in `[0, 1]`.
 
 * **Return type:**
-  [`Rect`](burns.rect.html.md#burns.rect.Rect)
+  [`Rect`](burns.rect.md#burns.rect.Rect)
 
 ### Examples
 
@@ -400,7 +400,7 @@ True
 
 A [`BurnsPath`](#burns.BurnsPath) that keeps the subject/faces framed while zooming
 toward or away from them — the content-aware counterpart of
-[`ken_burns_path()`](burns.path.html.md#burns.path.ken_burns_path).
+[`ken_burns_path()`](burns.path.md#burns.path.ken_burns_path).
 
 The *keep-region* is the union of `faces` if any, else `subject` (else a
 centered default). Both start and end crop windows are built to contain that
@@ -424,7 +424,7 @@ cover-crop is a no-op and what you frame is what shows.
   * **mode** ([`str`](https://docs.python.org/3/builtins/stdtypes.html#str)) – `"auto"` (alternate by index) · `"in"` (always toward) ·
     `"out"` (always away).
 * **Return type:**
-  [`BurnsPath`](burns.path.html.md#burns.path.BurnsPath)
+  [`BurnsPath`](burns.path.md#burns.path.BurnsPath)
 
 ### Examples
 
@@ -457,7 +457,7 @@ total, and computing an estimate only to discard it is how a partial
 override quietly lets saliency back in.
 
 * **Return type:**
-  [`BurnsPath`](burns.path.html.md#burns.path.BurnsPath)
+  [`BurnsPath`](burns.path.md#burns.path.BurnsPath)
 
 ### Examples
 
@@ -565,7 +565,7 @@ Two styles:
     cinematic slow-in/slow-out. Pass `"linear"` for constant velocity.
   * **output_aspect** ([`Optional`](https://docs.python.org/3/library/typing.html#typing.Optional)[[`float`](https://docs.python.org/3/builtins/functions.html#float)]) – aspect ratio the render should fill (`None` = match image).
 * **Return type:**
-  [`BurnsPath`](burns.path.html.md#burns.path.BurnsPath)
+  [`BurnsPath`](burns.path.md#burns.path.BurnsPath)
 * **Returns:**
   A [`BurnsPath`](#burns.BurnsPath) (two keyframes — Start and End).
 
@@ -586,7 +586,7 @@ Render one image into a pan/zoom video from a [`BurnsPath`](#burns.BurnsPath).
 
 * **Parameters:**
   * **image** – path / `PIL.Image` / `np.ndarray`.
-  * **path** ([`BurnsPath`](burns.path.html.md#burns.path.BurnsPath)) – the motion spec. Default is a 2-second standard push-in.
+  * **path** ([`BurnsPath`](burns.path.md#burns.path.BurnsPath)) – the motion spec. Default is a 2-second standard push-in.
   * **duration** ([`float`](https://docs.python.org/3/builtins/functions.html#float)) – clip length in seconds (the path’s clock is normalized, so
     duration is supplied here, not baked into the path).
   * **fps** ([`int`](https://docs.python.org/3/builtins/functions.html#int)) – frames per second.
@@ -673,8 +673,8 @@ Register a render backend under `name` (open-closed extension point).
 Resolve an authored camera intent against `image` into a path.
 
 * **Parameters:**
-  * **move** (`Union`[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`BurnsPath`](burns.path.html.md#burns.path.BurnsPath), [`Mapping`](https://docs.python.org/3/library/typing.html#typing.Mapping)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]]) – a name from `MOVES`, or an explicit
-    [`BurnsPath`](burns.path.html.md#burns.path.BurnsPath) / its `to_dict()` payload. The two
+  * **move** (`Union`[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`BurnsPath`](burns.path.md#burns.path.BurnsPath), [`Mapping`](https://docs.python.org/3/library/typing.html#typing.Mapping)[[`str`](https://docs.python.org/3/builtins/stdtypes.html#str), [`Any`](https://docs.python.org/3/library/typing.html#typing.Any)]]) – a name from `MOVES`, or an explicit
+    [`BurnsPath`](burns.path.md#burns.path.BurnsPath) / its `to_dict()` payload. The two
     are the two front doors on this one path: a stored panel that
     carries both a named move and a hand-corrected override passes the
     override here and the choice is made in one place.
@@ -704,9 +704,9 @@ Resolve an authored camera intent against `image` into a path.
       and honours 1.02 exactly. A drift is floored to whatever leaves
       `DRIFT_MIN_ROOM` of travel.
   * **focus** ([`Any`](https://docs.python.org/3/library/typing.html#typing.Any)) – an explicit keep-region overriding the saliency estimate. A
-    [`Rect`](burns.rect.html.md#burns.rect.Rect), a normalized `(x, y, w, h)` tuple, or
+    [`Rect`](burns.rect.md#burns.rect.Rect), a normalized `(x, y, w, h)` tuple, or
     any object with `.x/.y/.w/.h`. When given,
-    [`salient_box()`](burns.content.html.md#burns.content.salient_box) is not called at all.
+    [`salient_box()`](burns.content.md#burns.content.salient_box) is not called at all.
   * **seed** ([`int`](https://docs.python.org/3/builtins/functions.html#int)) – chooses which move `"auto"` becomes, and nothing else. Mint it
     once per panel and store it; never derive it from a position, which
     is the defect this parameter exists to remove.
@@ -729,9 +729,9 @@ Resolve an authored camera intent against `image` into a path.
     per delivery, so “author a second path” is not a remedy a caller
     can take; `"refit"` is.
 * **Return type:**
-  [`BurnsPath`](burns.path.html.md#burns.path.BurnsPath)
+  [`BurnsPath`](burns.path.md#burns.path.BurnsPath)
 * **Returns:**
-  A [`BurnsPath`](burns.path.html.md#burns.path.BurnsPath). Duration is not part of it; pass that
+  A [`BurnsPath`](burns.path.md#burns.path.BurnsPath). Duration is not part of it; pass that
   to the renderer.
 * **Raises:**
   [**MoveError**](#burns.MoveError) – an unknown move name, a malformed `focus`, a non-positive
@@ -827,11 +827,11 @@ True
 
 ### Modules
 
-| [`backends`](burns.backends.html.md#module-burns.backends)   | Pluggable single-clip render backends — the open-closed seam.                                                                                       |
+| [`backends`](burns.backends.md#module-burns.backends)   | Pluggable single-clip render backends — the open-closed seam.                                                                                       |
 |-----------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|
-| [`content`](burns.content.html.md#module-burns.content)     | Content-aware Ken Burns: choose crop windows that keep the subject (and any detected faces) framed, and avoid drifting over empty regions like sky. |
-| [`easing`](burns.easing.html.md#module-burns.easing)       | Timing functions (easing) for Ken Burns motion.                                                                                                     |
-| [`moves`](burns.moves.html.md#module-burns.moves)         | The named camera moves, and the one resolver that expands one into a path.                                                                          |
-| [`path`](burns.path.html.md#module-burns.path)           | The render-agnostic Ken Burns motion spec: [`BurnsPath`](#burns.BurnsPath).                                              |
-| [`rect`](burns.rect.html.md#module-burns.rect)           | The Ken Burns viewport rectangle — the render-agnostic geometric atom.                                                                              |
-| [`render`](burns.render.html.md#module-burns.render)       | Ken Burns **renderers** — turn still images into pan/zoom video.                                                                                    |
+| [`content`](burns.content.md#module-burns.content)     | Content-aware Ken Burns: choose crop windows that keep the subject (and any detected faces) framed, and avoid drifting over empty regions like sky. |
+| [`easing`](burns.easing.md#module-burns.easing)       | Timing functions (easing) for Ken Burns motion.                                                                                                     |
+| [`moves`](burns.moves.md#module-burns.moves)         | The named camera moves, and the one resolver that expands one into a path.                                                                          |
+| [`path`](burns.path.md#module-burns.path)           | The render-agnostic Ken Burns motion spec: [`BurnsPath`](#burns.BurnsPath).                                              |
+| [`rect`](burns.rect.md#module-burns.rect)           | The Ken Burns viewport rectangle — the render-agnostic geometric atom.                                                                              |
+| [`render`](burns.render.md#module-burns.render)       | Ken Burns **renderers** — turn still images into pan/zoom video.                                                                                    |

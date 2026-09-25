@@ -6,21 +6,21 @@
 ## Pages
 
 - [burns](index.html.md): Ken Burns pan/zoom video effects: turn a still image — or a sequence of stills —
-- [API reference](api.html.md): | [`burns`](_autosummary/burns.html.md#module-burns)   | burns — Ken Burns pan/zoom video effects.  ...
+- [API reference](api.html.md): | &#96;burns&#96;   | burns — Ken Burns pan/zoom video effects.   |
 - [burns](_autosummary/burns.html.md): burns — Ken Burns pan/zoom video effects.
 - [burns.backends](_autosummary/burns.backends.html.md): Pluggable single-clip render backends — the open-closed seam.
 - [burns.content](_autosummary/burns.content.html.md): Content-aware Ken Burns: choose crop windows that keep the subject (and any
 - [burns.easing](_autosummary/burns.easing.html.md): Timing functions (easing) for Ken Burns motion.
 - [burns.moves](_autosummary/burns.moves.html.md): The named camera moves, and the one resolver that expands one into a path.
-- [burns.path](_autosummary/burns.path.html.md): The render-agnostic Ken Burns motion spec: [`BurnsPath`](#burns.path.BurnsPath).
+- [burns.path](_autosummary/burns.path.html.md): The render-agnostic Ken Burns motion spec: &#96;BurnsPath&#96;.
 - [burns.rect](_autosummary/burns.rect.html.md): The Ken Burns viewport rectangle — the render-agnostic geometric atom.
-- [burns.render](_autosummary/burns.render.html.md): Ken Burns **renderers** — turn still images into pan/zoom video.
-- [For AI agents](ai-agents.html.md): `burns` ships artifacts for coding agents alongside its code. This page lists
-- [About this build](about-this-build.html.md): This documentation was built on **2026-09-19 22:13 UTC** from commit <a href="https://github.com/tho...
+- [burns.render](_autosummary/burns.render.html.md): Ken Burns &#42;&#42;renderers&#42;&#42; — turn still images into pan/zoom video.
+- [For AI agents](ai-agents.html.md): &#96;burns&#96; ships artifacts for coding agents alongside its code. This page lists
+- [About this build](about-this-build.html.md): This documentation was built on &#42;&#42;2026-09-25 01:19 UTC&#42;&#42; from commit &lt;a href="https://github.com/tho...
 
----
+## Optional
 
-For more comprehensive documentation, see [burns.md](burns.md)
+- [burns.md](burns.md): Complete documentation in a single file.
 
 ## Build
 

@@ -9,6 +9,7 @@ burns.moves
    .. autosummary::
    
       RESOLVER_IMPL_VERSION
+      DIFFUSE_KEEP_AREA
       DFLT_ZOOM
       DRIFT_TRAVEL
       DRIFT_SPAN
