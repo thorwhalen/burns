@@ -107,9 +107,21 @@ RESOLVER_IMPL_VERSION: int = 2
 #: on 10 of 10 archive photos). Such a region is replaced by the largest keep-
 #: region that still honours the requested zoom, centred where saliency
 #: points. An explicit ``focus`` is never treated this way: it is a decision.
-#: The default centred box (:data:`~burns.content.DFLT_KEEP_BOX`, 0.49) sits
-#: just under it, so a uniform picture keeps its old framing.
+#: It is the centre of a ramp (:data:`DIFFUSE_KEEP_RAMP`) and applies only to a
+#: box touching :data:`DIFFUSE_MIN_EDGES` borders; the default centred box
+#: (:data:`~burns.content.DFLT_KEEP_BOX`) touches none, so a uniform picture
+#: keeps its old framing.
 DIFFUSE_KEEP_AREA: float = 0.5
+#: The width of the area ramp around :data:`DIFFUSE_KEEP_AREA` over which a box
+#: turns from subject into centre hint (0.45 → 0.55), so framing never flips.
+DIFFUSE_KEEP_RAMP: float = 0.1
+#: A diffuse box reaches the borders: texture everywhere touches at least this
+#: many of the four image edges, a large subject on a flat field does not.
+DIFFUSE_MIN_EDGES: int = 3
+#: How close to an edge counts as touching it: saliency trims 4 % percentiles and pads 5 %, so a box of texture-everywhere sits 3–7 % in from the border on real photographs (burns#21 sample).
+_EDGE_TOL: float = 0.08
+#: Smallest ``content_box`` side, in pixels, saliency can run on.
+_MIN_CONTENT_PX: int = 4
 #: How far under the requested zoom's window a centre-hint keep-region is
 #: sized, so the ``0.98`` framing margins downstream never bind on it.
 _HINT_MARGIN: float = 0.96
@@ -637,7 +649,9 @@ def resolve_move(
     else:
         keep = _saliency_keep(
             img,
-            None if content_box is None else _focus_box(content_box),
+            None
+            if content_box is None
+            else _focus_box(content_box, what="content_box"),
             zoom=zoom,
             aspect=aspect,
         )
@@ -653,15 +667,43 @@ def resolve_move(
     )
 
 
+def _diffuseness(box: Box) -> float:
+    """How much a saliency box reads as *texture everywhere* rather than a subject, in [0, 1].
+
+    Two signals, because area alone cannot tell a detailed photograph from one
+    large subject on a flat field (a 0.69-sided block crossed a hard 0.5-area
+    threshold and was suddenly cropped at 1.3x). Texture everywhere reaches the
+    picture's borders: the box must touch at least :data:`DIFFUSE_MIN_EDGES`
+    of them. Then the area ramps the weight in smoothly over
+    ``DIFFUSE_KEEP_AREA ± DIFFUSE_KEEP_RAMP / 2``, so no 1 % change in the box
+    flips the framing.
+
+    >>> _diffuseness((0.0, 0.0, 1.0, 1.0))
+    1.0
+    >>> _diffuseness((0.15, 0.15, 0.7, 0.7))   # a big centred subject
+    0.0
+    >>> _diffuseness((0.0, 0.38, 1.0, 0.62))   # sky over detail: diffuse
+    1.0
+    """
+    x, y, w, h = box
+    touches = sum(
+        (x <= _EDGE_TOL, y <= _EDGE_TOL, x + w >= 1 - _EDGE_TOL, y + h >= 1 - _EDGE_TOL)
+    )
+    if touches < DIFFUSE_MIN_EDGES:
+        return 0.0
+    lo = DIFFUSE_KEEP_AREA - DIFFUSE_KEEP_RAMP / 2
+    return min(1.0, max(0.0, (w * h - lo) / DIFFUSE_KEEP_RAMP))
+
+
 def _saliency_keep(img, content_box, *, zoom: float, aspect) -> Box:
     """The keep-region saliency supports, in ``img``'s normalized coordinates.
 
     Saliency runs inside ``content_box`` (the whole image when ``None``), so a
     blurred fill or letterbox around a composited still never reads as
     subject: the seam between still and fill is a hard edge, and it widened
-    every box to the full still plus both seams. A region covering
-    :data:`DIFFUSE_KEEP_AREA` or more of the content is a centre hint (see
-    there).
+    every box to the full still plus both seams. A diffuse region (see
+    :func:`_diffuseness`) is shrunk toward a centre hint that honours the
+    requested zoom, by as much as it is diffuse.
 
     >>> import numpy as np
     >>> busy = (np.random.default_rng(0).random((300, 400)) * 255).astype("uint8")
@@ -672,23 +714,30 @@ def _saliency_keep(img, content_box, *, zoom: float, aspect) -> Box:
     bx, by, bw, bh = content_box if content_box is not None else (0.0, 0.0, 1.0, 1.0)
     if content_box is not None:
         img_w, img_h = img.size
-        box = (
-            int(round(bx * img_w)),
-            int(round(by * img_h)),
-            int(round((bx + bw) * img_w)),
-            int(round((by + bh) * img_h)),
-        )
-        region = img.crop(box)
+        x0, y0 = int(round(bx * img_w)), int(round(by * img_h))
+        x1 = max(x0 + 1, int(round((bx + bw) * img_w)))
+        y1 = max(y0 + 1, int(round((by + bh) * img_h)))
+        if x1 - x0 < _MIN_CONTENT_PX or y1 - y0 < _MIN_CONTENT_PX:
+            raise MoveError(
+                f"content_box {content_box} covers {x1 - x0}x{y1 - y0} px of a "
+                f"{img_w}x{img_h} image; saliency needs at least "
+                f"{_MIN_CONTENT_PX} px on each side"
+            )
+        region = img.crop((x0, y0, x1, y1))
     else:
         region = img
-    sx, sy, sw, sh = salient_box(region)
+    sbox = salient_box(region)
+    sx, sy, sw, sh = sbox
     keep = (bx + sx * bw, by + sy * bh, sw * bw, sh * bh)
-    if sw * sh < DIFFUSE_KEEP_AREA:
+    t = _diffuseness(sbox)
+    if t <= 0.0:
         return keep
     wmax, hmax = axis_maxima(*img.size, aspect)
     grow = 1 + 2 * DFLT_KEEP_PAD
-    w = min(sw * bw, _HINT_MARGIN * wmax / zoom / grow)
-    h = min(sh * bh, _HINT_MARGIN * hmax / zoom / grow)
+    hint_w = min(keep[2], _HINT_MARGIN * wmax / zoom / grow)
+    hint_h = min(keep[3], _HINT_MARGIN * hmax / zoom / grow)
+    w = keep[2] + (hint_w - keep[2]) * t
+    h = keep[3] + (hint_h - keep[3]) * t
     cx, cy = keep[0] + keep[2] / 2, keep[1] + keep[3] / 2
     return (cx - w / 2, cy - h / 2, w, h)
 
@@ -815,7 +864,7 @@ def _refit(
     )
 
 
-def _focus_box(focus: FocusLike) -> Box:
+def _focus_box(focus: FocusLike, *, what: str = "focus") -> Box:
     """Normalize ``focus`` to a ``(x, y, w, h)`` box, or say why it is not one."""
     if isinstance(focus, Mapping):
         # What a stored focus looks like after a JSON round-trip, which is how
@@ -823,7 +872,7 @@ def _focus_box(focus: FocusLike) -> Box:
         missing = [k for k in ("x", "y", "w", "h") if k not in focus]
         if missing:
             raise MoveError(
-                f"a focus mapping needs the keys x, y, w, h — missing {missing}"
+                f"a {what} mapping needs the keys x, y, w, h — missing {missing}"
             )
         box = tuple(focus[k] for k in ("x", "y", "w", "h"))
     elif all(hasattr(focus, a) for a in ("x", "y", "w", "h")):
@@ -838,22 +887,22 @@ def _focus_box(focus: FocusLike) -> Box:
             # reached float() and escaped as a bare ValueError from a generator
             # expression, three frames from anything that named the argument.
             raise MoveError(
-                f"focus must be a Rect, a normalized (x, y, w, h) sequence of 4 "
+                f"{what} must be a Rect, a normalized (x, y, w, h) sequence of 4 "
                 f"components, or an object with .x/.y/.w/.h — got "
                 f"{type(focus).__name__} {focus!r}"
             ) from e
         if len(box) != 4:
             raise MoveError(
-                f"focus must have exactly 4 components (x, y, w, h), got {len(box)}"
+                f"{what} must have exactly 4 components (x, y, w, h), got {len(box)}"
             )
     x, y, w, h = (float(v) for v in box)
     if w <= 0 or h <= 0:
         raise MoveError(
-            f"focus must have positive width and height, got {(x, y, w, h)}"
+            f"{what} must have positive width and height, got {(x, y, w, h)}"
         )
     if not (-1e-6 <= x and -1e-6 <= y and x + w <= 1 + 1e-6 and y + h <= 1 + 1e-6):
         raise MoveError(
-            f"focus must lie inside the image in normalized [0, 1] units with a "
+            f"{what} must lie inside the image in normalized [0, 1] units with a "
             f"top-left origin, got {(x, y, w, h)}. A box in pixels is the usual "
             "cause — divide by the image's width and height."
         )

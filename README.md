@@ -327,7 +327,7 @@ motion.
 | `content_aware_path(img_w, img_h, *, subject=None, faces=(), index=0, output_aspect=None, zoom=1.3, min_zoom=1.05, keep_pad=0.18, mode="auto", easing="ease-in-out")` | Pure geometry: a `BurnsPath` that keeps a keep-region framed. |
 | `content_aware_path_for(image, *, subject=None, faces=(), faces_detector=None, index=0, output_aspect=None, **kwargs)` | The same, deriving subject (`salient_box`) and faces from the image itself. An explicit `subject` replaces the saliency estimate, which is then not computed. |
 | `MOVES` | The named-move vocabulary — every value a stored `move` field may hold. |
-| `resolve_move(move, *, image, aspect, zoom=1.18, focus=None, seed=0, easing="ease-in-out", on_aspect_mismatch="raise")` | Resolve an authored move (a name, or an explicit `BurnsPath`) against an image into a path. |
+| `resolve_move(move, *, image, aspect, zoom=1.18, focus=None, seed=0, easing="ease-in-out", on_aspect_mismatch="raise", content_box=None)` | Resolve an authored move (a name, or an explicit `BurnsPath`) against an image into a path. `content_box` is the part of `image` that is picture (saliency runs only there, so a composited fill is never "subject"). When saliency finds texture everywhere, the requested `zoom` is honoured around its centre instead of being capped by it (`DIFFUSE_KEEP_AREA`; burns#21); an explicit `focus` always caps. |
 | `RESOLVER_IMPL_VERSION` | The identity of the resolver's geometry — put it in a render cache key. |
 | `choose_move(seed)` | Which concrete move `"auto"` resolves to for `seed`. |
 | `move_kind(move)` | How a move is grouped: `"zoom"`, `"drift"`, `"static"`, `"select"`. |

@@ -1004,7 +1004,12 @@ class TestRequestedZoomIsHonoured:
     and push_in's floor was what shipped. The fixture is the real case — a
     detailed 4:3 still in a 16:9 film, on the blurred-fill canvas."""
 
-    @pytest.mark.parametrize("where", ["still", "canvas", "canvas+content_box"])
+    # A canvas WITHOUT content_box is not a supported way to get this: the
+    # still's box on a letterboxed canvas touches only two borders, which is
+    # also what two subjects at opposite edges look like, so burns cannot tell
+    # it is texture. A caller that composites onto a fill says where the
+    # picture is (braidio does).
+    @pytest.mark.parametrize("where", ["still", "canvas+content_box"])
     def test_the_four_zoom_levels_are_distinct(self, where):
         photo = _busy_photo()
         img, box = (photo, None) if where == "still" else _on_blurred_canvas(photo)
@@ -1023,10 +1028,12 @@ class TestRequestedZoomIsHonoured:
             assert got == pytest.approx(z, abs=0.01), (z, ends)
 
     def test_hold_and_drift_follow_the_zoom_too(self):
-        img, _ = _on_blurred_canvas(_busy_photo())
+        img, box = _on_blurred_canvas(_busy_photo())
         holds = [
             _end_magnification(
-                resolve_move("hold", image=img, aspect=16 / 9, zoom=z), img, 16 / 9
+                resolve_move("hold", image=img, aspect=16 / 9, zoom=z, content_box=box),
+                img,
+                16 / 9,
             )
             for z in _STUDIO_ZOOMS
         ]
@@ -1065,3 +1072,30 @@ class TestRequestedZoomIsHonoured:
         cx, cy = x + w / 2, y + h / 2
         sx, sy = box[0] + box[2] * 1000 / 1280, box[1] + box[3] * 680 / 960
         assert abs(cx - sx) < 0.08 and abs(cy - sy) < 0.12, (cx, cy, sx, sy)
+
+
+class TestDiffuseIsNotASubject:
+    """Review of burns#21: area alone flipped a large subject on a flat field
+    from framed-whole to cropped at a 1 % size change."""
+
+    @pytest.mark.parametrize("side", [0.62, 0.66, 0.69])  # the review's flip point
+    def test_a_large_centred_subject_on_a_flat_field_is_never_cropped(self, side):
+        h, w = 600, 800
+        img = np.full((h, w, 3), 90, dtype=np.uint8)
+        rng = np.random.default_rng(1)
+        bh, bw = int(h * side), int(w * side)
+        y0, x0 = (h - bh) // 2, (w - bw) // 2
+        img[y0 : y0 + bh, x0 : x0 + bw] = rng.integers(0, 255, (bh, bw, 3))
+        for z in _STUDIO_ZOOMS:
+            end = resolve_move("push_in", image=img, aspect=16 / 9, zoom=z).evaluate(1)
+            # the subject's height stays inside the window, as before #21
+            assert end.y <= y0 / h + 0.02 and end.y + end.h >= (y0 + bh) / h - 0.02
+
+    def test_a_degenerate_content_box_is_a_move_error(self):
+        img = _busy_photo(400, 300)
+        with pytest.raises(MoveError, match="content_box"):
+            resolve_move(
+                "push_in", image=img, aspect=16 / 9, content_box=(0, 0, 0.001, 0.001)
+            )
+        with pytest.raises(MoveError, match="content_box must lie inside"):
+            resolve_move("push_in", image=img, aspect=16 / 9, content_box=(0, 0, 2, 1))
