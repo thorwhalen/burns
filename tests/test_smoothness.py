@@ -53,9 +53,7 @@ class TestTheWindowMovesEveryFrame:
         """The defining property. A slow push must advance every single frame —
         a repeated window IS a dropped frame of motion."""
         path = ken_burns_path(0, output_aspect=16 / 9, zoom=1.18)
-        boxes = [
-            sample_box_exact(path, t, **SLOW_PANEL) for t in _times()
-        ]
+        boxes = [sample_box_exact(path, t, **SLOW_PANEL) for t in _times()]
         repeats = [i for i in range(1, len(boxes)) if boxes[i] == boxes[i - 1]]
         assert not repeats, f"{len(repeats)} static frames at {repeats[:8]}"
 
@@ -83,12 +81,10 @@ class TestRenderedFramesChangeEvenly:
         img = gradient_image(1920, 1080)
         path = ken_burns_path(0, output_aspect=16 / 9, zoom=1.18)
         frames = [
-            sample_frame(path, t, img, 1920, 1080, 1920, 1080)
-            for t in _times()[:90]
+            sample_frame(path, t, img, 1920, 1080, 1920, 1080) for t in _times()[:90]
         ]
         identical = [
-            i for i in range(1, len(frames))
-            if np.array_equal(frames[i], frames[i - 1])
+            i for i in range(1, len(frames)) if np.array_equal(frames[i], frames[i - 1])
         ]
         assert not identical, f"frozen frames at {identical[:8]}"
 
@@ -106,9 +102,9 @@ class TestRenderedFramesChangeEvenly:
             sample_frame(path, t, img, 1920, 1080, 1920, 1080).astype(np.int16)
             for t in _times()[40:100]
         ]
-        deltas = np.array([
-            np.abs(frames[i] - frames[i - 1]).mean() for i in range(1, len(frames))
-        ])
+        deltas = np.array(
+            [np.abs(frames[i] - frames[i - 1]).mean() for i in range(1, len(frames))]
+        )
         assert deltas.min() > 0, "a frame did not change at all"
         # Coefficient of variation: stepping measured ~1.0+ before the fix.
         cv = deltas.std() / deltas.mean()

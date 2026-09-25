@@ -30,7 +30,12 @@ class TestRect:
 
     def test_to_pixels_rounds_inside_image(self):
         assert Rect(0, 0, 1, 1).to_pixels(100, 80) == (0, 0, 100, 80)
-        assert Rect.from_center_zoom(0.5, 0.5, 2.0).to_pixels(100, 80) == (25, 20, 75, 60)
+        assert Rect.from_center_zoom(0.5, 0.5, 2.0).to_pixels(100, 80) == (
+            25,
+            20,
+            75,
+            60,
+        )
 
     def test_lerp(self):
         mid = Rect(0, 0, 1, 1).lerp(Rect(0.25, 0.25, 0.5, 0.5), 0.5)
@@ -118,10 +123,15 @@ class TestBurnsPath:
         d = BurnsPath.from_start_end(Rect(0, 0, 1, 1), Rect(0, 0, 0.5, 0.5)).to_dict()
         assert d["version"] == 1
         assert d["easing"] == "ease-in-out"
-        assert d["keyframes"][0] == {"t": 0.0, "rect": {"x": 0.0, "y": 0.0, "w": 1.0, "h": 1.0}}
+        assert d["keyframes"][0] == {
+            "t": 0.0,
+            "rect": {"x": 0.0, "y": 0.0, "w": 1.0, "h": 1.0},
+        }
 
     def test_callable_easing_is_not_serializable(self):
-        p = BurnsPath.from_start_end(Rect(0, 0, 1, 1), Rect(0, 0, 0.5, 0.5), easing=lambda t: t)
+        p = BurnsPath.from_start_end(
+            Rect(0, 0, 1, 1), Rect(0, 0, 0.5, 0.5), easing=lambda t: t
+        )
         with pytest.raises(ValueError, match="not serializable"):
             p.to_dict()
 

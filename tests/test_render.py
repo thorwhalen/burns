@@ -31,7 +31,10 @@ class TestFrameMapping:
         assert output_size_for(800, 600, output_aspect=1.0) == (600, 600)
 
     def test_explicit_output_size_wins_and_snaps_even(self):
-        assert output_size_for(800, 600, output_aspect=2.0, output_size=(101, 99)) == (100, 98)
+        assert output_size_for(800, 600, output_aspect=2.0, output_size=(101, 99)) == (
+            100,
+            98,
+        )
 
     def test_sample_frame_returns_output_dims(self):
         img = _gradient_image()
@@ -69,7 +72,9 @@ class TestKenBurnsVideo:
         # 4:3 source -> 16:9 output: the spec's headline capability.
         out = tmp_path / "wide.mp4"
         path = ken_burns_path(1, output_aspect=16 / 9)
-        ken_burns_video(_gradient_image(64, 48), path, duration=0.4, fps=10, saveas=str(out))
+        ken_burns_video(
+            _gradient_image(64, 48), path, duration=0.4, fps=10, saveas=str(out)
+        )
         import imageio.v3 as iio
 
         frame = iio.imread(str(out), index=0)
