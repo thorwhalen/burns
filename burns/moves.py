@@ -99,8 +99,8 @@ RESOLVER_IMPL_VERSION: int = 2
 # 2: a diffuse saliency keep-region is a centre hint, not a cap, and saliency
 #    can be confined to a ``content_box`` (thorwhalen/burns#21).
 
-#: A saliency keep-region covering at least this share of the picture's area
-#: says where the picture's centre of interest is, not what must stay in frame.
+#: The area (share of the picture) around which a saliency keep-region that
+#: reaches the borders stops being a subject and becomes a centre hint.
 #: On a detailed photograph gradient saliency marks nearly everything, and
 #: treating that as a subject capped every requested zoom at ~1.0, so
 #: ``push_in`` rendered its ~1.07 floor whatever was asked (burns#21, measured
@@ -118,10 +118,17 @@ DIFFUSE_KEEP_RAMP: float = 0.1
 #: A diffuse box reaches the borders: texture everywhere touches at least this
 #: many of the four image edges, a large subject on a flat field does not.
 DIFFUSE_MIN_EDGES: int = 3
-#: How close to an edge counts as touching it: saliency trims 4 % percentiles and pads 5 %, so a box of texture-everywhere sits 3–7 % in from the border on real photographs (burns#21 sample).
-_EDGE_TOL: float = 0.08
+#: A box edge within ``_EDGE_NEAR`` of the border fully touches it, one beyond
+#: ``_EDGE_FAR`` does not, linearly between — a ramp, not a threshold, so a 2 %
+#: change in content cannot flip the framing. Saliency trims 4 % percentiles
+#: and pads 5 %, so texture-everywhere sits 3–7 % in on real photographs.
+_EDGE_NEAR: float = 0.04
+_EDGE_FAR: float = 0.12
 #: Smallest ``content_box`` side, in pixels, saliency can run on.
 _MIN_CONTENT_PX: int = 4
+#: ``salient_box``'s default ``downscale`` (long side, px), which the guard
+#: above has to anticipate.
+_SALIENCY_DOWNSCALE: int = 320
 #: How far under the requested zoom's window a centre-hint keep-region is
 #: sized, so the ``0.98`` framing margins downstream never bind on it.
 _HINT_MARGIN: float = 0.96
@@ -673,10 +680,15 @@ def _diffuseness(box: Box) -> float:
     Two signals, because area alone cannot tell a detailed photograph from one
     large subject on a flat field (a 0.69-sided block crossed a hard 0.5-area
     threshold and was suddenly cropped at 1.3x). Texture everywhere reaches the
-    picture's borders: the box must touch at least :data:`DIFFUSE_MIN_EDGES`
-    of them. Then the area ramps the weight in smoothly over
-    ``DIFFUSE_KEEP_AREA ± DIFFUSE_KEEP_RAMP / 2``, so no 1 % change in the box
-    flips the framing.
+    picture's borders: the box must reach :data:`DIFFUSE_MIN_EDGES` of them,
+    each edge's reach itself ramped (``_EDGE_NEAR`` → ``_EDGE_FAR``). Then the
+    area ramps the weight in over ``DIFFUSE_KEEP_AREA ± DIFFUSE_KEEP_RAMP / 2``.
+    Both ramps, so no small change in the box flips the framing.
+
+    The trade-off, stated: a large *subject* that genuinely reaches three
+    borders (a figure filling the height and one side) reads as diffuse, and
+    at a strong zoom (1.3) the window keeps ~0.6 of its box where it used to
+    keep ~0.7–0.8. An explicit ``focus`` restores the old cap.
 
     >>> _diffuseness((0.0, 0.0, 1.0, 1.0))
     1.0
@@ -686,13 +698,14 @@ def _diffuseness(box: Box) -> float:
     1.0
     """
     x, y, w, h = box
-    touches = sum(
-        (x <= _EDGE_TOL, y <= _EDGE_TOL, x + w >= 1 - _EDGE_TOL, y + h >= 1 - _EDGE_TOL)
-    )
-    if touches < DIFFUSE_MIN_EDGES:
-        return 0.0
+
+    def reach(gap: float) -> float:  # 1 at the border, 0 once clearly inside
+        return min(1.0, max(0.0, (_EDGE_FAR - gap) / (_EDGE_FAR - _EDGE_NEAR)))
+
+    touches = reach(x) + reach(y) + reach(1 - x - w) + reach(1 - y - h)
+    edges = min(1.0, max(0.0, touches - (DIFFUSE_MIN_EDGES - 1)))
     lo = DIFFUSE_KEEP_AREA - DIFFUSE_KEEP_RAMP / 2
-    return min(1.0, max(0.0, (w * h - lo) / DIFFUSE_KEEP_RAMP))
+    return edges * min(1.0, max(0.0, (w * h - lo) / DIFFUSE_KEEP_RAMP))
 
 
 def _saliency_keep(img, content_box, *, zoom: float, aspect) -> Box:
@@ -717,11 +730,16 @@ def _saliency_keep(img, content_box, *, zoom: float, aspect) -> Box:
         x0, y0 = int(round(bx * img_w)), int(round(by * img_h))
         x1 = max(x0 + 1, int(round((bx + bw) * img_w)))
         y1 = max(y0 + 1, int(round((by + bh) * img_h)))
-        if x1 - x0 < _MIN_CONTENT_PX or y1 - y0 < _MIN_CONTENT_PX:
+        cw, ch = x1 - x0, y1 - y0
+        # salient_box downscales the long side to its `downscale` first, so the
+        # short side must survive that too, or it silently returns its default
+        shrunk = min(cw, ch) * min(1.0, _SALIENCY_DOWNSCALE / max(cw, ch))
+        if min(cw, ch) < _MIN_CONTENT_PX or shrunk < _MIN_CONTENT_PX:
             raise MoveError(
-                f"content_box {content_box} covers {x1 - x0}x{y1 - y0} px of a "
+                f"content_box {content_box} covers {cw}x{ch} px of a "
                 f"{img_w}x{img_h} image; saliency needs at least "
-                f"{_MIN_CONTENT_PX} px on each side"
+                f"{_MIN_CONTENT_PX} px on each side after downscaling the long "
+                f"side to {_SALIENCY_DOWNSCALE} px"
             )
         region = img.crop((x0, y0, x1, y1))
     else:

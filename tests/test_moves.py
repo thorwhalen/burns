@@ -1074,6 +1074,20 @@ class TestRequestedZoomIsHonoured:
         assert abs(cx - sx) < 0.08 and abs(cy - sy) < 0.12, (cx, cy, sx, sy)
 
 
+def test_diffuseness_ramps_with_the_edge_distance():
+    """Second review of #21: a yes/no edge test flipped 1.30 -> 1.07 for a 2 %
+    change in content. The reach of each edge ramps, so the weight moves
+    continuously as a box edge leaves the border."""
+    from burns.moves import _diffuseness
+
+    margins = [0.02 + 0.005 * k for k in range(29)]  # 0.02 .. 0.16
+    weights = [_diffuseness((0.0, 0.0, 1.0 - m, 1.0 - m)) for m in margins]
+    assert weights[0] == 1.0 and weights[-1] == 0.0
+    steps = [a - b for a, b in zip(weights, weights[1:])]
+    # monotone, and no 0.5 % change in content moves the weight by much
+    assert all(s >= 0 for s in steps) and max(steps) <= 0.15, weights
+
+
 class TestDiffuseIsNotASubject:
     """Review of burns#21: area alone flipped a large subject on a flat field
     from framed-whole to cropped at a 1 % size change."""
@@ -1096,6 +1110,11 @@ class TestDiffuseIsNotASubject:
         with pytest.raises(MoveError, match="content_box"):
             resolve_move(
                 "push_in", image=img, aspect=16 / 9, content_box=(0, 0, 0.001, 0.001)
+            )
+        tall = _busy_photo(400, 4000)
+        with pytest.raises(MoveError, match="downscaling"):
+            resolve_move(
+                "push_in", image=tall, aspect=16 / 9, content_box=(0, 0, 0.0125, 1)
             )
         with pytest.raises(MoveError, match="content_box must lie inside"):
             resolve_move("push_in", image=img, aspect=16 / 9, content_box=(0, 0, 2, 1))
