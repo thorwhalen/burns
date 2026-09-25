@@ -33,6 +33,7 @@ from burns.content import DFLT_KEEP_PAD, fit_zoom, pad_box
 from burns.moves import (
     _AUTO_POOL,
     DFLT_ZOOM,
+    DIFFUSE_KEEP_AREA,
     _MOVES,
     DRIFT_MIN_ROOM,
     DRIFT_SPAN,
@@ -840,11 +841,17 @@ class TestGeometryIsPinned:
         here, and `RESOLVER_IMPL_VERSION`, which is what stops a consumer's
         cache serving frames from the old tuning forever.
         """
-        assert (DRIFT_TRAVEL, DRIFT_SPAN, DFLT_ZOOM) == (0.5, 0.10, 1.18), (
+        assert (DRIFT_TRAVEL, DRIFT_SPAN, DFLT_ZOOM, DIFFUSE_KEEP_AREA) == (
+            0.5,
+            0.10,
+            1.18,
+            0.5,
+        ), (
             "a tuned constant changed: bump RESOLVER_IMPL_VERSION in the same "
             "commit, then update this pin"
         )
-        assert RESOLVER_IMPL_VERSION == 1
+        # 2: diffuse saliency is a centre hint, and content_box (burns#21)
+        assert RESOLVER_IMPL_VERSION == 2
 
     def test_the_seed_is_mixed_not_taken_modulo(self):
         """Cross-process stability alone does not prove the seed is scrambled
@@ -949,3 +956,112 @@ class TestRenders:
             first = np.asarray(clip.get_frame(0.0), dtype="int16")
             last = np.asarray(clip.get_frame(0.9), dtype="int16")
         assert np.abs(first - last).mean() > 1.0
+
+
+# --- burns#21: the zoom a caller asks for is the zoom it gets -----------------
+
+#: The studio's four "How much it closes in" choices (reelee-web ZOOMS).
+_STUDIO_ZOOMS = (1.0, 1.08, 1.18, 1.3)
+
+
+def _busy_photo(w=1280, h=960, seed=0):
+    """A detailed 4:3 'photograph': texture everywhere, as archive photos are —
+    which is exactly what makes gradient saliency cover the whole frame."""
+    rng = np.random.default_rng(seed)
+    base = rng.integers(0, 255, size=(h // 8, w // 8, 3), dtype=np.uint8)
+    img = np.kron(base, np.ones((8, 8, 1), dtype=np.uint8))
+    img[h // 3 : h // 2, w // 3 : w // 2] = 250  # something brighter mid-frame
+    return img
+
+
+def _on_blurred_canvas(photo, size=(1920, 1080)):
+    """What braidio's prepare_still does: the still, contained, over a blurred
+    darkened enlargement of itself. Returns the canvas and the still's box."""
+    from PIL import Image, ImageFilter
+
+    cw, ch = size
+    still = Image.fromarray(photo)
+    fill = still.resize(size).filter(ImageFilter.GaussianBlur(40))
+    fill = Image.eval(fill, lambda v: int(v * 0.45))
+    scale = min(cw / still.width, ch / still.height)
+    fw, fh = int(round(still.width * scale)), int(round(still.height * scale))
+    ox, oy = (cw - fw) // 2, (ch - fh) // 2
+    fill.paste(still.resize((fw, fh)), (ox, oy))
+    return np.asarray(fill), (ox / cw, oy / ch, fw / cw, fh / ch)
+
+
+def _end_magnification(path, img, aspect):
+    """How far in the move ends, relative to the full-frame window."""
+    from burns.content import axis_maxima
+
+    wmax, _ = axis_maxima(img.shape[1], img.shape[0], aspect)
+    return wmax / path.evaluate(1.0).w
+
+
+class TestRequestedZoomIsHonoured:
+    """Before burns#21 all four studio zooms rendered one push, ~1.07x, on real
+    photographs: saliency covered the picture, so the framing cap bound at 1.0
+    and push_in's floor was what shipped. The fixture is the real case — a
+    detailed 4:3 still in a 16:9 film, on the blurred-fill canvas."""
+
+    @pytest.mark.parametrize("where", ["still", "canvas", "canvas+content_box"])
+    def test_the_four_zoom_levels_are_distinct(self, where):
+        photo = _busy_photo()
+        img, box = (photo, None) if where == "still" else _on_blurred_canvas(photo)
+        kw = {"content_box": box} if where == "canvas+content_box" else {}
+        ends = [
+            _end_magnification(
+                resolve_move("push_in", image=img, aspect=16 / 9, zoom=z, **kw),
+                img,
+                16 / 9,
+            )
+            for z in _STUDIO_ZOOMS
+        ]
+        assert all(b > a + 0.005 for a, b in zip(ends, ends[1:])), ends
+        # the requests above the push floor land where they were asked
+        for z, got in zip(_STUDIO_ZOOMS[1:], ends[1:]):
+            assert got == pytest.approx(z, abs=0.01), (z, ends)
+
+    def test_hold_and_drift_follow_the_zoom_too(self):
+        img, _ = _on_blurred_canvas(_busy_photo())
+        holds = [
+            _end_magnification(
+                resolve_move("hold", image=img, aspect=16 / 9, zoom=z), img, 16 / 9
+            )
+            for z in _STUDIO_ZOOMS
+        ]
+        assert all(b > a for a, b in zip(holds, holds[1:])), holds
+
+    def test_an_explicit_focus_still_caps(self):
+        """The cap is right for a decision: a focus filling the frame is a
+        subject to keep whole, so zoom yields to it exactly as before."""
+        img = _busy_photo()
+        ends = {
+            _end_magnification(
+                resolve_move(
+                    "push_in",
+                    image=img,
+                    aspect=16 / 9,
+                    zoom=z,
+                    focus=(0.0, 0.0, 1.0, 1.0),
+                ),
+                img,
+                16 / 9,
+            )
+            for z in _STUDIO_ZOOMS
+        }
+        assert len({round(e, 3) for e in ends}) == 1
+
+    def test_content_box_keeps_saliency_off_the_fill(self):
+        """A small subject on a flat still: confined to the still, saliency
+        finds the subject; over the whole canvas the fill seam widens it."""
+        photo = np.full((960, 1280, 3), 90, dtype=np.uint8)
+        photo[600:760, 900:1100] = 240  # a subject low and right
+        img, box = _on_blurred_canvas(photo)
+        from burns.moves import _saliency_keep
+        from burns.content import as_pil
+
+        x, y, w, h = _saliency_keep(as_pil(img), box, zoom=1.18, aspect=16 / 9)
+        cx, cy = x + w / 2, y + h / 2
+        sx, sy = box[0] + box[2] * 1000 / 1280, box[1] + box[3] * 680 / 960
+        assert abs(cx - sx) < 0.08 and abs(cy - sy) < 0.12, (cx, cy, sx, sy)

@@ -68,6 +68,7 @@ __all__ = [
     "AUTO_WEIGHTS",
     "RESOLVER_IMPL_VERSION",
     "DFLT_ZOOM",
+    "DIFFUSE_KEEP_AREA",
     "DRIFT_TRAVEL",
     "DRIFT_SPAN",
     "DRIFT_MIN_ROOM",
@@ -94,7 +95,24 @@ __all__ = [
 #: Deliberately **not** the package version: a burns release that touches only
 #: the renderer must not invalidate anybody's cut, and
 #: ``importlib.metadata.version("burns")`` is unreliable here besides.
-RESOLVER_IMPL_VERSION: int = 1
+RESOLVER_IMPL_VERSION: int = 2
+# 2: a diffuse saliency keep-region is a centre hint, not a cap, and saliency
+#    can be confined to a ``content_box`` (thorwhalen/burns#21).
+
+#: A saliency keep-region covering at least this share of the picture's area
+#: says where the picture's centre of interest is, not what must stay in frame.
+#: On a detailed photograph gradient saliency marks nearly everything, and
+#: treating that as a subject capped every requested zoom at ~1.0, so
+#: ``push_in`` rendered its ~1.07 floor whatever was asked (burns#21, measured
+#: on 10 of 10 archive photos). Such a region is replaced by the largest keep-
+#: region that still honours the requested zoom, centred where saliency
+#: points. An explicit ``focus`` is never treated this way: it is a decision.
+#: The default centred box (:data:`~burns.content.DFLT_KEEP_BOX`, 0.49) sits
+#: just under it, so a uniform picture keeps its old framing.
+DIFFUSE_KEEP_AREA: float = 0.5
+#: How far under the requested zoom's window a centre-hint keep-region is
+#: sized, so the ``0.98`` framing margins downstream never bind on it.
+_HINT_MARGIN: float = 0.96
 
 #: Default end magnification. Enough that a slow push reads as movement on a
 #: 1080p frame, little enough that a found still is not visibly softened by the
@@ -457,6 +475,7 @@ def resolve_move(
     seed: int = 0,
     easing: EasingLike = DFLT_EASING,
     on_aspect_mismatch: str = "raise",
+    content_box: FocusLike = None,
 ) -> BurnsPath:
     """Resolve an authored camera intent against ``image`` into a path.
 
@@ -478,9 +497,13 @@ def resolve_move(
             jittered by ``seed`` or by a position — but **bounded at both
             ends**, so the number you pass is a request:
 
-            * capped so the padded keep-region stays framed. A subject filling
-              the frame therefore yields a nearly static move; the fix is a
-              tighter ``focus``, not a bigger ``zoom``.
+            * capped so the padded keep-region stays framed. A ``focus``
+              filling the frame therefore yields a nearly static move; the fix
+              is a tighter ``focus``, not a bigger ``zoom``. A keep-region
+              that *saliency* found covering :data:`DIFFUSE_KEEP_AREA` or more
+              of the picture is only a centre hint and does not cap: on a
+              detailed photograph it covers nearly everything, and capping on
+              it made every zoom render the same ~1.07.
             * floored. ``push_in`` / ``pull_out`` inherit
               ``content_aware_path``'s ``min_zoom + 0.02`` (about 1.07), so a
               barely-there 1.02 push renders as 1.07; ``hold`` has no such floor
@@ -496,6 +519,10 @@ def resolve_move(
         easing: CSS timing function or callable. A callable is fine here but
             cannot be serialized — see :meth:`BurnsPath.to_dict`. Applies to a
             named move; an explicit path carries its own.
+        content_box: the part of ``image`` that is picture, as a normalized
+            ``(x, y, w, h)`` (same forms as ``focus``). Saliency runs inside it,
+            so the blurred fill or bars a caller composited around a still do
+            not read as subject. Ignored when ``focus`` is given.
         on_aspect_mismatch: what to do when an explicit path was authored for a
             different ``output_aspect`` than the one being rendered.
             ``"raise"`` (default) refuses, because honouring the stored
@@ -604,17 +631,66 @@ def resolve_move(
 
     img = as_pil(image)
     img_w, img_h = img.size
-    keep = _focus_box(focus) if focus is not None else salient_box(img)
+    zoom = _checked_zoom(zoom)
+    if focus is not None:
+        keep = _focus_box(focus)
+    else:
+        keep = _saliency_keep(
+            img,
+            None if content_box is None else _focus_box(content_box),
+            zoom=zoom,
+            aspect=aspect,
+        )
     return spec.build(
         _Frame(
             img_w=img_w,
             img_h=img_h,
             keep=keep,
-            zoom=_checked_zoom(zoom),
+            zoom=zoom,
             aspect=aspect,
             easing=easing,
         )
     )
+
+
+def _saliency_keep(img, content_box, *, zoom: float, aspect) -> Box:
+    """The keep-region saliency supports, in ``img``'s normalized coordinates.
+
+    Saliency runs inside ``content_box`` (the whole image when ``None``), so a
+    blurred fill or letterbox around a composited still never reads as
+    subject: the seam between still and fill is a hard edge, and it widened
+    every box to the full still plus both seams. A region covering
+    :data:`DIFFUSE_KEEP_AREA` or more of the content is a centre hint (see
+    there).
+
+    >>> import numpy as np
+    >>> busy = (np.random.default_rng(0).random((300, 400)) * 255).astype("uint8")
+    >>> x, y, w, h = _saliency_keep(as_pil(busy), None, zoom=1.3, aspect=16 / 9)
+    >>> w * h < DIFFUSE_KEEP_AREA          # no longer the whole picture
+    True
+    """
+    bx, by, bw, bh = content_box if content_box is not None else (0.0, 0.0, 1.0, 1.0)
+    if content_box is not None:
+        img_w, img_h = img.size
+        box = (
+            int(round(bx * img_w)),
+            int(round(by * img_h)),
+            int(round((bx + bw) * img_w)),
+            int(round((by + bh) * img_h)),
+        )
+        region = img.crop(box)
+    else:
+        region = img
+    sx, sy, sw, sh = salient_box(region)
+    keep = (bx + sx * bw, by + sy * bh, sw * bw, sh * bh)
+    if sw * sh < DIFFUSE_KEEP_AREA:
+        return keep
+    wmax, hmax = axis_maxima(*img.size, aspect)
+    grow = 1 + 2 * DFLT_KEEP_PAD
+    w = min(sw * bw, _HINT_MARGIN * wmax / zoom / grow)
+    h = min(sh * bh, _HINT_MARGIN * hmax / zoom / grow)
+    cx, cy = keep[0] + keep[2] / 2, keep[1] + keep[3] / 2
+    return (cx - w / 2, cy - h / 2, w, h)
 
 
 #: What ``on_aspect_mismatch`` accepts. A tuple rather than an enum because it

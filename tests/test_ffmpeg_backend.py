@@ -50,13 +50,31 @@ def smooth_image(width: int = 640, height: int = 480) -> np.ndarray:
     return img
 
 
-def render(img, path, out, *, duration=1.0, fps=25, out_w=640, out_h=480,
-           backend="ffmpeg", **kwargs):
+def render(
+    img,
+    path,
+    out,
+    *,
+    duration=1.0,
+    fps=25,
+    out_w=640,
+    out_h=480,
+    backend="ffmpeg",
+    **kwargs,
+):
     height, width = img.shape[:2]
     return get_backend(backend)(
-        img, width, height, path,
-        duration=duration, fps=fps, output=out,
-        out_w=out_w, out_h=out_h, codec="libx264", audio_codec="aac",
+        img,
+        width,
+        height,
+        path,
+        duration=duration,
+        fps=fps,
+        output=out,
+        out_w=out_w,
+        out_h=out_h,
+        codec="libx264",
+        audio_codec="aac",
         **kwargs,
     )
 
@@ -64,9 +82,19 @@ def render(img, path, out, *, duration=1.0, fps=25, out_w=640, out_h=480,
 def first_frame(video) -> np.ndarray:
     png = video.with_suffix(".png")
     subprocess.run(
-        [default_ffmpeg_exe(), "-v", "error", "-y", "-i", str(video),
-         "-frames:v", "1", str(png)],
-        check=True, capture_output=True,
+        [
+            default_ffmpeg_exe(),
+            "-v",
+            "error",
+            "-y",
+            "-i",
+            str(video),
+            "-frames:v",
+            "1",
+            str(png),
+        ],
+        check=True,
+        capture_output=True,
     )
     return np.asarray(Image.open(png).convert("RGB")).astype(int)
 
@@ -90,7 +118,8 @@ def probe(video) -> tuple[int, int, int]:
 
     proc = subprocess.run(
         [default_ffmpeg_exe(), "-hide_banner", "-i", str(video), "-f", "null", "-"],
-        capture_output=True, text=True,
+        capture_output=True,
+        text=True,
     )
     size = re.search(r"Stream #0:0.*?[ ,](\d{2,5})x(\d{2,5})", proc.stderr)
     frames = re.findall(r"frame=\s*(\d+)", proc.stderr)
@@ -143,8 +172,12 @@ class TestItFramesTheShotWhereBurnsSaysItShould:
     def test_the_two_backends_agree_on_a_smooth_image(self, tmp_path):
         img = smooth_image()
         path = BurnsPath.push_in(1.3)
-        a = render(img, path, tmp_path / "pillow.mp4", backend="pillow", out_w=640, out_h=480)
-        b = render(img, path, tmp_path / "ffmpeg.mp4", backend="ffmpeg", out_w=640, out_h=480)
+        a = render(
+            img, path, tmp_path / "pillow.mp4", backend="pillow", out_w=640, out_h=480
+        )
+        b = render(
+            img, path, tmp_path / "ffmpeg.mp4", backend="ffmpeg", out_w=640, out_h=480
+        )
         assert psnr(first_frame(a), first_frame(b)) > SAME_FRAMING_DB
 
     def test_the_headline_case_renders(self, tmp_path):
@@ -161,8 +194,13 @@ class TestItFramesTheShotWhereBurnsSaysItShould:
 class TestTheOutputIsWhatWasAskedFor:
     def test_size_frame_count_and_duration(self, tmp_path):
         video = render(
-            smooth_image(), BurnsPath.push_in(1.2), tmp_path / "a.mp4",
-            duration=2.0, fps=25, out_w=1280, out_h=720,
+            smooth_image(),
+            BurnsPath.push_in(1.2),
+            tmp_path / "a.mp4",
+            duration=2.0,
+            fps=25,
+            out_w=1280,
+            out_h=720,
         )
         width, height, frames = probe(video)
         assert (width, height) == (1280, 720)
@@ -192,8 +230,13 @@ class TestSamplingIsMeasuredNotGuessed:
 
     def test_an_explicit_count_is_honoured(self):
         frames = keyframes_for(
-            BurnsPath.push_in(1.2), duration=2.0,
-            img_w=640, img_h=480, out_w=640, out_h=480, samples=5,
+            BurnsPath.push_in(1.2),
+            duration=2.0,
+            img_w=640,
+            img_h=480,
+            out_w=640,
+            out_h=480,
+            samples=5,
         )
         assert len(frames) == 5
 
@@ -202,16 +245,26 @@ class TestSamplingIsMeasuredNotGuessed:
         Confusing them yields a path that runs in the first second of a
         ten-second clip and then holds — which renders perfectly."""
         frames = keyframes_for(
-            BurnsPath.push_in(1.2), duration=10.0,
-            img_w=640, img_h=480, out_w=640, out_h=480, samples=3,
+            BurnsPath.push_in(1.2),
+            duration=10.0,
+            img_w=640,
+            img_h=480,
+            out_w=640,
+            out_h=480,
+            samples=3,
         )
         assert [k.t for k in frames] == [0.0, 5.0, 10.0]
 
     def test_one_sample_is_refused(self):
         with pytest.raises(FfmpegBackendError, match="at least 2"):
             keyframes_for(
-                BurnsPath.push_in(1.2), duration=1.0,
-                img_w=64, img_h=48, out_w=64, out_h=48, samples=1,
+                BurnsPath.push_in(1.2),
+                duration=1.0,
+                img_w=64,
+                img_h=48,
+                out_w=64,
+                out_h=48,
+                samples=1,
             )
 
     def test_every_window_carries_the_output_aspect_exactly(self):
@@ -220,8 +273,13 @@ class TestSamplingIsMeasuredNotGuessed:
         does — where the integer `sample_box` this once read spread the ratio
         across a pixel of quantisation and needed the aspect reconstructed."""
         frames = keyframes_for(
-            ken_burns_path(0, output_aspect=16 / 9), duration=2.0,
-            img_w=640, img_h=480, out_w=1280, out_h=720, samples=17,
+            ken_burns_path(0, output_aspect=16 / 9),
+            duration=2.0,
+            img_w=640,
+            img_h=480,
+            out_w=1280,
+            out_h=720,
+            samples=17,
         )
         ratios = {round(k.window.w / k.window.h, 9) for k in frames}
         assert len(ratios) == 1, ratios
@@ -234,16 +292,24 @@ class TestItIsNotADropInSwapAndSaysSo:
         drop-in swap for the pillow backend when it is not."""
         with pytest.raises(FfmpegBackendError, match="does not understand"):
             render(
-                smooth_image(64, 48), BurnsPath.push_in(1.2),
-                tmp_path / "a.mp4", out_w=64, out_h=48, threads=4,
+                smooth_image(64, 48),
+                BurnsPath.push_in(1.2),
+                tmp_path / "a.mp4",
+                out_w=64,
+                out_h=48,
+                threads=4,
             )
 
     def test_moviepys_logger_is_accepted_and_ignored(self, tmp_path):
         """The pillow backend defaults it, so a caller forwarding its own
         defaults must not trip the refusal above."""
         video = render(
-            smooth_image(64, 48), BurnsPath.push_in(1.2),
-            tmp_path / "a.mp4", out_w=64, out_h=48, logger=None,
+            smooth_image(64, 48),
+            BurnsPath.push_in(1.2),
+            tmp_path / "a.mp4",
+            out_w=64,
+            out_h=48,
+            logger=None,
         )
         assert video.exists()
 
@@ -260,8 +326,11 @@ class TestItIsNotADropInSwapAndSaysSo:
         )
         with pytest.raises(FfmpegBackendError, match='backend="pillow"'):
             render(
-                smooth_image(64, 48), deep, tmp_path / "a.mp4",
-                out_w=64, out_h=48,
+                smooth_image(64, 48),
+                deep,
+                tmp_path / "a.mp4",
+                out_w=64,
+                out_h=48,
             )
 
 
@@ -276,8 +345,11 @@ class TestTheBinaryIsAChoice:
         argument rather than a constant."""
         with pytest.raises(FfmpegBackendError, match="could not run"):
             render(
-                smooth_image(64, 48), BurnsPath.push_in(1.2),
-                tmp_path / "a.mp4", out_w=64, out_h=48,
+                smooth_image(64, 48),
+                BurnsPath.push_in(1.2),
+                tmp_path / "a.mp4",
+                out_w=64,
+                out_h=48,
                 ffmpeg_exe="/nonexistent/ffmpeg",
             )
 
@@ -292,8 +364,13 @@ class TestThroughThePublicFacade:
         shapes = {}
         for backend in ("pillow", "ffmpeg"):
             out = ken_burns_video(
-                source, wide, saveas=tmp_path / f"{backend}.mp4",
-                duration=1.5, fps=24, backend=backend, output_size=(1280, 720),
+                source,
+                wide,
+                saveas=tmp_path / f"{backend}.mp4",
+                duration=1.5,
+                fps=24,
+                backend=backend,
+                output_size=(1280, 720),
             )
             shapes[backend] = probe(out)
         assert shapes["ffmpeg"] == shapes["pillow"] == (1280, 720, 36)
