@@ -1,4 +1,4 @@
-> built 2026-09-25 01:19 UTC from 34d2909 (main) · burns 0.0.15. Details: build_info.json
+> built 2026-10-01 14:33 UTC from 1fbdf0f (main) · burns 0.0.16. Details: build_info.json
 
 # index.html.md
 
@@ -2481,18 +2481,16 @@ Render one image into a pan/zoom video from a `BurnsPath`.
 
 # About this build
 
-This documentation was built on **2026-09-25 01:19 UTC** from commit <a href="https://github.com/thorwhalen/burns/commit/34d2909e4063b445077cd96bcfc4671637b44623"><code>34d2909</code></a> on branch <code>main</code>, for **burns 0.0.15** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-10-01 14:33 UTC** from commit <a href="https://github.com/thorwhalen/burns/commit/1fbdf0f9ef92a20a2caca62adbc03fd7a9b0e487"><code>1fbdf0f</code></a> on branch <code>main</code>, for **burns 0.0.16** (from <code>pyproject.toml</code>).
 
-#### WARNING
-The documentation and the package may be misaligned:
-
-- The documented version (0.0.15) is behind the latest release on PyPI (0.0.16): `pip install burns` gives newer code than these docs describe.
+#### NOTE
+Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
 
 ## Source
 
 |                     |                                                                                                                                                         |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/thorwhalen/burns/commit/34d2909e4063b445077cd96bcfc4671637b44623"><code>34d2909e4063b445077cd96bcfc4671637b44623</code></a> |
+| Commit              | <a href="https://github.com/thorwhalen/burns/commit/1fbdf0f9ef92a20a2caca62adbc03fd7a9b0e487"><code>1fbdf0f9ef92a20a2caca62adbc03fd7a9b0e487</code></a> |
 | Branch              | <code>main</code>                                                                                                                                       |
 | Tags at this commit | none                                                                                                                                                    |
 | Working tree        | clean                                                                                                                                                   |
@@ -2503,9 +2501,9 @@ The documentation and the package may be misaligned:
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>thorwhalen/burns</code>                                                              |
-| Run          | <a href="https://github.com/thorwhalen/burns/actions/runs/36081269691">36081269691</a>     |
+| Run          | <a href="https://github.com/thorwhalen/burns/actions/runs/36876908296">36876908296</a>     |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>34d2909e4063b445077cd96bcfc4671637b44623</code> (in the history of the built commit) |
+| Event commit | <code>1fbdf0f9ef92a20a2caca62adbc03fd7a9b0e487</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -2530,13 +2528,13 @@ The documentation and the package may be misaligned:
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/burns/0.0.16/">0.0.16</a>, newer than the documented version (0.0.15).
+Latest release: <a href="https://pypi.org/project/burns/0.0.16/">0.0.16</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/thorwhalen/burns && cd burns
-git checkout 34d2909e4063b445077cd96bcfc4671637b44623
+git checkout 1fbdf0f9ef92a20a2caca62adbc03fd7a9b0e487
 pip install "epythet==0.2.12"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
@@ -2563,6 +2561,12 @@ Skills are folders holding a `SKILL.md` (the [Agent Skills](https://agentskills.
 Use when turning a still image (or a sequence of stills) into a pan/zoom video — the “Ken Burns effect” — OR when building a UI to author/select the motion path. Triggers on “ken burns”, “pan and zoom a photo”, “animate a still image”, “make a slideshow with motion”, “zoom into an image as video”, “photo to video”, any use of ken_burns_video / ken_burns_film / ken_burns_path / BurnsPath; on content-aware framing: “keep the subject/face in frame”, “don’t pan over the sky”, content_aware_path / content_aware_path_for / salient_box; on STORING a move as data rather than geometry: “save the camera move”, “the same move on a different picture”, “named camera moves”, MOVES / resolve_move / choose_move / move_kind, push_in / pull_out / drift_left / hold / auto; AND on the TypeScript side: “kenburnz”, “ken burns path entry / selection / cropper UI”, “author a BurnsPath”, mountPathEntry, or work under ts/. Use BEFORE hand-rolling moviepy crop/resize-per-frame logic or a bespoke crop-rect UI.
 
 Source: [`.claude/skills/burns`](https://github.com/thorwhalen/burns/tree/HEAD/.claude/skills/burns).
+
+## Instruction files
+
+Files agents read before working in this repository.
+
+- [`CLAUDE.md`](https://github.com/thorwhalen/burns/tree/HEAD/CLAUDE.md): read by Claude Code
 
 ## Machine-readable documentation
 

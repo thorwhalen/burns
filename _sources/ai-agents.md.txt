@@ -18,6 +18,13 @@ Use when turning a still image (or a sequence of stills) into a pan/zoom video â
 Source: [`.claude/skills/burns`](https://github.com/thorwhalen/burns/tree/HEAD/.claude/skills/burns).
 
 
+## Instruction files
+
+Files agents read before working in this repository.
+
+- [`CLAUDE.md`](https://github.com/thorwhalen/burns/tree/HEAD/CLAUDE.md): read by Claude Code
+
+
 ## Machine-readable documentation
 
 This site publishes the same documentation in forms that fit an agent's context window:
