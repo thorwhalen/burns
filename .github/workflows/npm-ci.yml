@@ -1,3 +1,6 @@
+# npm auth: trusted publishing (OIDC) only. Never add an NPM_TOKEN secret.
+# npmjs.com -> each package -> Settings -> Trusted Publisher -> GitHub Actions:
+#   owner/repo = thorwhalen/burns, workflow filename = npm-ci.yml, no environment.
 # wads NPM CI — calls the reusable workflow hosted in i2mint/wads.
 #
 # All configuration lives in ts/package.json under the "wads" key (wads.ci.*).
@@ -8,7 +11,7 @@
 # to the default branch (main) whose commit message contains "[publish-npm]"
 # publishes kenburnz. Publishing uses OIDC trusted publishing by default
 # (configure the trusted publisher for this repo + workflow filename on
-# npmjs.com); NPM_TOKEN is the fallback (e.g. the first publish of a new name).
+# npmjs.com). The first publish of a new name must be done locally.
 name: NPM CI
 on:
   push:
@@ -26,5 +29,3 @@ jobs:
       id-token: write # npm provenance / OIDC trusted publishing
     with:
       package-dir: ts
-    secrets:
-      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
