@@ -1,4 +1,4 @@
-> built 2026-10-01 14:33 UTC from 1fbdf0f (main) · burns 0.0.16. Details: build_info.json
+> built 2026-10-06 09:28 UTC from e9c14d4 (main) · burns 0.0.17. Details: build_info.json
 
 # index.html.md
 
@@ -2481,7 +2481,7 @@ Render one image into a pan/zoom video from a `BurnsPath`.
 
 # About this build
 
-This documentation was built on **2026-10-01 14:33 UTC** from commit <a href="https://github.com/thorwhalen/burns/commit/1fbdf0f9ef92a20a2caca62adbc03fd7a9b0e487"><code>1fbdf0f</code></a> on branch <code>main</code>, for **burns 0.0.16** (from <code>pyproject.toml</code>).
+This documentation was built on **2026-10-06 09:28 UTC** from commit <a href="https://github.com/thorwhalen/burns/commit/e9c14d46ad20061d4817199156bc7c800e0aced5"><code>e9c14d4</code></a> on branch <code>main</code>, for **burns 0.0.17** (from <code>pyproject.toml</code>).
 
 #### NOTE
 Nothing suggests a mismatch: the tree was clean at the commit above, and the documented version is the one on PyPI.
@@ -2490,7 +2490,7 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 |                     |                                                                                                                                                         |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Commit              | <a href="https://github.com/thorwhalen/burns/commit/1fbdf0f9ef92a20a2caca62adbc03fd7a9b0e487"><code>1fbdf0f9ef92a20a2caca62adbc03fd7a9b0e487</code></a> |
+| Commit              | <a href="https://github.com/thorwhalen/burns/commit/e9c14d46ad20061d4817199156bc7c800e0aced5"><code>e9c14d46ad20061d4817199156bc7c800e0aced5</code></a> |
 | Branch              | <code>main</code>                                                                                                                                       |
 | Tags at this commit | none                                                                                                                                                    |
 | Working tree        | clean                                                                                                                                                   |
@@ -2501,9 +2501,9 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 |              |                                                                                            |
 |--------------|--------------------------------------------------------------------------------------------|
 | Repository   | <code>thorwhalen/burns</code>                                                              |
-| Run          | <a href="https://github.com/thorwhalen/burns/actions/runs/36876908296">36876908296</a>     |
+| Run          | <a href="https://github.com/thorwhalen/burns/actions/runs/37442910946">37442910946</a>     |
 | Ref          | <code>refs/heads/main</code>                                                               |
-| Event commit | <code>1fbdf0f9ef92a20a2caca62adbc03fd7a9b0e487</code> (in the history of the built commit) |
+| Event commit | <code>e9c14d46ad20061d4817199156bc7c800e0aced5</code> (in the history of the built commit) |
 
 ## Tools
 
@@ -2528,13 +2528,13 @@ Nothing suggests a mismatch: the tree was clean at the commit above, and the doc
 
 ## Package on PyPI
 
-Latest release: <a href="https://pypi.org/project/burns/0.0.16/">0.0.16</a>, the same as the documented version.
+Latest release: <a href="https://pypi.org/project/burns/0.0.17/">0.0.17</a>, the same as the documented version.
 
 ## Reproduce
 
 ```bash
 git clone https://github.com/thorwhalen/burns && cd burns
-git checkout 1fbdf0f9ef92a20a2caca62adbc03fd7a9b0e487
+git checkout e9c14d46ad20061d4817199156bc7c800e0aced5
 pip install "epythet==0.2.12"
 epythet quickstart . --ignore tests/ scrap/ examples/
 ```
